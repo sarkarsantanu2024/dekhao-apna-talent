@@ -1,8 +1,14 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * The wrapper is `block w-full overflow-x-auto` so wide tables scroll
+ * horizontally INSIDE their card instead of pushing the whole page wider
+ * on mobile. Cells default to `whitespace-nowrap` — opt out per-cell with
+ * `whitespace-normal` when you need wrapped text.
+ */
 export const Table = ({ className, ...props }: React.HTMLAttributes<HTMLTableElement>) => (
-  <div className="relative w-full overflow-auto">
+  <div className="block w-full max-w-full overflow-x-auto">
     <table className={cn("w-full caption-bottom text-sm", className)} {...props} />
   </div>
 );
@@ -16,8 +22,8 @@ export const TableRow = ({ className, ...props }: React.HTMLAttributes<HTMLTable
   <tr className={cn("border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted", className)} {...props} />
 );
 export const TableHead = ({ className, ...props }: React.ThHTMLAttributes<HTMLTableCellElement>) => (
-  <th className={cn("h-10 px-3 text-left align-middle font-medium text-muted-foreground", className)} {...props} />
+  <th className={cn("h-10 whitespace-nowrap px-3 text-left align-middle font-medium text-muted-foreground", className)} {...props} />
 );
 export const TableCell = ({ className, ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) => (
-  <td className={cn("p-3 align-middle", className)} {...props} />
+  <td className={cn("whitespace-nowrap p-3 align-middle", className)} {...props} />
 );

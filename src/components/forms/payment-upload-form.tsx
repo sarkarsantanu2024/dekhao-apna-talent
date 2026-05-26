@@ -1,10 +1,20 @@
 "use client";
+
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { store, useCenters } from "@/services";
+
+const fileToDataUrl = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result));
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(file);
+  });
 
 export function PaymentUploadForm() {
   const router = useRouter();
@@ -12,29 +22,35 @@ export function PaymentUploadForm() {
   const [file, setFile] = useState<File | null>(null);
   const [amount, setAmount] = useState("");
   const [ref, setRef] = useState("");
+  const { data: centers } = useCenters();
+  const myCenter = centers[0] ?? null;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) { toast.error("Choose a screenshot"); return; }
-    if (!amount) { toast.error("Enter amount"); return; }
-    start(async () => {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("bucket", "payment-screenshots");
-      const up = await fetch("/api/upload", { method: "POST", body: fd });
-      if (!up.ok) { toast.error("Upload failed"); return; }
-      const { url } = await up.json();
+    if (!file) return toast.error("Choose a screenshot");
+    if (!amount) return toast.error("Enter amount");
+    if (file.size > 5 * 1024 * 1024) return toast.error("Max 5 MB");
+    if (!myCenter) return toast.error("No centre available");
 
-      const res = await fetch("/api/payments", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ amount: Number(amount), transaction_ref: ref || undefined, screenshot_url: url }),
-      });
-      const json = await res.json();
-      if (!res.ok) { toast.error(json.error ?? "Could not submit"); return; }
-      toast.success("Screenshot submitted — awaiting admin approval");
-      router.push("/center/payments");
-      router.refresh();
+    start(async () => {
+      try {
+        const screenshot_url = await fileToDataUrl(file);
+        await store.createPayment({
+          center_id: myCenter.id,
+          center_name: myCenter.center_name,
+          uploaded_by: null,
+          amount: Number(amount),
+          transaction_ref: ref || null,
+          screenshot_url,
+        });
+        toast.success("Screenshot submitted — awaiting admin approval");
+        setFile(null);
+        setAmount("");
+        setRef("");
+        router.push("/center/payments");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Could not submit");
+      }
     });
   };
 
