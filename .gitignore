@@ -56,3 +56,7 @@ package-lock.json
 Thumbs.db
 Desktop.ini
 ehthumbs.db
+
+# Client-demo assets (deck, mockups) — generated locally, not part of the app
+/demo/
+docs/demo/
