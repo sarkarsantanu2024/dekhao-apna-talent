@@ -1,0 +1,121 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* x2y-inspired: near-black canvas, cream ink, vivid orange accent */
+:root {
+  --background: oklch(0.10 0.005 250);     /* #0B0B0F-ish */
+  --foreground: oklch(0.96 0.015 80);      /* #F5F1EA cream */
+  --card: oklch(0.13 0.006 250);
+  --card-foreground: oklch(0.96 0.015 80);
+  --popover: oklch(0.13 0.006 250);
+  --popover-foreground: oklch(0.96 0.015 80);
+  --primary: oklch(0.70 0.21 38);          /* #FF5A1F vivid orange */
+  --primary-foreground: oklch(0.10 0.005 250);
+  --secondary: oklch(0.18 0.005 250);
+  --secondary-foreground: oklch(0.96 0.015 80);
+  --muted: oklch(0.16 0.005 250);
+  --muted-foreground: oklch(0.68 0.01 80);
+  --accent: oklch(0.86 0.18 90);           /* warm yellow highlight */
+  --accent-foreground: oklch(0.10 0.005 250);
+  --destructive: oklch(0.62 0.24 28);
+  --border: oklch(0.22 0.005 250);
+  --input: oklch(0.20 0.005 250);
+  --ring: oklch(0.70 0.21 38);
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: oklch(0.10 0.005 250);
+  --foreground: oklch(0.96 0.015 80);
+  --card: oklch(0.13 0.006 250);
+  --card-foreground: oklch(0.96 0.015 80);
+  --popover: oklch(0.13 0.006 250);
+  --popover-foreground: oklch(0.96 0.015 80);
+  --primary: oklch(0.70 0.21 38);
+  --primary-foreground: oklch(0.10 0.005 250);
+  --secondary: oklch(0.18 0.005 250);
+  --secondary-foreground: oklch(0.96 0.015 80);
+  --muted: oklch(0.16 0.005 250);
+  --muted-foreground: oklch(0.68 0.01 80);
+  --accent: oklch(0.86 0.18 90);
+  --accent-foreground: oklch(0.10 0.005 250);
+  --destructive: oklch(0.62 0.24 28);
+  --border: oklch(0.22 0.005 250);
+  --input: oklch(0.20 0.005 250);
+  --ring: oklch(0.70 0.21 38);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@layer base {
+  * { border-color: var(--border); }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+}
+
+/* Marquee — used across home page tickers */
+@keyframes dat-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: dat-marquee 28s linear infinite;
+}
+
+/* Material Symbols — used everywhere icons live */
+.material-symbols-outlined,
+.material-symbols-rounded {
+  font-family: var(--icon-family, "Material Symbols Outlined");
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  vertical-align: middle;
+}
+.material-symbols-rounded {
+  --icon-family: "Material Symbols Rounded";
+}
