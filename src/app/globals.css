@@ -98,6 +98,30 @@
   animation: dat-marquee 28s linear infinite;
 }
 
+/* Backend theme — light dashboard palette inspired by DashboardKit/Paces.
+ * Scoped via `.theme-grey` on dashboard layouts only; the public site keeps
+ * its dark cinematic look. */
+.theme-grey {
+  --background: oklch(0.975 0.004 270);         /* #F3F4F8 page bg */
+  --foreground: oklch(0.20 0.04 270);           /* near-navy ink */
+  --card: oklch(1 0 0);                         /* pure white surfaces */
+  --card-foreground: oklch(0.20 0.04 270);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.20 0.04 270);
+  --primary: oklch(0.70 0.21 38);               /* keep brand orange */
+  --primary-foreground: oklch(0.20 0.04 270);
+  --secondary: oklch(0.965 0.004 270);
+  --secondary-foreground: oklch(0.25 0.04 270);
+  --muted: oklch(0.96 0.004 270);
+  --muted-foreground: oklch(0.50 0.02 270);
+  --accent: oklch(0.96 0.02 38);                /* warm tint behind active nav */
+  --accent-foreground: oklch(0.20 0.04 270);
+  --destructive: oklch(0.58 0.22 28);
+  --border: oklch(0.91 0.005 270);
+  --input: oklch(0.93 0.005 270);
+  --ring: oklch(0.70 0.21 38);
+}
+
 /* Material Symbols — used everywhere icons live */
 .material-symbols-outlined,
 .material-symbols-rounded {

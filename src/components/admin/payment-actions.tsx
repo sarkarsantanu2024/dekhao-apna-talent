@@ -1,24 +1,28 @@
 "use client";
+
 import { useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { store } from "@/services";
 
 export function PaymentActions({ id }: { id: string }) {
-  const router = useRouter();
   const [pending, start] = useTransition();
+
   const act = (kind: "approve" | "reject") =>
     start(async () => {
-      const note = kind === "reject" ? prompt("Reason for rejection (optional):") ?? undefined : undefined;
-      const res = await fetch(`/api/payments/${id}/${kind}`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ note }),
-      });
-      if (!res.ok) { toast.error("Action failed"); return; }
-      toast.success(kind === "approve" ? "Payment approved" : "Payment rejected");
-      router.refresh();
+      const note =
+        kind === "reject"
+          ? window.prompt("Reason for rejection (optional):") ?? undefined
+          : undefined;
+      try {
+        if (kind === "approve") await store.approvePayment(id, note);
+        else await store.rejectPayment(id, note);
+        toast.success(kind === "approve" ? "Payment approved" : "Payment rejected");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Action failed");
+      }
     });
+
   return (
     <div className="flex gap-2">
       <Button size="sm" disabled={pending} onClick={() => act("approve")}>Approve</Button>

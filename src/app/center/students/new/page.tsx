@@ -1,19 +1,27 @@
-import { auth } from "@/lib/auth/auth";
-import { supabaseAdmin } from "@/lib/supabase/admin";
+"use client";
+
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { StudentForm } from "@/components/forms/student-form";
-import type { Category } from "@/types";
+import { useCategories, useCenters } from "@/services";
 
-export const metadata = { title: "Add student" };
+export default function NewStudentPage() {
+  const { data: categories, loading: catsLoading } = useCategories();
+  const { data: centers, loading: centersLoading } = useCenters();
 
-export default async function NewStudentPage() {
-  const session = await auth();
-  const sb = supabaseAdmin();
+  /**
+   * Pick the centre this user is logged into. In demo mode the auth session's
+   * centerId is pinned to the seeded Demo Centre — but if a custom centre
+   * exists we still prefer the first one as a sensible fallback.
+   */
+  const myCenter = useMemo(() => centers[0] ?? null, [centers]);
 
-  const [{ data: cats }, { data: centre }] = await Promise.all([
-    sb.from("categories").select("*").eq("active", true).order("name"),
-    sb.from("centers").select("center_name").eq("id", session!.user.centerId!).maybeSingle(),
-  ]);
+  if (catsLoading || centersLoading) {
+    return <p className="text-sm text-muted-foreground">Loading…</p>;
+  }
+  if (!myCenter) {
+    return <p className="text-sm text-muted-foreground">No centre available. Add one in the admin panel first.</p>;
+  }
 
   return (
     <Card>
@@ -23,9 +31,12 @@ export default async function NewStudentPage() {
       </CardHeader>
       <CardContent>
         <StudentForm
-          categories={(cats ?? []) as Category[]}
-          centerName={(centre?.center_name as string) ?? "My Centre"}
-          centerId={session!.user.centerId}
+          categories={categories.filter((c) => c.active)}
+          centerName={myCenter.center_name}
+          centerId={myCenter.id}
+          centerCity={myCenter.city}
+          centerState={myCenter.state}
+          centerPincode={myCenter.pincode}
         />
       </CardContent>
     </Card>

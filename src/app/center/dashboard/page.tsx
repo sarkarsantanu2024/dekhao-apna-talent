@@ -1,40 +1,75 @@
+"use client";
+
 import Link from "next/link";
-import { auth } from "@/lib/auth/auth";
-import { supabaseAdmin } from "@/lib/supabase/admin";
-import { StatCard } from "@/components/cards/stat-card";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, FileCheck2, Hourglass } from "lucide-react";
 import { EVENT_YEAR } from "@/constants";
+import { useCenters, usePayments, useStudents } from "@/services";
+import type { DashboardStats } from "@/services";
+import { DashboardOverview } from "@/components/dashboard/overview";
 
-export const metadata = { title: "Centre dashboard" };
+export default function CenterDashboard() {
+  const { data: centers } = useCenters();
+  const myCenter = centers[0] ?? null;
+  const centerId = myCenter?.id;
 
-export default async function CenterDashboard() {
-  const session = await auth();
-  const centerId = session!.user.centerId;
-  const sb = supabaseAdmin();
+  const { data: students } = useStudents({ centerId });
+  const { data: payments } = usePayments({ centerId });
 
-  const [students, active, pending] = await Promise.all([
-    sb.from("students").select("id", { count: "exact", head: true }).eq("center_id", centerId).eq("event_year", EVENT_YEAR),
-    sb.from("students").select("id", { count: "exact", head: true }).eq("center_id", centerId).eq("status", "active").eq("event_year", EVENT_YEAR),
-    sb.from("payments").select("id", { count: "exact", head: true }).eq("center_id", centerId).eq("status", "pending").eq("event_year", EVENT_YEAR),
-  ]);
+  /**
+   * Compute the same DashboardStats shape the admin uses, but scoped to this
+   * centre's students/payments only. Identical UI → identical mental model.
+   */
+  const stats: DashboardStats = useMemo(() => {
+    const byCat = new Map<string, number>();
+    let pending = 0, approved = 0, rejected = 0, active = 0;
+    for (const s of students) {
+      byCat.set(s.category_name, (byCat.get(s.category_name) ?? 0) + 1);
+      if      (s.status === "pending")  pending++;
+      else if (s.status === "approved") approved++;
+      else if (s.status === "rejected") rejected++;
+      else if (s.status === "active")   active++;
+    }
+    let pPay = 0, aPay = 0, rPay = 0, collected = 0;
+    for (const p of payments) {
+      if      (p.status === "pending")  pPay++;
+      else if (p.status === "approved") { aPay++; collected += Number(p.amount); }
+      else if (p.status === "rejected") rPay++;
+    }
+    return {
+      students: students.length,
+      centers: 1,
+      pendingStudents: pending,
+      approvedStudents: approved,
+      rejectedStudents: rejected,
+      activeStudents: active,
+      pendingPayments: pPay,
+      approvedPayments: aPay,
+      rejectedPayments: rPay,
+      collected,
+      byCategory: Array.from(byCat.entries()).map(([categoryName, count]) => ({ categoryName, count })),
+    };
+  }, [students, payments]);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Welcome back</h1>
-          <p className="text-sm text-muted-foreground">Event year {EVENT_YEAR}</p>
+          <p className="text-sm text-muted-foreground">
+            {myCenter?.center_name ?? "—"} · Event year {EVENT_YEAR}
+          </p>
         </div>
         <Button asChild><Link href="/center/students/new">+ Add student</Link></Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="My students"       value={students.count ?? 0} icon={Users}      />
-        <StatCard label="Active chest cards" value={active.count ?? 0}  icon={FileCheck2} />
-        <StatCard label="Payments awaiting"  value={pending.count ?? 0} icon={Hourglass}  />
-      </div>
+      <DashboardOverview
+        stats={stats}
+        scope="centre"
+        studentsHref="/center/students"
+        paymentsHref="/center/payments"
+      />
 
       <Card>
         <CardHeader><CardTitle>Quick actions</CardTitle></CardHeader>
