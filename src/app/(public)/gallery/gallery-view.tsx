@@ -35,7 +35,7 @@ export function GalleryView() {
                 key={t}
                 onClick={() => setTab(t)}
                 className={`relative rounded-full px-5 py-2 text-[12px] font-bold uppercase tracking-wider transition-colors ${
-                  tab === t ? "bg-[#FF5A1F] text-black" : "text-white/70 hover:text-white"
+                  tab === t ? "bg-[#A855F7] text-black" : "text-white/70 hover:text-white"
                 }`}
               >
                 {t}
@@ -51,7 +51,7 @@ export function GalleryView() {
                   onClick={() => setTag(tg)}
                   className={`rounded-full border px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
                     tag === tg
-                      ? "border-[#FF5A1F] bg-[#FF5A1F]/10 text-[#FF5A1F]"
+                      ? "border-[#A855F7] bg-[#A855F7]/10 text-gradient"
                       : "border-white/15 text-white/60 hover:text-white"
                   }`}
                 >
@@ -109,12 +109,12 @@ export function GalleryView() {
                 />
                 <span className="absolute inset-0 bg-black/30 transition-colors group-hover:bg-black/50" />
                 <span className="absolute inset-0 flex items-center justify-center">
-                  <span className="inline-flex size-16 items-center justify-center rounded-full bg-[#FF5A1F] text-black shadow-2xl transition-transform group-hover:scale-110">
+                  <span className="inline-flex size-16 items-center justify-center rounded-full bg-[#A855F7] text-black shadow-2xl transition-transform group-hover:scale-110">
                     <Icon name="play_arrow" size={28} filled />
                   </span>
                 </span>
                 <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/60 to-transparent p-4 text-left">
-                  <span className="text-[11px] uppercase tracking-wider text-[#FF5A1F]">Video</span>
+                  <span className="text-[11px] uppercase tracking-wider text-gradient">Video</span>
                   <p className="mt-1 text-lg font-black uppercase tracking-tight text-white">{v.title}</p>
                 </span>
               </button>
@@ -140,11 +140,11 @@ export function GalleryView() {
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent" />
-                <span className="absolute right-3 top-3 inline-flex size-10 items-center justify-center rounded-full bg-[#FF5A1F] text-black opacity-0 transition-opacity group-hover:opacity-100">
+                <span className="absolute right-3 top-3 inline-flex size-10 items-center justify-center rounded-full bg-[#A855F7] text-black opacity-0 transition-opacity group-hover:opacity-100">
                   <Icon name="play_arrow" size={18} filled />
                 </span>
                 <span className="absolute inset-x-3 bottom-3 text-left">
-                  <span className="text-[10px] uppercase tracking-wider text-[#FF5A1F]">Reel</span>
+                  <span className="text-[10px] uppercase tracking-wider text-gradient">Reel</span>
                   <p className="mt-1 line-clamp-2 text-sm font-bold text-white">{s.title}</p>
                 </span>
               </button>

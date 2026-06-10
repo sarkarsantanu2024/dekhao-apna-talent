@@ -33,7 +33,7 @@ const KEY = "dat:store:v1";
  * Bump this version whenever the seed shape changes — every browser will
  * re-seed on next visit instead of holding stale ids that no longer line up.
  */
-const SEED_VERSION = "v2";
+const SEED_VERSION = "v3";
 const SEEDED_FLAG = "dat:store:seeded";
 
 interface Snapshot {
@@ -106,7 +106,7 @@ const SEED_CATEGORIES: Category[] = [
 export const DEMO_CENTRE_ID = "11111111-1111-1111-1111-111111111111";
 
 const SEED_CENTERS: Center[] = [
-  { id: DEMO_CENTRE_ID,  center_name: "Demo Centre — Dumdum",       owner_name: "Demo Owner",      phone: "+91 98300 00000", address: "Dumdum Road",            city: "Kolkata",   state: "West Bengal", pincode: "700028", event_year: EVENT_YEAR, created_at: nowIso() },
+  { id: DEMO_CENTRE_ID,  center_name: "Mind Mantra · Dumdum",        owner_name: "Centre Owner",    phone: "+91 98300 00000", address: "Dumdum Road",            city: "Kolkata",   state: "West Bengal", pincode: "700028", event_year: EVENT_YEAR, created_at: nowIso() },
   { id: "ctr_kol_north", center_name: "Mind Mantra · Salt Lake",    owner_name: "Riya Banerjee",   phone: "+91 98300 11111", address: "Sector V, Salt Lake",    city: "Kolkata",   state: "West Bengal", pincode: "700091", event_year: EVENT_YEAR, created_at: nowIso() },
   { id: "ctr_kol_south", center_name: "Mind Mantra · Tollygunge",   owner_name: "Arjun Sen",       phone: "+91 98300 22222", address: "Charu Avenue",           city: "Kolkata",   state: "West Bengal", pincode: "700033", event_year: EVENT_YEAR, created_at: nowIso() },
   { id: "ctr_howrah",    center_name: "Mind Mantra · Howrah",       owner_name: "Pratima Roy",     phone: "+91 98300 33333", address: "Maidan Road",            city: "Howrah",    state: "West Bengal", pincode: "711101", event_year: EVENT_YEAR, created_at: nowIso() },

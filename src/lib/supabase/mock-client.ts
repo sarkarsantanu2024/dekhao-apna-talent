@@ -48,7 +48,7 @@ const db: Record<string, Row[]> = {
     },
     {
       id: "u0000002-0000-0000-0000-000000000002",
-      name: "Demo Centre Owner",
+      name: "Centre Owner",
       email: "centre@dekhaoapnatalent.com",
       password_hash: CENTRE_HASH,
       role: "center_owner",
@@ -61,8 +61,8 @@ const db: Record<string, Row[]> = {
   centers: [
     {
       id: CENTRE_ID,
-      center_name: "Demo Centre — Dumdum",
-      owner_name: "Demo Owner",
+      center_name: "Mind Mantra · Dumdum",
+      owner_name: "Centre Owner",
       phone: "+91-9000000000",
       address: null,
       city: "Kolkata",

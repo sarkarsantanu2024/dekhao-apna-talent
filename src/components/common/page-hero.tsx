@@ -4,6 +4,7 @@ import { useRef, type ReactNode } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { MaskReveal } from "./mask-reveal";
+import { Decor } from "./decor";
 
 gsap.registerPlugin(useGSAP);
 
@@ -32,8 +33,9 @@ export function PageHero({ eyebrow, title, subtitle }: Props) {
     >
       <div
         aria-hidden
-        className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(255,90,31,0.18),transparent_50%),radial-gradient(circle_at_10%_85%,rgba(255,90,31,0.08),transparent_50%)]"
+        className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(168,85,247,0.22),transparent_50%),radial-gradient(circle_at_10%_85%,rgba(236,72,153,0.12),transparent_50%)]"
       />
+      <Decor />
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 -bottom-8 select-none text-center text-[24vw] font-black uppercase leading-none tracking-tighter text-white/[0.03] sm:-bottom-12"
@@ -43,9 +45,8 @@ export function PageHero({ eyebrow, title, subtitle }: Props) {
       <div className="container relative mx-auto px-6">
         {eyebrow && (
           <div data-hero-eyebrow className="inline-flex items-center gap-3">
-            <span className="font-mono text-[#FF5A1F]">/</span>
+            <span className="font-script text-3xl leading-none text-gradient sm:text-4xl">{eyebrow}</span>
             <span className="h-px w-10 bg-white/30" />
-            <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/70">{eyebrow}</span>
           </div>
         )}
         <MaskReveal
@@ -58,7 +59,7 @@ export function PageHero({ eyebrow, title, subtitle }: Props) {
           {title}
         </MaskReveal>
         {subtitle && (
-          <p data-hero-sub className="mt-6 max-w-2xl text-base text-white/65 sm:text-lg">
+          <p data-hero-sub className="mt-7 max-w-2xl text-lg text-white/70 sm:text-xl">
             {subtitle}
           </p>
         )}

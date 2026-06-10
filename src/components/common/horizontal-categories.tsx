@@ -63,7 +63,7 @@ export function HorizontalCategories() {
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-3">
-              <span className="font-mono text-[#FF5A1F]">02</span>
+              <span className="font-mono text-[#A855F7]">02</span>
               <span className="h-px w-10 bg-white/30" />
               <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/70">Categories</span>
             </div>
@@ -108,10 +108,10 @@ export function HorizontalCategories() {
                     <Icon
                       name="arrow_outward"
                       size={18}
-                      className="text-white/50 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#FF5A1F]"
+                      className="text-white/50 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#A855F7]"
                     />
                   </div>
-                  <Icon name={iconName} size={40} className="mt-8 text-[#FF5A1F] md:mt-10" />
+                  <Icon name={iconName} size={40} className="mt-8 text-[#A855F7] md:mt-10" />
                 </div>
                 <div>
                   <h3 className="text-2xl font-black uppercase tracking-tight sm:text-3xl md:text-4xl">{c.name}</h3>
@@ -126,15 +126,15 @@ export function HorizontalCategories() {
           })}
 
           {/* Tail card */}
-          <article className="flex w-full min-h-[220px] flex-col items-start justify-center rounded-2xl border border-[#FF5A1F]/30 bg-[#FF5A1F]/5 p-8 sm:min-h-[280px] md:h-[480px] md:w-[440px] md:p-10">
-            <span className="font-mono text-xs text-[#FF5A1F]">05</span>
+          <article className="flex w-full min-h-[220px] flex-col items-start justify-center rounded-2xl border border-[#A855F7]/30 bg-[#A855F7]/5 p-8 sm:min-h-[280px] md:h-[480px] md:w-[440px] md:p-10">
+            <span className="font-mono text-xs text-[#A855F7]">05</span>
             <h3 className="mt-6 text-2xl font-black uppercase leading-tight tracking-tight sm:text-3xl md:mt-10 md:text-4xl">
               Ready to <br />
-              <span className="text-[#FF5A1F]">enter?</span>
+              <span className="text-[#A855F7]">enter?</span>
             </h3>
             <a
               href="/register"
-              className="mt-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white hover:text-[#FF5A1F] md:mt-auto"
+              className="mt-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white hover:text-[#A855F7] md:mt-auto"
             >
               Register your centre <Icon name="arrow_outward" size={16} />
             </a>
