@@ -1,8 +1,7 @@
 import NextAuth, { type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
-import { supabaseAdmin } from "@/lib/supabase/admin";
-import { verifyPassword } from "@/lib/auth/password";
+import { FIXED_USERS } from "@/lib/auth/users";
 
 declare module "next-auth" {
   interface Session {
@@ -29,27 +28,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
+      // TEMPORARY auth: two fixed accounts (admin + centre owner). No database
+      // yet — this will be replaced by Supabase auth + a real users table later.
       authorize: async (raw) => {
         const parsed = credSchema.safeParse(raw);
         if (!parsed.success) return null;
-        const { email, password } = parsed.data;
+        const email = parsed.data.email.trim().toLowerCase();
+        const { password } = parsed.data;
 
-        const { data: user, error } = await supabaseAdmin()
-          .from("users")
-          .select("id, name, email, password_hash, role, center_id")
-          .eq("email", email)
-          .maybeSingle();
-        if (error || !user) return null;
-
-        const ok = await verifyPassword(password, user.password_hash as string);
-        if (!ok) return null;
+        const match = FIXED_USERS.find(
+          (u) => u.email === email && u.password === password
+        );
+        if (!match) return null;
 
         return {
-          id: user.id as string,
-          email: user.email as string,
-          name: user.name as string,
-          role: user.role as "admin" | "center_owner",
-          centerId: (user.center_id as string | null) ?? null,
+          id: match.id,
+          email: match.email,
+          name: match.name,
+          role: match.role,
+          centerId: match.centerId,
         };
       },
     }),

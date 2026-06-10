@@ -6,40 +6,75 @@ import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(useGSAP);
 
+const WORDS = ["Dekhao", "Apna", "Talent"];
+
 export function PageLoader() {
   const root = useRef<HTMLDivElement>(null);
-  const title = useRef<HTMLSpanElement>(null);
-  const bar = useRef<HTMLSpanElement>(null);
   const counter = useRef<HTMLSpanElement>(null);
+  const bar = useRef<HTMLSpanElement>(null);
   const [mounted, setMounted] = useState(true);
 
   useGSAP(
     () => {
+      const lines = gsap.utils.toArray<HTMLElement>("[data-line]");
+      const meta = gsap.utils.toArray<HTMLElement>("[data-meta]");
       const count = { v: 0 };
+
+      const setCount = () => {
+        if (counter.current) counter.current.textContent = String(Math.round(count.v));
+      };
+
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduce) {
+        count.v = 100;
+        setCount();
+        gsap.set([...lines, ...meta, bar.current], { clearProps: "all" });
+        gsap.to(root.current, {
+          autoAlpha: 0,
+          duration: 0.4,
+          delay: 0.4,
+          onComplete: () => setMounted(false),
+        });
+        return;
+      }
+
       const tl = gsap.timeline({
         defaults: { ease: "power3.out" },
         onComplete: () => {
-          gsap.to(root.current, {
-            yPercent: -100,
-            duration: 0.8,
-            ease: "power3.inOut",
-            delay: 0.15,
-            onComplete: () => setMounted(false),
-          });
+          gsap
+            .timeline({ onComplete: () => setMounted(false) })
+            .to(lines, { yPercent: -110, duration: 0.55, ease: "power3.in", stagger: 0.07 })
+            .to(meta, { opacity: 0, duration: 0.3 }, "<")
+            .to(
+              root.current,
+              { yPercent: -100, duration: 0.9, ease: "power4.inOut" },
+              "-=0.15"
+            );
         },
       });
-      tl.from(title.current, { y: 24, opacity: 0, duration: 0.6 })
-        .to(count, {
-          v: 100,
-          duration: 1.2,
-          ease: "power2.inOut",
-          onUpdate: () => {
-            if (counter.current) counter.current.textContent = String(Math.round(count.v)).padStart(2, "0");
-          },
-        }, "-=0.15")
-        .from(bar.current, { scaleX: 0, transformOrigin: "left center", duration: 1.2, ease: "power2.inOut" }, "<");
+
+      tl
+        // meta (top + bottom labels) fade/slide in
+        .from(meta, { yPercent: 120, opacity: 0, duration: 0.5, stagger: 0.08 })
+        // headline words mask up into view
+        .from(
+          lines,
+          { yPercent: 115, duration: 0.8, ease: "power4.out", stagger: 0.1 },
+          "-=0.25"
+        )
+        // count 0 -> 100, synced with the fill bar
+        .to(
+          count,
+          { v: 100, duration: 1.6, ease: "power2.inOut", onUpdate: setCount },
+          "-=0.5"
+        )
+        .to(
+          bar.current,
+          { scaleX: 1, duration: 1.6, ease: "power2.inOut" },
+          "<"
+        );
     },
-    { scope: root },
+    { scope: root }
   );
 
   if (!mounted) return null;
@@ -47,19 +82,58 @@ export function PageLoader() {
   return (
     <div
       ref={root}
-      className="fixed inset-0 z-[100] flex flex-col justify-end bg-black text-white"
+      className="fixed inset-0 z-[100] flex flex-col bg-[#0B0B0F] text-white"
     >
-      <div className="container mx-auto flex items-end justify-between gap-6 px-6 pb-10">
-        <span ref={title} className="text-3xl font-black uppercase leading-none tracking-tight sm:text-5xl">
-          Dekhao Apna <span className="text-[#FF5A1F]">Talent</span>
+      {/* Top meta row */}
+      <div className="flex items-start justify-between px-6 pt-8 sm:px-10">
+        <span className="overflow-hidden">
+          <span data-meta className="block font-mono text-[11px] uppercase tracking-[0.3em] text-white/50">
+            Mind Mantra Abacus
+          </span>
         </span>
-        <span className="font-mono text-xs uppercase tracking-wider text-white/60">
-          <span ref={counter}>00</span>%
+        <span className="overflow-hidden">
+          <span data-meta className="block font-mono text-[11px] uppercase tracking-[0.3em] text-[#A855F7]">
+            2026
+          </span>
         </span>
       </div>
-      <span className="relative block h-px w-full overflow-hidden bg-white/10">
-        <span ref={bar} className="absolute inset-y-0 left-0 w-full bg-[#FF5A1F]" />
-      </span>
+
+      {/* Masked headline */}
+      <div className="flex flex-1 items-center px-6 sm:px-10">
+        <h2 className="font-black uppercase leading-[0.82] tracking-tight text-[16vw] sm:text-[12vw]">
+          {WORDS.map((w, i) => (
+            <span key={w} className="block overflow-hidden">
+              <span
+                data-line
+                className={`block ${i === WORDS.length - 1 ? "text-[#A855F7]" : ""}`}
+              >
+                {w}
+              </span>
+            </span>
+          ))}
+        </h2>
+      </div>
+
+      {/* Bottom counter + progress bar */}
+      <div className="px-6 pb-8 sm:px-10">
+        <div className="flex items-end justify-between">
+          <span className="overflow-hidden">
+            <span data-meta className="block font-mono text-[11px] uppercase tracking-[0.3em] text-white/50">
+              Loading
+            </span>
+          </span>
+          <span className="font-black tabular-nums leading-none text-5xl sm:text-7xl">
+            <span ref={counter}>0</span>
+            <span className="text-[#A855F7]">%</span>
+          </span>
+        </div>
+        <span className="relative mt-5 block h-[2px] w-full overflow-hidden bg-white/10">
+          <span
+            ref={bar}
+            className="absolute inset-y-0 left-0 w-full origin-left scale-x-0 bg-[#A855F7]"
+          />
+        </span>
+      </div>
     </div>
   );
 }

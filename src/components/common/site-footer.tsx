@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { EVENT_NAME, EVENT_YEAR } from "@/constants";
 import { Icon } from "./icon";
+import { SOCIALS } from "./social-icons";
 
 export function SiteFooter() {
   return (
@@ -8,16 +9,30 @@ export function SiteFooter() {
       <div className="container mx-auto px-6 py-20">
         {/* Oversized brand line, x2y-style */}
         <Link href="/" className="block">
-          <h2 className="text-balance text-[clamp(2.5rem,9vw,8rem)] font-black uppercase leading-[0.92] tracking-tight text-white transition-colors hover:text-[#FF5A1F]">
-            Dekhao Apna <span className="text-[#FF5A1F]">Talent.</span>
+          <h2 className="text-balance text-[clamp(2.5rem,9vw,8rem)] font-black uppercase leading-[0.92] tracking-tight text-white transition-colors hover:text-[#A855F7]">
+            Dekhao Apna <span className="text-[#A855F7]">Talent.</span>
           </h2>
         </Link>
 
         <div className="mt-16 grid gap-10 border-t border-white/10 pt-10 md:grid-cols-4">
           <div className="md:col-span-1">
-            <p className="text-sm text-white/60">
+            <p className="text-base text-white/65">
               Eastern India&apos;s biggest talent contest for students aged 6–14, presented by Mind Mantra Abacus.
             </p>
+            <div className="mt-6 flex items-center gap-3">
+              {SOCIALS.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  className="inline-flex size-10 items-center justify-center rounded-full border border-white/15 text-white/70 transition-colors hover:border-transparent hover:bg-brand-gradient hover:text-white"
+                >
+                  <s.Icon className="size-4" />
+                </a>
+              ))}
+            </div>
           </div>
 
           <FooterCol title="Event" links={[
@@ -60,7 +75,7 @@ function FooterCol({ title, links }: { title: string; links: { href: string; lab
           <li key={l.href}>
             <Link
               href={l.href}
-              className="group inline-flex items-center gap-1.5 text-sm text-white/80 transition-colors hover:text-[#FF5A1F]"
+              className="group inline-flex items-center gap-1.5 text-sm text-white/80 transition-colors hover:text-[#A855F7]"
             >
               {l.label}
               <Icon name="arrow_outward" size={14} className="opacity-0 transition-opacity group-hover:opacity-100" />

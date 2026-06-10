@@ -1,23 +1,30 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Icon } from "./icon";
 
+function useIsActive() {
+  const pathname = usePathname();
+  return (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+}
+
 const NAV = [
-  { href: "/",           label: "Home",       num: "01" },
-  { href: "/about",      label: "About",      num: "02" },
-  { href: "/categories", label: "Categories", num: "03" },
-  { href: "/rules",      label: "Guidelines", num: "04" },
-  { href: "/prizes",     label: "Prizes",     num: "05" },
-  { href: "/gallery",    label: "Gallery",    num: "06" },
-  { href: "/contact",    label: "Contact",    num: "07" },
+  { href: "/",           label: "Home" },
+  { href: "/about",      label: "About" },
+  { href: "/categories", label: "Categories" },
+  { href: "/rules",      label: "Guidelines" },
+  { href: "/prizes",     label: "Prizes" },
+  { href: "/gallery",    label: "Gallery" },
+  { href: "/contact",    label: "Contact" },
 ];
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const isActive = useIsActive();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -54,7 +61,7 @@ export function SiteHeader() {
       >
         <div className="container mx-auto flex h-20 items-center justify-between gap-6 px-4 sm:px-6">
           <Link href="/" className="group flex items-center gap-3">
-            <span className="inline-flex size-9 items-center justify-center rounded-full bg-[#FF5A1F] text-black transition-transform group-hover:rotate-90">
+            <span className="inline-flex size-9 items-center justify-center rounded-full bg-[#A855F7] text-black transition-transform group-hover:rotate-90">
               <span className="text-sm font-black">D</span>
             </span>
             <span className="text-sm font-black uppercase tracking-[0.18em] text-white sm:text-base">
@@ -64,20 +71,29 @@ export function SiteHeader() {
 
           <nav className="hidden xl:block">
             <ul className="flex items-center gap-8">
-              {NAV.map((n) => (
-                <li key={n.href}>
-                  <Link
-                    href={n.href}
-                    className="group inline-flex items-baseline gap-1.5 text-[13px] font-medium uppercase tracking-wider text-white/70 transition-colors hover:text-white"
-                  >
-                    <span className="text-[10px] text-[#FF5A1F]/80">{n.num}</span>
-                    <span className="relative">
-                      {n.label}
-                      <span className="absolute -bottom-1 left-0 h-px w-0 bg-[#FF5A1F] transition-all duration-300 group-hover:w-full" />
-                    </span>
-                  </Link>
-                </li>
-              ))}
+              {NAV.map((n) => {
+                const active = isActive(n.href);
+                return (
+                  <li key={n.href}>
+                    <Link
+                      href={n.href}
+                      aria-current={active ? "page" : undefined}
+                      className={`group inline-flex items-baseline gap-1.5 text-sm font-semibold uppercase tracking-wider transition-colors ${
+                        active ? "text-white" : "text-white/65 hover:text-white"
+                      }`}
+                    >
+                      <span className="relative">
+                        {n.label}
+                        <span
+                          className={`absolute -bottom-1 left-0 h-0.5 bg-brand-gradient transition-all duration-300 ${
+                            active ? "w-full" : "w-0 group-hover:w-full"
+                          }`}
+                        />
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </nav>
 
@@ -85,9 +101,9 @@ export function SiteHeader() {
             <Button
               asChild
               size="sm"
-              className="hidden bg-[#FF5A1F] font-bold uppercase tracking-wider text-black hover:bg-[#ff6b35] sm:inline-flex"
+              className="hidden font-bold uppercase tracking-wider sm:inline-flex"
             >
-              <Link href="/register">Register</Link>
+              <Link href="/login">Login / Register</Link>
             </Button>
             <button
               type="button"
@@ -131,7 +147,7 @@ export function SiteHeader() {
             type="button"
             aria-label="Close menu"
             onClick={() => setOpen(false)}
-            className="group inline-flex size-11 items-center justify-center rounded-full border border-white/15 text-white transition-colors hover:border-[#FF5A1F] hover:bg-[#FF5A1F]/10 hover:text-[#FF5A1F]"
+            className="group inline-flex size-11 items-center justify-center rounded-full border border-white/15 text-white transition-colors hover:border-[#A855F7] hover:bg-[#A855F7]/10 hover:text-[#A855F7]"
           >
             <Icon name="close" size={22} />
           </button>
@@ -151,18 +167,18 @@ export function SiteHeader() {
                 <Link
                   href={n.href}
                   onClick={() => setOpen(false)}
-                  className="group flex items-baseline justify-between border-b border-white/5 py-5 hover:text-[#FF5A1F]"
+                  aria-current={isActive(n.href) ? "page" : undefined}
+                  className={`group flex items-baseline justify-between border-b border-white/5 py-5 ${
+                    isActive(n.href) ? "text-white" : "text-white/80 hover:text-[#A855F7]"
+                  }`}
                 >
-                  <span className="inline-flex items-baseline gap-3">
-                    <span className="font-mono text-xs text-[#FF5A1F]">{n.num}</span>
-                    <span className="text-2xl font-black uppercase tracking-tight">
-                      {n.label}
-                    </span>
+                  <span className={`text-2xl font-black uppercase tracking-tight ${isActive(n.href) ? "text-gradient" : ""}`}>
+                    {n.label}
                   </span>
                   <Icon
                     name="north_east"
                     size={20}
-                    className="opacity-40 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#FF5A1F] group-hover:opacity-100"
+                    className="opacity-40 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#A855F7] group-hover:opacity-100"
                   />
                 </Link>
               </li>
@@ -179,13 +195,20 @@ export function SiteHeader() {
         >
           <Button
             asChild
-            className="h-12 w-full bg-[#FF5A1F] font-bold uppercase tracking-wider text-black hover:bg-[#ff6b35]"
+            className="h-12 w-full font-bold uppercase tracking-wider"
           >
-            <Link href="/register" onClick={() => setOpen(false)} className="inline-flex items-center justify-center gap-2">
-              Register your centre
+            <Link href="/login" onClick={() => setOpen(false)} className="inline-flex items-center justify-center gap-2">
+              Login / Register
               <Icon name="arrow_outward" size={18} />
             </Link>
           </Button>
+          <Link
+            href="/login"
+            onClick={() => setOpen(false)}
+            className="mt-3 hidden w-full items-center justify-center gap-2 rounded-md border border-white/15 py-3 text-sm font-bold uppercase tracking-wider text-white hover:border-[#A855F7] hover:text-[#A855F7]"
+          >
+            Login
+          </Link>
           <p className="mt-4 text-[11px] uppercase tracking-[0.22em] text-white/40">
             Kolkata · Eastern India
           </p>

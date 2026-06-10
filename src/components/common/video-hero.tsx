@@ -10,6 +10,7 @@ import { HERO_VIDEO } from "@/constants/media";
 import { EVENT_YEAR } from "@/constants";
 import { Magnetic } from "./magnetic";
 import { Icon } from "./icon";
+import { Decor } from "./decor";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -62,7 +63,8 @@ export function VideoHero() {
       </video>
 
       <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-black/55 via-black/35 to-black" />
-      <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_80%_20%,rgba(255,90,31,0.22),transparent_55%)]" />
+      <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_82%_18%,rgba(168,85,247,0.30),transparent_55%),radial-gradient(circle_at_12%_88%,rgba(236,72,153,0.18),transparent_55%)]" />
+      <Decor blobs={false} className="-z-10" />
 
       <div
         data-hero-ghost
@@ -76,7 +78,7 @@ export function VideoHero() {
         <div className="container mx-auto flex items-center justify-between px-6 text-[11px] uppercase tracking-[0.22em] text-white/60">
           <span>Eastern India · National Stage</span>
           <span className="inline-flex items-center gap-2">
-            <span className="size-1.5 rounded-full bg-[#FF5A1F]" />
+            <span className="size-1.5 rounded-full bg-[#A855F7]" />
             Edition {EVENT_YEAR}
           </span>
         </div>
@@ -105,7 +107,7 @@ export function VideoHero() {
               <Button
                 asChild
                 size="lg"
-                className="group h-12 bg-[#FF5A1F] px-6 font-bold uppercase tracking-wider text-black hover:bg-[#ff6b35]"
+                className="group h-12 px-7 font-bold uppercase tracking-wider"
               >
                 <Link href="/register" className="inline-flex items-center gap-2">
                   Register your centre
@@ -146,15 +148,33 @@ export function VideoHero() {
 }
 
 function SplitLine({ text, accent = false, className }: { text: string; accent?: boolean; className?: string }) {
-  return (
-    <span className={`${className ?? ""} ${accent ? "text-[#FF5A1F]" : ""}`}>
-      {Array.from(text).map((ch, i) => (
-        <span key={i} className="inline-block overflow-hidden align-bottom">
-          <span data-hero-char className="inline-block will-change-transform">
-            {ch === " " ? " " : ch}
+  // The accent word renders as ONE gradient unit — `background-clip: text`
+  // can't paint a gradient through per-letter inline-block spans (it goes
+  // invisible), so we keep the gradient on a single leaf and animate it whole.
+  if (accent) {
+    return (
+      <span className={className ?? ""}>
+        <span className="inline-block overflow-hidden align-bottom">
+          <span data-hero-char className="inline-block text-gradient will-change-transform">
+            {text}
           </span>
         </span>
-      ))}
+      </span>
+    );
+  }
+  return (
+    <span className={className ?? ""}>
+      {Array.from(text).map((ch, i) =>
+        ch === " " ? (
+          <span key={i} className="inline-block w-[0.28em]" aria-hidden />
+        ) : (
+          <span key={i} className="inline-block overflow-hidden align-bottom">
+            <span data-hero-char className="inline-block will-change-transform">
+              {ch}
+            </span>
+          </span>
+        )
+      )}
     </span>
   );
 }

@@ -56,27 +56,27 @@ export default function RulesPage() {
     <>
       <PageHero
         eyebrow="Guidelines"
-        title={<>Competition <span className="text-[#FF5A1F]">rules.</span></>}
+        title={<>Competition <span className="text-gradient">rules.</span></>}
         subtitle="Read the rules for each category before you register."
       />
       <section className="border-t border-white/10 py-20">
         <div className="container mx-auto max-w-5xl px-6">
           <ScrollReveal stagger className="space-y-px overflow-hidden rounded-2xl border border-white/10 bg-white/10">
-            {RULES.map((r, i) => (
+            {RULES.map((r) => (
               <div key={r.title} data-reveal-item className="bg-black p-8 sm:p-10">
-                <div className="grid gap-4 md:grid-cols-[120px_1fr]">
-                  <span className="font-mono text-xs text-white/40">0{i + 1}</span>
+                <div className="grid gap-4 md:grid-cols-[16px_1fr]">
+                  <span className="mt-3 h-2.5 w-2.5 rounded-full bg-brand-gradient" />
                   <div>
                     <div className="flex flex-wrap items-baseline justify-between gap-3">
                       <h2 className="text-2xl font-black uppercase tracking-tight sm:text-3xl">{r.title}</h2>
-                      <span className="rounded-full border border-[#FF5A1F]/40 bg-[#FF5A1F]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[#FF5A1F]">
+                      <span className="rounded-full border border-[#A855F7]/40 bg-[#A855F7]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-gradient">
                         {r.fee}
                       </span>
                     </div>
                     <ul className="mt-6 space-y-3 text-white/70">
                       {r.items.map((it) => (
                         <li key={it} className="flex gap-3">
-                          <span className="mt-2.5 inline-block size-1.5 shrink-0 rounded-full bg-[#FF5A1F]" />
+                          <span className="mt-2.5 inline-block size-1.5 shrink-0 rounded-full bg-[#A855F7]" />
                           <span>{it}</span>
                         </li>
                       ))}

@@ -1,7 +1,6 @@
 import { signOut } from "@/lib/auth/auth";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
-import { DemoControls } from "@/components/admin/demo-controls";
 
 export function DashboardTopbar({ user }: { user: { name?: string | null; email?: string | null; role: string } }) {
   return (
@@ -11,7 +10,6 @@ export function DashboardTopbar({ user }: { user: { name?: string | null; email?
         <p className="text-sm font-medium">{user.name ?? user.email} · {user.role === "admin" ? "Admin" : "Centre Owner"}</p>
       </div>
       <div className="flex items-center gap-2">
-        {user.role === "admin" && <DemoControls />}
         <form
           action={async () => {
             "use server";

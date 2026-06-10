@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
+import { Children, useRef, type ReactNode } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -34,9 +34,11 @@ export function MaskReveal({
       const targets = root.current.querySelectorAll<HTMLElement>("[data-mask-frag]");
       if (!targets.length) return;
 
-      gsap.set(targets, { yPercent: 110 });
-      gsap.to(targets, {
-        yPercent: 0,
+      // `from` (not set+to) guarantees the text ends visible: even if the
+      // ScrollTrigger fires while the element is already in view, it reveals
+      // once and never gets stuck hidden.
+      gsap.from(targets, {
+        yPercent: 110,
         duration: 0.95,
         ease: "power3.out",
         stagger,
@@ -46,8 +48,8 @@ export function MaskReveal({
           : {
               scrollTrigger: {
                 trigger: root.current,
-                start: "top 88%",
-                toggleActions: "play none none reverse",
+                start: "top 95%",
+                once: true,
               },
             }),
       });
@@ -59,34 +61,41 @@ export function MaskReveal({
 
   return (
     <Tag className={className} ref={root as React.Ref<HTMLDivElement>}>
-      {fragments.map((frag, i) => (
-        <span key={i} className="inline-block overflow-hidden align-bottom">
-          <span data-mask-frag className="inline-block will-change-transform">
-            {frag === " " ? " " : frag}
+      {fragments.map((frag, i) =>
+        typeof frag === "string" && frag.trim() === "" ? (
+          // Real space — explicit width so it isn't collapsed between the
+          // inline-block word wrappers (otherwise words run together).
+          <span key={i} className="inline-block w-[0.28em]" aria-hidden />
+        ) : (
+          <span key={i} className="inline-block overflow-hidden align-bottom">
+            <span data-mask-frag className="inline-block will-change-transform">
+              {frag}
+            </span>
           </span>
-        </span>
-      ))}
+        )
+      )}
     </Tag>
   );
 }
 
-function splitChildren(children: ReactNode, byChar: boolean): string[] {
-  const text = flatten(children);
-  if (byChar) return Array.from(text);
-  const out: string[] = [];
-  text.split(/(\s+)/).forEach((w) => {
-    if (w) out.push(w);
+/**
+ * Split children into reveal fragments. Plain text is split into words (or
+ * characters). React elements — e.g. a `<span className="text-gradient">word</span>`
+ * highlight — are kept WHOLE so their gradient/styling survives (flattening to a
+ * string would drop it, and `background-clip:text` only paints on a leaf).
+ */
+function splitChildren(children: ReactNode, byChar: boolean): ReactNode[] {
+  const out: ReactNode[] = [];
+  Children.forEach(children, (child) => {
+    if (typeof child === "string" || typeof child === "number") {
+      const text = String(child);
+      const parts = byChar ? Array.from(text) : text.split(/(\s+)/);
+      parts.forEach((p) => {
+        if (p) out.push(p);
+      });
+    } else if (child != null && typeof child !== "boolean") {
+      out.push(child);
+    }
   });
   return out;
-}
-
-function flatten(node: ReactNode): string {
-  if (node == null || typeof node === "boolean") return "";
-  if (typeof node === "string" || typeof node === "number") return String(node);
-  if (Array.isArray(node)) return node.map(flatten).join("");
-  if (typeof node === "object" && "props" in node) {
-    const props = (node as { props?: { children?: ReactNode } }).props;
-    return flatten(props?.children);
-  }
-  return "";
 }

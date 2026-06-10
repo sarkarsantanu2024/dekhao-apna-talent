@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Star, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { DemoControls } from "@/components/admin/demo-controls";
 import { NotificationBell } from "./notifications";
 import { ProfileMenu } from "./profile-menu";
 
@@ -168,7 +167,6 @@ export function DashboardShell({ nav, title, user, children }: Props) {
           </div>
 
           <div className="flex items-center gap-2">
-            {user.role === "admin" && <DemoControls />}
             <NotificationBell role={user.role === "admin" ? "admin" : "center_owner"} />
             <ProfileMenu user={user} />
           </div>

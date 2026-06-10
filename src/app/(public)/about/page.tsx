@@ -1,4 +1,6 @@
+import Image from "next/image";
 import { EVENT_NAME } from "@/constants";
+import { JUDGES } from "@/constants/media";
 import { PageHero } from "@/components/common/page-hero";
 import { ScrollReveal } from "@/components/common/scroll-reveal";
 
@@ -9,7 +11,7 @@ export default function AboutPage() {
     <>
       <PageHero
         eyebrow="About"
-        title={<>About <span className="text-[#FF5A1F]">{EVENT_NAME}.</span></>}
+        title={<>About <span className="text-gradient">{EVENT_NAME}.</span></>}
         subtitle="Eastern India's biggest national-stage talent contest for students aged 6–14."
       />
 
@@ -22,22 +24,44 @@ export default function AboutPage() {
           </Block>
 
           <Block data-reveal-item heading="Two-stage journey">
-            <ul className="space-y-2 text-white/70">
-              <li><span className="text-[#FF5A1F]">01 ·</span> District-wise auditions by the judges&apos; team on specific dates.</li>
-              <li><span className="text-[#FF5A1F]">02 ·</span> National stage finale in Kolkata, judged by Bengali television stars.</li>
+            <ul className="space-y-3 text-white/75">
+              <li className="flex gap-3"><span className="mt-2.5 inline-block size-1.5 shrink-0 rounded-full bg-brand-gradient" /> District-wise auditions by the judges&apos; team on specific dates.</li>
+              <li className="flex gap-3"><span className="mt-2.5 inline-block size-1.5 shrink-0 rounded-full bg-brand-gradient" /> National stage finale in Kolkata, judged by Bengali television stars.</li>
             </ul>
           </Block>
 
           <Block data-reveal-item heading="Special judges">
-            <span className="text-white">Indrani Sen</span> (Bengali playback singer),{" "}
-            <span className="text-white">Sonamoni Saha</span> (TV actress) — and many more from popular television shows.
+            <div className="grid max-w-md grid-cols-2 gap-4">
+              {JUDGES.map((j) => (
+                <figure key={j.name} className="group">
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-xl border border-white/10">
+                    <Image
+                      src={j.src}
+                      alt={j.name}
+                      fill
+                      sizes="(max-width: 640px) 50vw, 220px"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <figcaption className="mt-3">
+                    <p className="font-bold text-white">{j.name}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gradient">
+                      {j.role}
+                    </p>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+            <p className="mt-5 text-base text-white/65">
+              …and many more special judges from popular television shows.
+            </p>
           </Block>
 
           <Block data-reveal-item heading="Every participant receives">
             <ul className="space-y-2 text-white/70">
-              <li><span className="text-[#FF5A1F]">·</span> A judge-signed certificate.</li>
-              <li><span className="text-[#FF5A1F]">·</span> A special medal.</li>
-              <li><span className="text-[#FF5A1F]">·</span> The opportunity to perform on a national-stage platform.</li>
+              <li><span className="text-gradient">·</span> A judge-signed certificate.</li>
+              <li><span className="text-gradient">·</span> A special medal.</li>
+              <li><span className="text-gradient">·</span> The opportunity to perform on a national-stage platform.</li>
             </ul>
           </Block>
 
@@ -56,9 +80,9 @@ function Block({
   ...rest
 }: { heading: string; children: React.ReactNode } & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div {...rest} className="grid gap-4 border-t border-white/10 pt-8 md:grid-cols-[200px_1fr]">
-      <h3 className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/50">{heading}</h3>
-      <div className="text-lg text-white/80">{children}</div>
+    <div {...rest} className="grid gap-4 border-t border-white/10 pt-8 md:grid-cols-[220px_1fr]">
+      <h3 className="font-script text-2xl leading-none text-gradient sm:text-3xl">{heading}</h3>
+      <div className="text-lg text-white/80 sm:text-xl">{children}</div>
     </div>
   );
 }

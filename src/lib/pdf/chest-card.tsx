@@ -10,7 +10,7 @@ import {
 import type { Student } from "@/types";
 
 /* ----- palette / spec ----- */
-const ORANGE = "#FF5A1F";
+const ORANGE = "#A855F7";
 const INK    = "#0E1330";
 const MUTED  = "#6B7280";
 const HAIR   = "#E5E7EB";
