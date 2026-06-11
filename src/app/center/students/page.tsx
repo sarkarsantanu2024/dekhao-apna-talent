@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,9 +17,13 @@ import { confirm } from "@/components/ui/confirm-dialog";
 import type { Student } from "@/types";
 
 export default function CenterStudentsPage() {
+  const { data: session } = useSession();
   const { data: centers } = useCenters();
   const { data: categories } = useCategories();
-  const myCenter = centers[0] ?? null;
+  // Resolve the centre this owner is logged into via the session, falling back
+  // to the first centre only if the session has no centre pinned.
+  const sessionCenterId = session?.user?.centerId ?? null;
+  const myCenter = centers.find((c) => c.id === sessionCenterId) ?? centers[0] ?? null;
   const centerId = myCenter?.id;
   const { data: rows, loading } = useStudents({ centerId });
 

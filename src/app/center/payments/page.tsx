@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { RotateCcw, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,8 +14,10 @@ import { useCenters, usePayments } from "@/services";
 import type { Payment } from "@/types";
 
 export default function CenterPaymentsPage() {
+  const { data: session } = useSession();
   const { data: centers } = useCenters();
-  const centerId = centers[0]?.id;
+  const sessionCenterId = session?.user?.centerId ?? null;
+  const centerId = (centers.find((c) => c.id === sessionCenterId) ?? centers[0])?.id;
   const { data: rows, loading } = usePayments({ centerId });
 
   const [resubmitTarget, setResubmitTarget] = useState<Payment | null>(null);
@@ -40,6 +43,7 @@ export default function CenterPaymentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Student</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Ref</TableHead>
                 <TableHead>Screenshot</TableHead>
@@ -50,9 +54,9 @@ export default function CenterPaymentsPage() {
             </TableHeader>
             <TableBody>
               {loading && rows.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
               ) : rows.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">No payments yet.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">No payments yet.</TableCell></TableRow>
               ) : rows.map((p) => (
                 <PaymentRow key={p.id} payment={p} onResubmit={() => setResubmitTarget(p)} />
               ))}
@@ -75,6 +79,7 @@ function PaymentRow({ payment: p, onResubmit }: { payment: Payment; onResubmit: 
   return (
     <>
       <TableRow className={isRejected ? "bg-destructive/5" : undefined}>
+        <TableCell className="font-medium">{p.student_name ?? "—"}</TableCell>
         <TableCell>{formatCurrency(p.amount)}</TableCell>
         <TableCell className="font-mono text-xs">{p.transaction_ref ?? "—"}</TableCell>
         <TableCell><a href={p.screenshot_url} target="_blank" rel="noreferrer" className="text-primary hover:underline">View</a></TableCell>
@@ -94,7 +99,7 @@ function PaymentRow({ payment: p, onResubmit }: { payment: Payment; onResubmit: 
       {/* Inline rejection note callout */}
       {isRejected && (
         <TableRow className="bg-destructive/5 hover:bg-destructive/5">
-          <TableCell colSpan={6} className="!py-2">
+          <TableCell colSpan={7} className="!py-2">
             <div className="flex items-start gap-2 text-sm">
               <AlertCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
               <div>

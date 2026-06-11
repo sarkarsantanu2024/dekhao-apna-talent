@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Download, Loader2, Files, Lock } from "lucide-react";
 import {
@@ -29,11 +30,15 @@ import {
 import type { Student } from "@/types";
 
 export default function CenterDownloadsPage() {
+  const { data: session } = useSession();
   const { data: centers } = useCenters();
-  const center   = centers[0] ?? null;
+  const sessionCenterId = session?.user?.centerId ?? null;
+  const center   = centers.find((c) => c.id === sessionCenterId) ?? centers[0] ?? null;
   const centerId = center?.id;
   const { data: rows, loading } = useStudents({ centerId });
 
+  // A student becomes `active` (downloadable) only when an admin approves that
+  // student's payment — so `isDownloadable` already encodes "paid & approved".
   const eligible = useMemo(() => rows.filter(isDownloadable), [rows]);
   const allEligible = rows.length > 0 && eligible.length === rows.length;
 
@@ -75,12 +80,11 @@ export default function CenterDownloadsPage() {
         <div className="min-w-0">
           <CardTitle>Chest card downloads</CardTitle>
           <CardDescription>
-            Downloads unlock automatically once an admin approves the student.
-            {!allEligible && rows.length > 0 && (
-              <> · {eligible.length} of {rows.length} ready — the rest still pending approval.</>
-            )}
-            {allEligible && rows.length > 0 && (
-              <> · All {rows.length} students approved — bulk download is unlocked.</>
+            Each chest card unlocks once an admin approves that student&apos;s payment.
+            {rows.length > 0 && (
+              allEligible
+                ? <> · All {rows.length} students paid &amp; approved — bulk download is unlocked.</>
+                : <> · {eligible.length} of {rows.length} ready — the rest await payment approval.</>
             )}
           </CardDescription>
         </div>
@@ -90,7 +94,7 @@ export default function CenterDownloadsPage() {
           title={
             allEligible
               ? "Download all chest cards as one PDF (two per page)"
-              : "Bulk download unlocks when every student of this centre is approved"
+              : "Bulk download unlocks when every student's payment is approved"
           }
           className="gap-2 shrink-0 sm:self-start"
         >
@@ -144,7 +148,7 @@ export default function CenterDownloadsPage() {
                       </Button>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Lock className="size-3.5" /> Awaiting approval
+                        <Lock className="size-3.5" /> Awaiting payment approval
                       </span>
                     )}
                   </TableCell>

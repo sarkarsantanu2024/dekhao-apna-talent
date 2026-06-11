@@ -23,7 +23,10 @@ export type NewStudent = Omit<Student, "id" | "roll_number" | "created_at" | "up
   status?: StudentStatus;
 };
 
-export type NewCenter = Omit<Center, "id" | "created_at" | "event_year">;
+export type NewCenter = Omit<
+  Center,
+  "id" | "created_at" | "event_year" | "login_id" | "login_password"
+>;
 
 export type NewPayment = Omit<
   Payment,
@@ -57,6 +60,9 @@ export interface DataStore {
   ensureSeeded(): Promise<void>;
   /** Wipe everything and re-seed. */
   reset(): Promise<void>;
+  /** Fresh-test reset: keep centres + students, clear all payments and reset
+   *  every student to "approved" (un-active) and every centre to not-participating. */
+  resetTestData(): Promise<void>;
 
   getStats(): Promise<DashboardStats>;
 
@@ -71,6 +77,8 @@ export interface DataStore {
   createCenter(input: NewCenter): Promise<Center>;
   updateCenter(id: string, patch: Partial<Center>): Promise<Center>;
   deleteCenter(id: string): Promise<void>;
+  /** Generate a login id + password for any centre missing one. Returns all centres. */
+  generateCenterLogins(): Promise<Center[]>;
 
   listPayments(opts?: { status?: PaymentStatus; centerId?: string }): Promise<Payment[]>;
   createPayment(input: NewPayment): Promise<Payment>;

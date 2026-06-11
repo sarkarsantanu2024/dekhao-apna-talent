@@ -26,6 +26,10 @@ export interface Center {
   start_date: string | null;
   /** Whether this centre is participating in the Dekhao Apna Talent event. */
   participating: boolean;
+  /** Generated centre-owner login (demo). Sent to the owner over WhatsApp.
+   *  These won't authenticate until Supabase auth is wired up. */
+  login_id: string | null;
+  login_password: string | null;
   event_year: number;
   created_at: string;
 }
@@ -73,6 +77,9 @@ export interface Payment {
   id: string;
   center_id: string | null;
   center_name: string;
+  /** The student this payment is for — approving it unlocks that student's chest card. */
+  student_id: string | null;
+  student_name: string | null;
   uploaded_by: string | null;
   amount: number;
   transaction_ref: string | null;

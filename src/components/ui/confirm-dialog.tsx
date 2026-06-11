@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import {
   Dialog,
@@ -11,6 +11,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 export type ConfirmOptions = {
   title?: string;
@@ -21,7 +22,14 @@ export type ConfirmOptions = {
   destructive?: boolean;
 };
 
-type Pending = ConfirmOptions & { resolve: (ok: boolean) => void };
+export type PromptOptions = ConfirmOptions & {
+  placeholder?: string;
+  defaultValue?: string;
+};
+
+type ConfirmPending = ConfirmOptions & { kind: "confirm"; resolve: (ok: boolean) => void };
+type PromptPending = PromptOptions & { kind: "prompt"; resolve: (value: string | null) => void };
+type Pending = ConfirmPending | PromptPending;
 
 let push: ((p: Pending) => void) | null = null;
 
@@ -31,63 +39,86 @@ let push: ((p: Pending) => void) | null = null;
  */
 export function confirm(options: ConfirmOptions = {}): Promise<boolean> {
   return new Promise((resolve) => {
-    if (!push) {
-      // Provider not mounted — fail safe by resolving false.
-      resolve(false);
-      return;
-    }
-    push({ ...options, resolve });
+    if (!push) return resolve(false);
+    push({ ...options, kind: "confirm", resolve });
+  });
+}
+
+/**
+ * Promise-based replacement for `window.prompt`. Resolves the entered text, or
+ * `null` if cancelled.
+ */
+export function prompt(options: PromptOptions = {}): Promise<string | null> {
+  return new Promise((resolve) => {
+    if (!push) return resolve(null);
+    push({ ...options, kind: "prompt", resolve });
   });
 }
 
 export function ConfirmProvider({ children }: { children: React.ReactNode }) {
   const [pending, setPending] = useState<Pending | null>(null);
+  const [value, setValue] = useState("");
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
-    push = (p) => setPending(p);
-    return () => {
-      push = null;
+    push = (p) => {
+      setValue(p.kind === "prompt" ? (p.defaultValue ?? "") : "");
+      setPending(p);
     };
+    return () => { push = null; };
   }, []);
 
-  const close = (ok: boolean) => {
-    pending?.resolve(ok);
+  const finish = (result: boolean | string | null) => {
+    if (pending) {
+      if (pending.kind === "confirm") pending.resolve(result as boolean);
+      else pending.resolve(result as string | null);
+    }
     setPending(null);
   };
+
+  const isPrompt = pending?.kind === "prompt";
 
   return (
     <>
       {children}
-      <Dialog open={!!pending} onOpenChange={(o) => !o && close(false)}>
+      <Dialog open={!!pending} onOpenChange={(o) => !o && finish(isPrompt ? null : false)}>
         <DialogContent className="theme-grey border bg-background text-foreground sm:max-w-md">
           <DialogHeader>
             <div className="flex items-start gap-3">
               <span
                 className={
                   "flex size-10 shrink-0 items-center justify-center rounded-full " +
-                  (pending?.destructive
-                    ? "bg-destructive/10 text-destructive"
-                    : "bg-primary/10 text-primary")
+                  (pending?.destructive ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary")
                 }
               >
                 <AlertTriangle className="size-5" />
               </span>
               <div className="grid gap-1.5">
                 <DialogTitle>{pending?.title ?? "Are you sure?"}</DialogTitle>
-                {pending?.description && (
-                  <DialogDescription>{pending.description}</DialogDescription>
-                )}
+                {pending?.description && <DialogDescription>{pending.description}</DialogDescription>}
               </div>
             </div>
           </DialogHeader>
+
+          {isPrompt && (
+            <Textarea
+              ref={inputRef}
+              rows={3}
+              value={value}
+              placeholder={(pending as PromptPending).placeholder}
+              onChange={(e) => setValue(e.target.value)}
+              autoFocus
+            />
+          )}
+
           <DialogFooter className="gap-2 sm:gap-2">
-            <Button type="button" variant="outline" onClick={() => close(false)}>
+            <Button type="button" variant="outline" onClick={() => finish(isPrompt ? null : false)}>
               {pending?.cancelText ?? "Cancel"}
             </Button>
             <Button
               type="button"
               variant={pending?.destructive ? "destructive" : "default"}
-              onClick={() => close(true)}
+              onClick={() => finish(isPrompt ? value : true)}
             >
               {pending?.confirmText ?? "Confirm"}
             </Button>

@@ -61,9 +61,110 @@ function toISODate(v: unknown): string {
 }
 
 const TEMPLATE_COLUMNS = [
-  "Name", "Father's Name", "Date of Birth", "Age", "Class", "School",
-  "Category", "Phone", "WhatsApp", "City", "State", "Pincode", "Address",
-  "Performance Topic", "Performance Details",
+  "Name",
+  "Father's Name",
+  "Date of Birth",
+  "Age",
+  "Class",
+  "School",
+  "Category",
+  "Phone",
+  "WhatsApp",
+  "City",
+  "State",
+  "Pincode",
+  "Address",
+  "Performance Topic",
+  "Performance Details",
+];
+
+/** A few realistic rows so centres can test the import end-to-end. */
+const SAMPLE_ROWS: string[][] = [
+  [
+    "Ananya Das",
+    "Subir Das",
+    "2014-04-12",
+    "11",
+    "Class 5",
+    "St. Xavier's School",
+    "Dance",
+    "+91 98311 20001",
+    "+91 98311 20001",
+    "Kolkata",
+    "West Bengal",
+    "700028",
+    "12 Park Street",
+    "Kathak",
+    "Solo classical performance",
+  ],
+  [
+    "Rohan Mehta",
+    "Vikram Mehta",
+    "2013-09-08",
+    "12",
+    "Class 6",
+    "Delhi Public School",
+    "Song",
+    "+91 98311 20002",
+    "+91 98311 20002",
+    "Kolkata",
+    "West Bengal",
+    "700028",
+    "5 Lake Road",
+    "Rabindra Sangeet",
+    "Tagore song rendition",
+  ],
+  [
+    "Ishita Roy",
+    "Amit Roy",
+    "2015-01-25",
+    "10",
+    "Class 4",
+    "Sushila Birla School",
+    "Mental Math Olympiad",
+    "+91 98311 20003",
+    "+91 98311 20003",
+    "Kolkata",
+    "West Bengal",
+    "700028",
+    "9 Gariahat Road",
+    "Abacus",
+    "Level 3 mental arithmetic",
+  ],
+  [
+    "Aarav Sen",
+    "Pradip Sen",
+    "2012-11-30",
+    "13",
+    "Class 7",
+    "La Martiniere",
+    "Other Talent",
+    "+91 98311 20004",
+    "+91 98311 20004",
+    "Kolkata",
+    "West Bengal",
+    "700028",
+    "33 Salt Lake",
+    "Magic",
+    "Stage illusion act",
+  ],
+  [
+    "Priya Ghosh",
+    "Tapan Ghosh",
+    "2014-06-18",
+    "11",
+    "Class 5",
+    "Modern High School",
+    "Dance",
+    "+91 98311 20005",
+    "+91 98311 20005",
+    "Kolkata",
+    "West Bengal",
+    "700028",
+    "18 Behala Main Road",
+    "Bharatnatyam",
+    "Group dance lead",
+  ],
 ];
 
 export function StudentBulkUpload({
@@ -83,13 +184,17 @@ export function StudentBulkUpload({
     if (name) {
       const n = norm(name);
       const match = categories.find(
-        (c) => norm(c.name) === n || norm(c.slug) === n || norm(c.prefix) === n
+        (c) => norm(c.name) === n || norm(c.slug) === n || norm(c.prefix) === n,
       );
       if (match) return match;
     }
     // "All (mixed)" — never block: send category-less rows to the Other Talent bucket.
     if (defaultCatId === ALL) {
-      return categories.find((c) => c.slug === "other-talent") ?? categories[0] ?? null;
+      return (
+        categories.find((c) => c.slug === "other-talent") ??
+        categories[0] ??
+        null
+      );
     }
     return categories.find((c) => c.id === defaultCatId) ?? null;
   }
@@ -100,14 +205,18 @@ export function StudentBulkUpload({
       const buf = await file.arrayBuffer();
       const wb = XLSX.read(buf, { type: "array", cellDates: true });
       const sheet = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
+      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
+        defval: "",
+      });
       if (!rows.length) {
         toast.error("That file has no rows.");
         return;
       }
 
       // Existing students (this centre) + already-seen-in-file → skip duplicates.
-      const existing = await store.listStudents(centerId ? { centerId } : undefined);
+      const existing = await store.listStudents(
+        centerId ? { centerId } : undefined,
+      );
       const seen = new Set(existing.map(studentKey));
 
       let added = 0;
@@ -118,8 +227,15 @@ export function StudentBulkUpload({
         const rowNo = i + 2; // header is row 1
 
         const full_name = pick(
-          row, "full name", "name", "name of the candidate", "candidate name",
-          "candidate", "student name", "student", "students name"
+          row,
+          "full name",
+          "name",
+          "name of the candidate",
+          "candidate name",
+          "candidate",
+          "student name",
+          "student",
+          "students name",
         );
         if (!full_name || full_name.length < 2) {
           errors.push(`Row ${rowNo}: missing name`);
@@ -129,12 +245,23 @@ export function StudentBulkUpload({
         const categoryName = pick(row, "category", "category name", "event");
         const cat = resolveCategory(categoryName);
         if (!cat) {
-          errors.push(`Row ${rowNo}: no category (pick a default above or add a Category column)`);
+          errors.push(
+            `Row ${rowNo}: no category (pick a default above or add a Category column)`,
+          );
           continue;
         }
 
-        const dob = toISODate(rawPick(row, "dob", "date of birth", "birth date", "birthdate"));
-        const phone = pick(row, "phone", "mobile", "contact", "phone number", "phone no");
+        const dob = toISODate(
+          rawPick(row, "dob", "date of birth", "birth date", "birthdate"),
+        );
+        const phone = pick(
+          row,
+          "phone",
+          "mobile",
+          "contact",
+          "phone number",
+          "phone no",
+        );
         const key = studentKey({ full_name, phone });
         if (seen.has(key)) {
           errors.push(`Row ${rowNo}: duplicate "${full_name}"`);
@@ -148,13 +275,25 @@ export function StudentBulkUpload({
           await store.createStudent({
             full_name,
             guardian_name:
-              pick(row, "guardian name", "guardian", "parent", "parent name",
-                "father's name", "fathers name", "father name", "father",
-                "mother's name", "mothers name", "mother") || "—",
+              pick(
+                row,
+                "guardian name",
+                "guardian",
+                "parent",
+                "parent name",
+                "father's name",
+                "fathers name",
+                "father name",
+                "father",
+                "mother's name",
+                "mothers name",
+                "mother",
+              ) || "—",
             dob,
             age,
             class: pick(row, "class", "grade", "std") || "—",
-            school_name: pick(row, "school", "school name", "institution") || "—",
+            school_name:
+              pick(row, "school", "school name", "institution") || "—",
             category_id: cat.id,
             category_name: cat.name,
             center_id: centerId,
@@ -164,28 +303,36 @@ export function StudentBulkUpload({
             address: pick(row, "address") || "—",
             city: pick(row, "city") || centerCity || null,
             state: pick(row, "state") || centerState || null,
-            pincode: pick(row, "pincode", "pin", "zip") || centerPincode || null,
+            pincode:
+              pick(row, "pincode", "pin", "zip") || centerPincode || null,
             photo_url: null,
-            performance_topic: pick(row, "performance topic", "topic", "performance") || null,
-            performance_details: pick(row, "performance details", "details") || null,
+            performance_topic:
+              pick(row, "performance topic", "topic", "performance") || null,
+            performance_details:
+              pick(row, "performance details", "details") || null,
             created_by: null,
           });
           seen.add(key);
           added++;
         } catch (err) {
-          errors.push(`Row ${rowNo}: ${err instanceof Error ? err.message : "failed"}`);
+          errors.push(
+            `Row ${rowNo}: ${err instanceof Error ? err.message : "failed"}`,
+          );
         }
       }
 
-      if (added) toast.success(`Imported ${added} student${added > 1 ? "s" : ""}.`);
+      if (added)
+        toast.success(`Imported ${added} student${added > 1 ? "s" : ""}.`);
       if (errors.length) {
         toast.error(
-          `${errors.length} row(s) skipped. ${errors.slice(0, 3).join(" · ")}${errors.length > 3 ? " …" : ""}`
+          `${errors.length} row(s) skipped. ${errors.slice(0, 3).join(" · ")}${errors.length > 3 ? " …" : ""}`,
         );
       }
       if (added) onDone?.();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not read that file.");
+      toast.error(
+        err instanceof Error ? err.message : "Could not read that file.",
+      );
     } finally {
       setBusy(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -201,6 +348,15 @@ export function StudentBulkUpload({
     XLSX.writeFile(wb, "student-upload-template.xlsx");
   }
 
+  /** Download a ready-to-import sample file (.xlsx) pre-filled with example students. */
+  function downloadSample() {
+    const ws = XLSX.utils.aoa_to_sheet([TEMPLATE_COLUMNS, ...SAMPLE_ROWS]);
+    ws["!cols"] = TEMPLATE_COLUMNS.map(() => ({ wch: 18 }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Students");
+    XLSX.writeFile(wb, "student-list-sample.xlsx");
+  }
+
   return (
     <div className="mb-6 rounded-lg border border-dashed bg-muted/30 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -211,7 +367,8 @@ export function StudentBulkUpload({
           <div>
             <p className="text-sm font-semibold">Bulk add from spreadsheet</p>
             <p className="text-xs text-muted-foreground">
-              Download the template, fill it in, then upload (.csv / .xls / .xlsx). One row per student.
+              Download the template, fill it in, then upload (.csv / .xls /
+              .xlsx). One row per student.
             </p>
           </div>
         </div>
@@ -223,14 +380,27 @@ export function StudentBulkUpload({
             <SelectContent>
               <SelectItem value={ALL}>All (mixed)</SelectItem>
               {categories.map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Button type="button" variant="outline" size="sm" onClick={downloadTemplate}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={downloadTemplate}
+          >
             <Download className="size-4" /> Template
           </Button>
-          <Button type="button" size="sm" disabled={busy} onClick={() => inputRef.current?.click()}>
+
+          <Button
+            type="button"
+            size="sm"
+            disabled={busy}
+            onClick={() => inputRef.current?.click()}
+          >
             <Upload className="size-4" /> {busy ? "Importing…" : "Upload file"}
           </Button>
         </div>

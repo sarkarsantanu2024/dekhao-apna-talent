@@ -106,11 +106,11 @@ const SEED_CATEGORIES: Category[] = [
 export const DEMO_CENTRE_ID = "11111111-1111-1111-1111-111111111111";
 
 const SEED_CENTERS: Center[] = [
-  { id: DEMO_CENTRE_ID,  center_name: "Mind Mantra · Dumdum",        owner_name: "Centre Owner",    phone: "+91 98300 00000", whatsapp: "+91 98300 00000", address: "Dumdum Road",            city: "Kolkata",   state: "West Bengal", pincode: "700028", start_date: `${EVENT_YEAR}-01-15`, participating: true,  event_year: EVENT_YEAR, created_at: nowIso() },
-  { id: "ctr_kol_north", center_name: "Mind Mantra · Salt Lake",    owner_name: "Riya Banerjee",   phone: "+91 98300 11111", whatsapp: "+91 98300 11111", address: "Sector V, Salt Lake",    city: "Kolkata",   state: "West Bengal", pincode: "700091", start_date: `${EVENT_YEAR}-01-20`, participating: true,  event_year: EVENT_YEAR, created_at: nowIso() },
-  { id: "ctr_kol_south", center_name: "Mind Mantra · Tollygunge",   owner_name: "Arjun Sen",       phone: "+91 98300 22222", whatsapp: "+91 98300 22222", address: "Charu Avenue",           city: "Kolkata",   state: "West Bengal", pincode: "700033", start_date: `${EVENT_YEAR}-02-01`, participating: false, event_year: EVENT_YEAR, created_at: nowIso() },
-  { id: "ctr_howrah",    center_name: "Mind Mantra · Howrah",       owner_name: "Pratima Roy",     phone: "+91 98300 33333", whatsapp: "+91 98300 33333", address: "Maidan Road",            city: "Howrah",    state: "West Bengal", pincode: "711101", start_date: `${EVENT_YEAR}-02-05`, participating: true,  event_year: EVENT_YEAR, created_at: nowIso() },
-  { id: "ctr_durgapur",  center_name: "Mind Mantra · Durgapur",     owner_name: "Subir Das",       phone: "+91 98300 44444", whatsapp: "+91 98300 44444", address: "City Centre",            city: "Durgapur",  state: "West Bengal", pincode: "713216", start_date: `${EVENT_YEAR}-02-10`, participating: false, event_year: EVENT_YEAR, created_at: nowIso() },
+  { id: DEMO_CENTRE_ID,  center_name: "Mind Mantra · Dumdum",        owner_name: "Centre Owner",    phone: "+91 98300 00000", whatsapp: "+91 98300 00000", address: "Dumdum Road",            city: "Kolkata",   state: "West Bengal", pincode: "700028", start_date: `${EVENT_YEAR}-01-15`, participating: true,  login_id: null, login_password: null, event_year: EVENT_YEAR, created_at: nowIso() },
+  { id: "ctr_kol_north", center_name: "Mind Mantra · Salt Lake",    owner_name: "Riya Banerjee",   phone: "+91 98300 11111", whatsapp: "+91 98300 11111", address: "Sector V, Salt Lake",    city: "Kolkata",   state: "West Bengal", pincode: "700091", start_date: `${EVENT_YEAR}-01-20`, participating: true,  login_id: null, login_password: null, event_year: EVENT_YEAR, created_at: nowIso() },
+  { id: "ctr_kol_south", center_name: "Mind Mantra · Tollygunge",   owner_name: "Arjun Sen",       phone: "+91 98300 22222", whatsapp: "+91 98300 22222", address: "Charu Avenue",           city: "Kolkata",   state: "West Bengal", pincode: "700033", start_date: `${EVENT_YEAR}-02-01`, participating: false, login_id: null, login_password: null, event_year: EVENT_YEAR, created_at: nowIso() },
+  { id: "ctr_howrah",    center_name: "Mind Mantra · Howrah",       owner_name: "Pratima Roy",     phone: "+91 98300 33333", whatsapp: "+91 98300 33333", address: "Maidan Road",            city: "Howrah",    state: "West Bengal", pincode: "711101", start_date: `${EVENT_YEAR}-02-05`, participating: true,  login_id: null, login_password: null, event_year: EVENT_YEAR, created_at: nowIso() },
+  { id: "ctr_durgapur",  center_name: "Mind Mantra · Durgapur",     owner_name: "Subir Das",       phone: "+91 98300 44444", whatsapp: "+91 98300 44444", address: "City Centre",            city: "Durgapur",  state: "West Bengal", pincode: "713216", start_date: `${EVENT_YEAR}-02-10`, participating: false, login_id: null, login_password: null, event_year: EVENT_YEAR, created_at: nowIso() },
 ];
 
 const SEED_STUDENT_NAMES = [
@@ -162,10 +162,15 @@ function seedStudents(snapshot: Snapshot): Student[] {
 function seedPayments(snapshot: Snapshot): Payment[] {
   return SEED_CENTERS.map((c, i) => {
     const status: PaymentStatus = i === 0 ? "pending" : i === 1 ? "pending" : i === 2 ? "approved" : "approved";
+    // Link each seed payment to a student of the same centre, so approving it
+    // unlocks that student's chest card.
+    const student = snapshot.students.find((s) => s.center_id === c.id) ?? null;
     return {
       id: uid("pay"),
       center_id: c.id,
       center_name: c.center_name,
+      student_id: student?.id ?? null,
+      student_name: student?.full_name ?? null,
       uploaded_by: null,
       amount: 1600 + i * 400,
       transaction_ref: `UPI${EVENT_YEAR}${String(10000 + i)}`,
@@ -185,14 +190,27 @@ function seedPayments(snapshot: Snapshot): Payment[] {
 export const localStore: DataStore = {
   async ensureSeeded() {
     if (!isBrowser()) return;
-    if (window.localStorage.getItem(SEEDED_FLAG) === SEED_VERSION) return;
-    const snap = structuredClone(empty);
-    snap.categories = SEED_CATEGORIES;
-    snap.centers = SEED_CENTERS;
-    snap.students = seedStudents(snap);
-    snap.payments = seedPayments(snap);
-    write(snap);
-    window.localStorage.setItem(SEEDED_FLAG, SEED_VERSION);
+    if (window.localStorage.getItem(SEEDED_FLAG) !== SEED_VERSION) {
+      const snap = structuredClone(empty);
+      snap.categories = SEED_CATEGORIES;
+      snap.centers = SEED_CENTERS;
+      snap.students = seedStudents(snap);
+      snap.payments = seedPayments(snap);
+      write(snap);
+      window.localStorage.setItem(SEEDED_FLAG, SEED_VERSION);
+    }
+    // Self-heal: drop any students/payments left orphaned by a deleted centre,
+    // so the Payments, Reports and Dashboard views always agree with the centre
+    // list. (Does not touch valid centre/student rows.)
+    const s = read();
+    const validCenter = new Set(s.centers.map((c) => c.id));
+    const students = s.students.filter((st) => st.center_id == null || validCenter.has(st.center_id));
+    const payments = s.payments.filter((p) => p.center_id == null || validCenter.has(p.center_id));
+    if (students.length !== s.students.length || payments.length !== s.payments.length) {
+      s.students = students;
+      s.payments = payments;
+      write(s);
+    }
   },
 
   async reset() {
@@ -200,6 +218,14 @@ export const localStore: DataStore = {
     window.localStorage.removeItem(KEY);
     window.localStorage.removeItem(SEEDED_FLAG);
     await this.ensureSeeded();
+  },
+
+  async resetTestData() {
+    const s = read();
+    s.payments = [];
+    s.students = s.students.map((st) => ({ ...st, status: "approved", updated_at: nowIso() }));
+    s.centers = s.centers.map((c) => ({ ...c, participating: false }));
+    write(s);
   },
 
   async getStats(): Promise<DashboardStats> {
@@ -247,7 +273,9 @@ export const localStore: DataStore = {
     const row: Student = {
       ...input,
       id: uid("stu"),
-      status: input.status ?? "pending",
+      // Students are auto-approved on submission; admins can still reject bad
+      // entries afterwards. Callers may override by passing an explicit status.
+      status: input.status ?? "approved",
       event_year: EVENT_YEAR,
       roll_number: nextRoll(s, prefix),
       created_at: nowIso(),
@@ -280,7 +308,14 @@ export const localStore: DataStore = {
   },
   async createCenter(input) {
     const s = read();
-    const row: Center = { ...input, id: uid("ctr"), event_year: EVENT_YEAR, created_at: nowIso() };
+    const row: Center = {
+      ...input,
+      id: uid("ctr"),
+      login_id: null,
+      login_password: null,
+      event_year: EVENT_YEAR,
+      created_at: nowIso(),
+    };
     s.centers.unshift(row);
     write(s);
     return row;
@@ -298,9 +333,32 @@ export const localStore: DataStore = {
     write(s);
     return s.centers[idx];
   },
+  async generateCenterLogins() {
+    const s = read();
+    const used = new Set(s.centers.map((c) => c.login_id).filter(Boolean) as string[]);
+    const slug = (name: string) =>
+      name.toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.+|\.+$/g, "").replace(/\.{2,}/g, ".") || "centre";
+    const pwd = () => Math.random().toString(36).slice(2, 8); // 6-char demo password
+    s.centers = s.centers.map((c) => {
+      if (c.login_id && c.login_password) return c; // keep existing — credentials stay stable
+      let id = slug(c.center_name);
+      const base = id;
+      let n = 1;
+      while (used.has(id)) id = `${base}.${n++}`;
+      used.add(id);
+      return { ...c, login_id: id, login_password: pwd() };
+    });
+    write(s);
+    return s.centers.slice().sort((a, b) => b.created_at.localeCompare(a.created_at));
+  },
+
   async deleteCenter(id) {
     const s = read();
     s.centers = s.centers.filter((c) => c.id !== id);
+    // Cascade: a centre's students and payments must not outlive it, otherwise
+    // they become orphaned rows that desync the Payments/Reports/Dashboard views.
+    s.students = s.students.filter((st) => st.center_id !== id);
+    s.payments = s.payments.filter((p) => p.center_id !== id);
     write(s);
   },
 
@@ -345,6 +403,14 @@ export const localStore: DataStore = {
       const ci = s.centers.findIndex((c) => c.id === centerId);
       if (ci >= 0 && !s.centers[ci].participating) {
         s.centers[ci] = { ...s.centers[ci], participating: true };
+      }
+    }
+    // Approving the payment activates the linked student → unlocks their chest card.
+    const studentId = s.payments[idx].student_id;
+    if (studentId) {
+      const si = s.students.findIndex((st) => st.id === studentId);
+      if (si >= 0 && s.students[si].status !== "active") {
+        s.students[si] = { ...s.students[si], status: "active", updated_at: nowIso() };
       }
     }
     write(s);

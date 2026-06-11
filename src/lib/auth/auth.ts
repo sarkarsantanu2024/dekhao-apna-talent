@@ -1,72 +1,57 @@
-import NextAuth, { type DefaultSession } from "next-auth";
+import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import { FIXED_USERS } from "@/lib/auth/users";
-
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      role: "admin" | "center_owner";
-      centerId: string | null;
-    } & DefaultSession["user"];
-  }
-}
+import { authConfig } from "@/lib/auth/auth.config";
+import { findCenterLogin } from "@/lib/auth/center-login-store";
 
 const credSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+  userId: z.string().min(3),
+  password: z.string().min(4),
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt" },
-  pages: { signIn: "/login" },
-  trustHost: true,
+  ...authConfig,
   providers: [
     Credentials({
       credentials: {
-        email: { label: "Email", type: "email" },
+        userId: { label: "User ID", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      // TEMPORARY auth: two fixed accounts (admin + centre owner). No database
-      // yet — this will be replaced by Supabase auth + a real users table later.
+      // TEMPORARY auth. Fixed admin/centre accounts + locally-generated centre
+      // logins (see center-login-store.ts). Replaced by Supabase auth later.
       authorize: async (raw) => {
         const parsed = credSchema.safeParse(raw);
         if (!parsed.success) return null;
-        const email = parsed.data.email.trim().toLowerCase();
+        const userId = parsed.data.userId.trim().toLowerCase();
         const { password } = parsed.data;
 
-        const match = FIXED_USERS.find(
-          (u) => u.email === email && u.password === password
-        );
-        if (!match) return null;
+        // 1) Fixed accounts (two admins + demo centre owner).
+        const fixed = FIXED_USERS.find((u) => u.userId === userId && u.password === password);
+        if (fixed) {
+          return {
+            id: fixed.id,
+            email: fixed.userId,
+            name: fixed.name,
+            role: fixed.role,
+            centerId: fixed.centerId,
+          };
+        }
 
-        return {
-          id: match.id,
-          email: match.email,
-          name: match.name,
-          role: match.role,
-          centerId: match.centerId,
-        };
+        // 2) Locally-generated centre logins (demo stopgap, file-backed).
+        const centre = await findCenterLogin(userId, password);
+        if (centre) {
+          return {
+            id: `centre:${centre.center_id}`,
+            email: centre.login_id,
+            name: centre.center_name,
+            role: "center_owner",
+            centerId: centre.center_id,
+          };
+        }
+
+        return null;
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = (user as { id: string }).id;
-        token.role = (user as { role: "admin" | "center_owner" }).role;
-        token.centerId = (user as { centerId: string | null }).centerId;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as "admin" | "center_owner";
-        session.user.centerId = (token.centerId as string | null) ?? null;
-      }
-      return session;
-    },
-  },
 });
