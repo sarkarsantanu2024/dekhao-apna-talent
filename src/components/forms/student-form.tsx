@@ -38,6 +38,7 @@ import { studentSchema, type StudentInput } from "@/lib/validations/student";
 import type { Category } from "@/types";
 import { calcAge, cn } from "@/lib/utils";
 import { store } from "@/services";
+import { studentKey } from "@/components/forms/student-bulk-upload";
 
 type Props = {
   categories: Category[];
@@ -92,6 +93,16 @@ export function StudentForm({
       try {
         if (!values.category_id) {
           toast.error("Please pick a category");
+          return;
+        }
+        if (!values.photo_url) {
+          toast.error("Student photo is required");
+          return;
+        }
+        const existing = await store.listStudents(centerId ? { centerId } : undefined);
+        const candidate = { full_name: values.full_name, dob: values.dob, phone: values.phone };
+        if (existing.some((s) => studentKey(s) === studentKey(candidate))) {
+          toast.error("A student with the same name, date of birth and phone already exists");
           return;
         }
         const created = await store.createStudent({
@@ -221,7 +232,7 @@ export function StudentForm({
         <Input {...form.register("pincode")} />
       </Field>
 
-      <Field label="Photo" icon={ImageIcon} hint="JPG or PNG, max 3 MB">
+      <Field label="Photo" icon={ImageIcon} required hint={form.watch("photo_url") ? "Photo attached ✓" : "JPG or PNG, max 3 MB"}>
         <Input type="file" accept="image/*" onChange={async (ev) => {
           const f = ev.target.files?.[0];
           if (!f) return;
