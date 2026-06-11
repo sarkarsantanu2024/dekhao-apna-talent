@@ -5,10 +5,11 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Star, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Icon } from "@/components/common/icon";
 import { NotificationBell } from "./notifications";
 import { ProfileMenu } from "./profile-menu";
 
-export interface NavItem { href: string; label: string }
+export interface NavItem { href: string; label: string; icon?: string }
 
 type SessionUser = { name?: string | null; email?: string | null; role: string };
 
@@ -225,14 +226,22 @@ function SidebarNav({
             href={n.href}
             title={collapsed ? n.label : undefined}
             className={cn(
-              "relative block truncate rounded-md px-3 py-2 text-sm transition-colors",
-              collapsed && "text-center",
+              "relative flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+              collapsed && "justify-center",
               active
                 ? cn(SIDEBAR_ACTIVE, SIDEBAR_ACTIVE_BAR)
                 : cn(SIDEBAR_TEXT, SIDEBAR_HOVER),
             )}
           >
-            {collapsed ? n.label.charAt(0) : n.label}
+            {n.icon && (
+              <Icon
+                name={n.icon}
+                size={20}
+                filled={active}
+                className={active ? "text-primary" : "text-white/60"}
+              />
+            )}
+            {!collapsed && <span className="truncate">{n.label}</span>}
           </Link>
         );
       })}

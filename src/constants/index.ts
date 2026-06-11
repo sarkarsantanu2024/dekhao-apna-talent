@@ -24,18 +24,18 @@ export const PRIZES = {
 } as const;
 
 export const ADMIN_NAV = [
-  { href: "/admin/dashboard", label: "Dashboard" },
-  { href: "/admin/students",  label: "Students" },
-  { href: "/admin/centers",   label: "Centers" },
-  { href: "/admin/payments",  label: "Payments" },
-  { href: "/admin/approvals", label: "Approvals" },
-  { href: "/admin/categories",label: "Categories" },
-  { href: "/admin/reports",   label: "Reports" },
+  { href: "/admin/dashboard", label: "Dashboard",  icon: "dashboard" },
+  { href: "/admin/students",  label: "Students",   icon: "group" },
+  { href: "/admin/centers",   label: "Centers",    icon: "storefront" },
+  { href: "/admin/payments",  label: "Payments",   icon: "payments" },
+  { href: "/admin/approvals", label: "Approvals",  icon: "fact_check" },
+  { href: "/admin/categories",label: "Categories", icon: "category" },
+  { href: "/admin/reports",   label: "Reports",    icon: "bar_chart" },
 ];
 
 export const CENTER_NAV = [
-  { href: "/center/dashboard", label: "Dashboard" },
-  { href: "/center/students",  label: "Students" },
-  { href: "/center/payments",  label: "Payments" },
-  { href: "/center/downloads", label: "Chest Cards" },
+  { href: "/center/dashboard", label: "Dashboard",   icon: "dashboard" },
+  { href: "/center/students",  label: "Students",    icon: "group" },
+  { href: "/center/payments",  label: "Payments",    icon: "payments" },
+  { href: "/center/downloads", label: "Chest Cards", icon: "badge" },
 ];
