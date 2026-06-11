@@ -106,11 +106,11 @@ const SEED_CATEGORIES: Category[] = [
 export const DEMO_CENTRE_ID = "11111111-1111-1111-1111-111111111111";
 
 const SEED_CENTERS: Center[] = [
-  { id: DEMO_CENTRE_ID,  center_name: "Mind Mantra · Dumdum",        owner_name: "Centre Owner",    phone: "+91 98300 00000", address: "Dumdum Road",            city: "Kolkata",   state: "West Bengal", pincode: "700028", event_year: EVENT_YEAR, created_at: nowIso() },
-  { id: "ctr_kol_north", center_name: "Mind Mantra · Salt Lake",    owner_name: "Riya Banerjee",   phone: "+91 98300 11111", address: "Sector V, Salt Lake",    city: "Kolkata",   state: "West Bengal", pincode: "700091", event_year: EVENT_YEAR, created_at: nowIso() },
-  { id: "ctr_kol_south", center_name: "Mind Mantra · Tollygunge",   owner_name: "Arjun Sen",       phone: "+91 98300 22222", address: "Charu Avenue",           city: "Kolkata",   state: "West Bengal", pincode: "700033", event_year: EVENT_YEAR, created_at: nowIso() },
-  { id: "ctr_howrah",    center_name: "Mind Mantra · Howrah",       owner_name: "Pratima Roy",     phone: "+91 98300 33333", address: "Maidan Road",            city: "Howrah",    state: "West Bengal", pincode: "711101", event_year: EVENT_YEAR, created_at: nowIso() },
-  { id: "ctr_durgapur",  center_name: "Mind Mantra · Durgapur",     owner_name: "Subir Das",       phone: "+91 98300 44444", address: "City Centre",            city: "Durgapur",  state: "West Bengal", pincode: "713216", event_year: EVENT_YEAR, created_at: nowIso() },
+  { id: DEMO_CENTRE_ID,  center_name: "Mind Mantra · Dumdum",        owner_name: "Centre Owner",    phone: "+91 98300 00000", whatsapp: "+91 98300 00000", address: "Dumdum Road",            city: "Kolkata",   state: "West Bengal", pincode: "700028", start_date: `${EVENT_YEAR}-01-15`, participating: true,  event_year: EVENT_YEAR, created_at: nowIso() },
+  { id: "ctr_kol_north", center_name: "Mind Mantra · Salt Lake",    owner_name: "Riya Banerjee",   phone: "+91 98300 11111", whatsapp: "+91 98300 11111", address: "Sector V, Salt Lake",    city: "Kolkata",   state: "West Bengal", pincode: "700091", start_date: `${EVENT_YEAR}-01-20`, participating: true,  event_year: EVENT_YEAR, created_at: nowIso() },
+  { id: "ctr_kol_south", center_name: "Mind Mantra · Tollygunge",   owner_name: "Arjun Sen",       phone: "+91 98300 22222", whatsapp: "+91 98300 22222", address: "Charu Avenue",           city: "Kolkata",   state: "West Bengal", pincode: "700033", start_date: `${EVENT_YEAR}-02-01`, participating: false, event_year: EVENT_YEAR, created_at: nowIso() },
+  { id: "ctr_howrah",    center_name: "Mind Mantra · Howrah",       owner_name: "Pratima Roy",     phone: "+91 98300 33333", whatsapp: "+91 98300 33333", address: "Maidan Road",            city: "Howrah",    state: "West Bengal", pincode: "711101", start_date: `${EVENT_YEAR}-02-05`, participating: true,  event_year: EVENT_YEAR, created_at: nowIso() },
+  { id: "ctr_durgapur",  center_name: "Mind Mantra · Durgapur",     owner_name: "Subir Das",       phone: "+91 98300 44444", whatsapp: "+91 98300 44444", address: "City Centre",            city: "Durgapur",  state: "West Bengal", pincode: "713216", start_date: `${EVENT_YEAR}-02-10`, participating: false, event_year: EVENT_YEAR, created_at: nowIso() },
 ];
 
 const SEED_STUDENT_NAMES = [
@@ -339,6 +339,14 @@ export const localStore: DataStore = {
       reviewed_at: nowIso(),
       review_note: note ?? null,
     };
+    // Approving a centre's payment auto-joins it to the event.
+    const centerId = s.payments[idx].center_id;
+    if (centerId) {
+      const ci = s.centers.findIndex((c) => c.id === centerId);
+      if (ci >= 0 && !s.centers[ci].participating) {
+        s.centers[ci] = { ...s.centers[ci], participating: true };
+      }
+    }
     write(s);
     return s.payments[idx];
   },

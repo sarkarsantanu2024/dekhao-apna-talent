@@ -7,7 +7,7 @@
  */
 
 import { pdf } from "@react-pdf/renderer";
-import { ChestCardDocument } from "./chest-card";
+import { ChestCardDocument, ChestCardSheetDocument } from "./chest-card";
 import { SITE_URL, EVENT_NAME } from "@/constants";
 import { store } from "@/services";
 import type { Student } from "@/types";
@@ -33,9 +33,18 @@ export function chestCardFilename(s: Pick<Student, "roll_number" | "full_name" |
   return `chest-card-${safe}.pdf`;
 }
 
-/** Generate a single chest-card PDF as a Blob (two cards per A4 page). */
+/** Generate a single chest-card PDF as a Blob (card on top, second slot blank). */
 export async function generateChestCardBlob(student: Student): Promise<Blob> {
   const doc = ChestCardDocument({ student, logoUrl: logoUrl(), eventName: EVENT_NAME });
+  return await pdf(doc).toBlob();
+}
+
+/**
+ * Generate one combined PDF for many students — two different cards per A4 page.
+ * An odd final student leaves the bottom slot blank.
+ */
+export async function generateChestCardsSheetBlob(students: Student[]): Promise<Blob> {
+  const doc = ChestCardSheetDocument({ students, logoUrl: logoUrl(), eventName: EVENT_NAME });
   return await pdf(doc).toBlob();
 }
 
@@ -66,36 +75,25 @@ export async function downloadChestCard(student: Student): Promise<void> {
 }
 
 /**
- * Bundle all eligible students' chest cards into one ZIP and download it.
- * Progress reporting via the optional `onProgress(done, total)` callback so
- * UIs can show "Generating 3/12…" while it runs.
+ * Bundle all eligible students into one combined PDF — two different cards per
+ * A4 page — and download it. `onProgress(done, total)` brackets the single
+ * render so UIs can show a generating state while @react-pdf works.
  */
-export async function downloadChestCardsZip(
+export async function downloadAllChestCards(
   students: Student[],
-  opts?: { onProgress?: (done: number, total: number) => void; zipName?: string },
+  opts?: { onProgress?: (done: number, total: number) => void; fileName?: string },
 ): Promise<void> {
   const eligible = students.filter(isDownloadable);
   if (eligible.length === 0) throw new Error("No approved students to download");
 
-  const [{ default: JSZip }, { saveAs }] = await Promise.all([
-    import("jszip"),
-    import("file-saver"),
-  ]);
-  const zip = new JSZip();
+  opts?.onProgress?.(0, eligible.length);
+  const blob = await generateChestCardsSheetBlob(eligible);
+  opts?.onProgress?.(eligible.length, eligible.length);
 
-  let done = 0;
-  opts?.onProgress?.(done, eligible.length);
-  for (const s of eligible) {
-    const blob = await generateChestCardBlob(s);
-    zip.file(chestCardFilename(s), blob);
-    done++;
-    opts?.onProgress?.(done, eligible.length);
-  }
-
-  const zipBlob = await zip.generateAsync({ type: "blob" });
+  const { saveAs } = await import("file-saver");
   const stamp = new Date().toISOString().slice(0, 10);
-  saveAs(zipBlob, opts?.zipName ?? `chest-cards-${stamp}.zip`);
+  saveAs(blob, opts?.fileName ?? `chest-cards-${stamp}.pdf`);
 
-  // Promote everyone whose card was just bundled into the ZIP.
+  // Promote everyone whose card was just bundled into the sheet.
   await Promise.all(eligible.map(markActivatedOnce));
 }

@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/common/status-badge";
 import { formatDate } from "@/lib/utils";
+import { confirm } from "@/components/ui/confirm-dialog";
 import { store, useStudents, useCenters, useCategories } from "@/services";
 import type { Student, StudentStatus } from "@/types";
 import { StudentDialog } from "@/components/admin/student-dialog";
@@ -56,7 +57,12 @@ export default function AdminStudentsPage() {
   }, [students, filter, query]);
 
   const onDelete = async (s: Student) => {
-    if (!window.confirm(`Delete ${s.full_name}? This cannot be undone.`)) return;
+    if (!(await confirm({
+      title: "Delete student?",
+      description: `“${s.full_name}” will be permanently removed. This cannot be undone.`,
+      confirmText: "Delete",
+      destructive: true,
+    }))) return;
     await store.deleteStudent(s.id);
     toast.success("Student deleted");
   };

@@ -17,10 +17,15 @@ export interface Center {
   center_name: string;
   owner_name: string | null;
   phone: string | null;
+  whatsapp: string | null;
   address: string | null;
   city: string | null;
   state: string | null;
   pincode: string | null;
+  /** ISO date (YYYY-MM-DD) the centre started / joined. */
+  start_date: string | null;
+  /** Whether this centre is participating in the Dekhao Apna Talent event. */
+  participating: boolean;
   event_year: number;
   created_at: string;
 }

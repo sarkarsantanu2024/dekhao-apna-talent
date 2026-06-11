@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Download, Loader2, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { StatusBadge } from "@/components/common/status-badge";
 import { formatDate } from "@/lib/utils";
 import { store, useCategories, useCenters, useStudents } from "@/services";
-import { downloadChestCard, isDownloadable } from "@/lib/pdf/generate-chest-card";
 import { StudentDialog } from "@/components/admin/student-dialog";
+import { confirm } from "@/components/ui/confirm-dialog";
 import type { Student } from "@/types";
 
 export default function CenterStudentsPage() {
@@ -22,7 +22,6 @@ export default function CenterStudentsPage() {
   const centerId = myCenter?.id;
   const { data: rows, loading } = useStudents({ centerId });
 
-  const [busyId, setBusyId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Student | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -44,7 +43,12 @@ export default function CenterStudentsPage() {
   const onBulkDelete = async () => {
     const ids = [...selected].filter((id) => rows.find((r) => r.id === id)?.status !== "active");
     if (!ids.length) return;
-    if (!window.confirm(`Delete ${ids.length} student(s)? This cannot be undone.`)) return;
+    if (!(await confirm({
+      title: `Delete ${ids.length} student${ids.length !== 1 ? "s" : ""}?`,
+      description: "The selected students will be permanently removed. This cannot be undone.",
+      confirmText: "Delete",
+      destructive: true,
+    }))) return;
     let ok = 0;
     for (const id of ids) {
       try {
@@ -58,18 +62,6 @@ export default function CenterStudentsPage() {
     toast.success(`Deleted ${ok} student${ok !== 1 ? "s" : ""}`);
   };
 
-  const onDownload = async (s: Student) => {
-    setBusyId(s.id);
-    try {
-      await downloadChestCard(s);
-      toast.success(`Downloaded ${s.roll_number ?? s.full_name}`);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Download failed");
-    } finally {
-      setBusyId(null);
-    }
-  };
-
   const onEdit = (s: Student) => {
     setEditing(s);
     setDialogOpen(true);
@@ -80,7 +72,12 @@ export default function CenterStudentsPage() {
       toast.error("This student already has a chest card issued — please contact admin to remove.");
       return;
     }
-    if (!window.confirm(`Delete ${s.full_name}? This cannot be undone.`)) return;
+    if (!(await confirm({
+      title: "Delete student?",
+      description: `“${s.full_name}” will be permanently removed. This cannot be undone.`,
+      confirmText: "Delete",
+      destructive: true,
+    }))) return;
     try {
       await store.deleteStudent(s.id);
       toast.success("Student deleted");
@@ -144,23 +141,6 @@ export default function CenterStudentsPage() {
                 <TableCell className="text-muted-foreground">{formatDate(s.created_at)}</TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-1">
-                    {isDownloadable(s) ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="gap-1.5"
-                        onClick={() => onDownload(s)}
-                        disabled={busyId === s.id}
-                      >
-                        {busyId === s.id ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
-                        {busyId === s.id ? "Generating…" : "Download card"}
-                      </Button>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">
-                        {s.status === "rejected" ? "Rejected — edit & re-submit" : "Awaiting approval"}
-                      </span>
-                    )}
-
                     <Button size="icon" variant="ghost" aria-label="Edit" onClick={() => onEdit(s)}>
                       <Pencil className="size-4" />
                     </Button>

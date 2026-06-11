@@ -87,8 +87,12 @@ export interface ChestCardProps {
   student: Student;
   logoUrl: string;
   eventName?: string;
-  /** Copies placed on the A4 page (default 2 — one above the other). */
-  copies?: number;
+}
+
+export interface ChestCardSheetProps {
+  students: Student[];
+  logoUrl: string;
+  eventName?: string;
 }
 
 function Card({ student, logoUrl }: { student: Student; logoUrl: string }) {
@@ -170,17 +174,56 @@ function CutGuide() {
   );
 }
 
-export function ChestCardDocument({ student, logoUrl, copies = 2 }: ChestCardProps) {
+/**
+ * One A4 page holding two card slots (top + bottom) separated by a cut guide.
+ * A `null` slot is left blank — used for single-student downloads (bottom blank)
+ * and the trailing odd card on a bulk sheet.
+ */
+function CardPage({
+  top,
+  bottom,
+  logoUrl,
+}: {
+  top: Student | null;
+  bottom: Student | null;
+  logoUrl: string;
+}) {
+  return (
+    <Page size="A4" style={styles.page}>
+      <View style={{ flex: 1 }}>
+        {top ? <Card student={top} logoUrl={logoUrl} /> : <View style={styles.card} />}
+      </View>
+      <CutGuide />
+      <View style={{ flex: 1 }}>
+        {bottom ? <Card student={bottom} logoUrl={logoUrl} /> : <View style={styles.card} />}
+      </View>
+    </Page>
+  );
+}
+
+/** Single student: card on top, the second slot left blank. */
+export function ChestCardDocument({ student, logoUrl }: ChestCardProps) {
   return (
     <Document title={`Chest Card — ${student.roll_number ?? student.full_name}`}>
-      <Page size="A4" style={styles.page}>
-        {Array.from({ length: copies }).map((_, i) => (
-          <View key={i} style={{ flex: 1 }}>
-            {i > 0 ? <CutGuide /> : null}
-            <Card student={student} logoUrl={logoUrl} />
-          </View>
-        ))}
-      </Page>
+      <CardPage top={student} bottom={null} logoUrl={logoUrl} />
+    </Document>
+  );
+}
+
+/**
+ * Bulk sheet: students packed two-per-page (different students top & bottom).
+ * An odd final student leaves the bottom slot blank.
+ */
+export function ChestCardSheetDocument({ students, logoUrl }: ChestCardSheetProps) {
+  const pages: Array<[Student | null, Student | null]> = [];
+  for (let i = 0; i < students.length; i += 2) {
+    pages.push([students[i], students[i + 1] ?? null]);
+  }
+  return (
+    <Document title="Chest Cards">
+      {pages.map(([top, bottom], i) => (
+        <CardPage key={i} top={top} bottom={bottom} logoUrl={logoUrl} />
+      ))}
     </Document>
   );
 }
