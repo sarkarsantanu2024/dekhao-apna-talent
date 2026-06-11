@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { confirm } from "@/components/ui/confirm-dialog";
 import { store } from "@/services";
 
 /**
@@ -19,7 +20,12 @@ export function StudentActions({ id, name }: { id: string; name: string }) {
 
   const act = (kind: "approve" | "reject") =>
     start(async () => {
-      if (kind === "reject" && !window.confirm(`Reject ${name}?`)) return;
+      if (kind === "reject" && !(await confirm({
+        title: "Reject student?",
+        description: `“${name}” will be marked as rejected.`,
+        confirmText: "Reject",
+        destructive: true,
+      }))) return;
       try {
         await store.updateStudent(id, { status: kind === "approve" ? "approved" : "rejected" });
         toast.success(kind === "approve" ? "Student approved" : "Student rejected");

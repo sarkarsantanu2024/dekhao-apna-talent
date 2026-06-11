@@ -9,7 +9,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (session.user.role !== "admin") redirect("/center/dashboard");
 
   return (
-    <DashboardShell nav={ADMIN_NAV} title="Admin" user={session.user}>
+    <DashboardShell nav={ADMIN_NAV} title="MindMantra Abacus" user={session.user}>
       {children}
     </DashboardShell>
   );

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PaymentActions } from "@/components/admin/payment-actions";
 import { StudentActions } from "@/components/admin/student-actions";
+import { confirm } from "@/components/ui/confirm-dialog";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { store, usePayments, useStudents } from "@/services";
 
@@ -68,7 +69,12 @@ export default function ApprovalsPage() {
     const studentIds = Array.from(selStudents);
     const paymentIds = Array.from(selPayments);
     if (studentIds.length === 0 && paymentIds.length === 0) return;
-    if (kind === "reject" && !window.confirm(`Reject ${totalSelected} item(s)?`)) return;
+    if (kind === "reject" && !(await confirm({
+      title: `Reject ${totalSelected} item${totalSelected !== 1 ? "s" : ""}?`,
+      description: "The selected submissions will be marked as rejected.",
+      confirmText: "Reject",
+      destructive: true,
+    }))) return;
 
     const note = kind === "reject"
       ? window.prompt("Reason for rejection (optional):") ?? undefined

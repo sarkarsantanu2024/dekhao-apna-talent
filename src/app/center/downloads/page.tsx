@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Download, Loader2, FileArchive, Lock } from "lucide-react";
+import { Download, Loader2, Files, Lock } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -23,7 +23,7 @@ import { StatusBadge } from "@/components/common/status-badge";
 import { useCenters, useStudents } from "@/services";
 import {
   downloadChestCard,
-  downloadChestCardsZip,
+  downloadAllChestCards,
   isDownloadable,
 } from "@/lib/pdf/generate-chest-card";
 import type { Student } from "@/types";
@@ -55,10 +55,10 @@ export default function CenterDownloadsPage() {
   const onBulk = async () => {
     setBulk({ done: 0, total: eligible.length });
     try {
-      await downloadChestCardsZip(eligible, {
+      await downloadAllChestCards(eligible, {
         onProgress: (done, total) => setBulk({ done, total }),
-        zipName: center
-          ? `chest-cards-${center.center_name.replace(/\s+/g, "-").toLowerCase()}.zip`
+        fileName: center
+          ? `chest-cards-${center.center_name.replace(/\s+/g, "-").toLowerCase()}.pdf`
           : undefined,
       });
       toast.success(`Bundled ${eligible.length} chest cards`);
@@ -71,8 +71,8 @@ export default function CenterDownloadsPage() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-wrap items-start justify-between gap-3">
-        <div>
+      <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <CardTitle>Chest card downloads</CardTitle>
           <CardDescription>
             Downloads unlock automatically once an admin approves the student.
@@ -89,20 +89,20 @@ export default function CenterDownloadsPage() {
           disabled={!allEligible || bulk !== null}
           title={
             allEligible
-              ? "Download all chest cards as ZIP"
+              ? "Download all chest cards as one PDF (two per page)"
               : "Bulk download unlocks when every student of this centre is approved"
           }
-          className="gap-2"
+          className="gap-2 shrink-0 sm:self-start"
         >
           {bulk ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              Generating {bulk.done}/{bulk.total}…
+              Generating…
             </>
           ) : (
             <>
-              <FileArchive className="size-4" />
-              Download all (ZIP)
+              <Files className="size-4" />
+              Download all (PDF)
             </>
           )}
         </Button>
