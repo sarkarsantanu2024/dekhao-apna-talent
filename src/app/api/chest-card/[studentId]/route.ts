@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { renderToBuffer, type DocumentProps } from "@react-pdf/renderer";
-import QRCode from "qrcode";
 import { ChestCardDocument } from "@/lib/pdf/chest-card";
 import type { ReactElement } from "react";
 import { SITE_URL, EVENT_NAME } from "@/constants";
@@ -24,11 +23,10 @@ export async function GET(_: Request, ctx: { params: Promise<{ studentId: string
   }
 
   const qrPayload = `${SITE_URL}/verify?roll=${encodeURIComponent(student.roll_number ?? "")}`;
-  const qrDataUrl = await QRCode.toDataURL(qrPayload, { width: 256, margin: 1 });
 
-  // PDF
+  // PDF — two cards per A4 page, fixed brand logo from /public.
   const pdf = await renderToBuffer(
-    ChestCardDocument({ student, qrDataUrl, eventName: EVENT_NAME }) as unknown as ReactElement<DocumentProps>
+    ChestCardDocument({ student, logoUrl: `${SITE_URL}/mma-logo-white.png`, eventName: EVENT_NAME }) as unknown as ReactElement<DocumentProps>
   );
 
   await sb.from("chest_cards").upsert({

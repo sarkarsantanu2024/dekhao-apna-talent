@@ -7,11 +7,16 @@
  */
 
 import { pdf } from "@react-pdf/renderer";
-import QRCode from "qrcode";
 import { ChestCardDocument } from "./chest-card";
 import { SITE_URL, EVENT_NAME } from "@/constants";
 import { store } from "@/services";
 import type { Student } from "@/types";
+
+/** Same-origin URL for the fixed brand logo used on every chest card. */
+function logoUrl(): string {
+  const origin = typeof window !== "undefined" ? window.location.origin : SITE_URL;
+  return `${origin}/mma-logo-white.png`;
+}
 
 export type ChestCardEligibility = "active" | "approved";
 
@@ -28,15 +33,9 @@ export function chestCardFilename(s: Pick<Student, "roll_number" | "full_name" |
   return `chest-card-${safe}.pdf`;
 }
 
-/** Build the QR payload (URL the audition desk scans). */
-function qrPayload(student: Pick<Student, "roll_number">): string {
-  return `${SITE_URL}/verify?roll=${encodeURIComponent(student.roll_number ?? "")}`;
-}
-
-/** Generate a single chest-card PDF as a Blob. */
+/** Generate a single chest-card PDF as a Blob (two cards per A4 page). */
 export async function generateChestCardBlob(student: Student): Promise<Blob> {
-  const qrDataUrl = await QRCode.toDataURL(qrPayload(student), { width: 256, margin: 1 });
-  const doc = ChestCardDocument({ student, qrDataUrl, eventName: EVENT_NAME });
+  const doc = ChestCardDocument({ student, logoUrl: logoUrl(), eventName: EVENT_NAME });
   return await pdf(doc).toBlob();
 }
 
