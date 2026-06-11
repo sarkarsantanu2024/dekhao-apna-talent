@@ -6,9 +6,10 @@ import * as XLSX from "xlsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/cards/stat-card";
-import { Trophy, Users, IndianRupee, FileCheck2, Download } from "lucide-react";
+import { Trophy, Users, IndianRupee, FileCheck2, Download, RotateCcw } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { useStats, useStudents, useCenters } from "@/services";
+import { store, useStats, useStudents, useCenters } from "@/services";
+import { confirm } from "@/components/ui/confirm-dialog";
 import { EVENT_YEAR } from "@/constants";
 
 export default function ReportsPage() {
@@ -16,6 +17,17 @@ export default function ReportsPage() {
   const { data: students } = useStudents();
   const { data: centers } = useCenters();
   const [busy, setBusy] = useState(false);
+
+  async function onResetTestData() {
+    if (!(await confirm({
+      title: "Reset test data?",
+      description: "Clears ALL payments and resets every student to “approved” (un-active) and every centre to not-participating. Your centres and students stay. This cannot be undone.",
+      confirmText: "Reset",
+      destructive: true,
+    }))) return;
+    await store.resetTestData();
+    toast.success("Test data reset — centres & students kept, everything else cleared");
+  }
 
   function downloadReport() {
     setBusy(true);
@@ -92,9 +104,14 @@ export default function ReportsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-semibold">Reports{loading ? " · syncing…" : ""}</h2>
-        <Button onClick={downloadReport} disabled={busy} className="gap-2 sm:self-start">
-          <Download className="size-4" /> {busy ? "Preparing…" : "Download full report (.xlsx)"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2 sm:self-start">
+          <Button variant="outline" onClick={onResetTestData} className="gap-2">
+            <RotateCcw className="size-4" /> Reset test data
+          </Button>
+          <Button onClick={downloadReport} disabled={busy} className="gap-2">
+            <Download className="size-4" /> {busy ? "Preparing…" : "Download full report (.xlsx)"}
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -122,8 +122,10 @@ export function StudentDialog({
     if (!center || !category) return toast.error("Centre or category missing");
 
     setBusy(true);
+    // Centre submissions are auto-approved; editing a non-rejected student
+    // keeps its current status. Admins (non-scoped) pick the status manually.
     const nextStatus: StudentStatus = isCentreScoped
-      ? editing?.status === "rejected" ? "pending" : (editing?.status ?? "pending")
+      ? editing && editing.status !== "rejected" ? editing.status : "approved"
       : form.status;
 
     // Only the mandatory fields are edited here; city/state/pincode/performance

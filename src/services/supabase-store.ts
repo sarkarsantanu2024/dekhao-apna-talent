@@ -28,6 +28,7 @@ import type { DataStore } from "./store";
 export const supabaseStore: DataStore = {
   ensureSeeded:    async () => { /* Migrations + seed scripts handle this in supabase/ */ },
   reset:           async () => { throw new Error("reset() is destructive in production — disabled."); },
+  resetTestData:   async () => { throw new Error("resetTestData() is disabled in production."); },
   getStats:        async () => { throw new Error("Not implemented yet"); },
 
   listStudents:    async () => { throw new Error("Not implemented yet"); },
@@ -41,6 +42,7 @@ export const supabaseStore: DataStore = {
   createCenter:    async () => { throw new Error("Not implemented yet"); },
   updateCenter:    async () => { throw new Error("Not implemented yet"); },
   deleteCenter:    async () => { throw new Error("Not implemented yet"); },
+  generateCenterLogins: async () => { throw new Error("Not implemented yet"); },
 
   listPayments:    async () => { throw new Error("Not implemented yet"); },
   createPayment:   async () => { throw new Error("Not implemented yet"); },

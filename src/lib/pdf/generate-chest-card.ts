@@ -18,10 +18,13 @@ function logoUrl(): string {
   return `${origin}/mma-logo-white.png`;
 }
 
-export type ChestCardEligibility = "active" | "approved";
+export type ChestCardEligibility = "active";
 
-/** Statuses that may download a card. */
-export const DOWNLOADABLE_STATUSES: ReadonlyArray<Student["status"]> = ["approved", "active"];
+/**
+ * Statuses that may download a card. A student becomes `active` only once an
+ * admin approves their payment, so chest cards stay locked until then.
+ */
+export const DOWNLOADABLE_STATUSES: ReadonlyArray<Student["status"]> = ["active"];
 
 export function isDownloadable(s: Pick<Student, "status">): boolean {
   return DOWNLOADABLE_STATUSES.includes(s.status);

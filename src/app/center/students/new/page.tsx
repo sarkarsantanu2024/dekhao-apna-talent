@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { StudentForm } from "@/components/forms/student-form";
 import { StudentBulkUpload } from "@/components/forms/student-bulk-upload";
@@ -9,15 +10,19 @@ import { useCategories, useCenters } from "@/services";
 
 export default function NewStudentPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const { data: categories, loading: catsLoading } = useCategories();
   const { data: centers, loading: centersLoading } = useCenters();
 
   /**
-   * Pick the centre this user is logged into. In demo mode the auth session's
-   * centerId is pinned to the seeded Demo Centre — but if a custom centre
-   * exists we still prefer the first one as a sensible fallback.
+   * Pick the centre this user is logged into — resolved from the session's
+   * pinned centerId, falling back to the first centre only if none is set.
    */
-  const myCenter = useMemo(() => centers[0] ?? null, [centers]);
+  const sessionCenterId = session?.user?.centerId ?? null;
+  const myCenter = useMemo(
+    () => centers.find((c) => c.id === sessionCenterId) ?? centers[0] ?? null,
+    [centers, sessionCenterId],
+  );
 
   if (catsLoading || centersLoading) {
     return <p className="text-sm text-muted-foreground">Loading…</p>;

@@ -60,3 +60,6 @@ ehthumbs.db
 # Client-demo assets (deck, mockups) — generated locally, not part of the app
 /demo/
 docs/demo/
+
+# Local-only generated centre logins (demo stopgap)
+.data/

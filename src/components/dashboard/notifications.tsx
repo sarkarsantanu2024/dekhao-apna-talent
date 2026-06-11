@@ -136,7 +136,7 @@ function useNotifications(role: Role): NotificationItem[] {
           id: "n-pending-payments",
           icon: CreditCard,
           text: <><strong>{stats.pendingPayments}</strong> payment{stats.pendingPayments === 1 ? "" : "s"} pending verification</>,
-          href: "/admin/approvals",
+          href: "/admin/payments",
           tone: "warn",
         });
       }

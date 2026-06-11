@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth/auth.config";
+
+// Edge-safe NextAuth instance — uses the provider-less config so no Node APIs
+// (the file-backed centre login lookup in auth.ts) leak into the edge bundle.
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { nextUrl } = req;
