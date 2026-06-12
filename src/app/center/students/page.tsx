@@ -118,6 +118,7 @@ export default function CenterStudentsPage() {
               </TableHead>
               <TableHead>Roll</TableHead>
               <TableHead>Name</TableHead>
+              <TableHead>Phone</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Added</TableHead>
@@ -126,9 +127,9 @@ export default function CenterStudentsPage() {
           </TableHeader>
           <TableBody>
             {loading && rows.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
             ) : rows.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">No students yet — add your first.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">No students yet — add your first.</TableCell></TableRow>
             ) : rows.map((s) => (
               <TableRow key={s.id} data-state={selected.has(s.id) ? "selected" : undefined}>
                 <TableCell>
@@ -141,6 +142,7 @@ export default function CenterStudentsPage() {
                 </TableCell>
                 <TableCell className="font-mono text-xs">{s.roll_number}</TableCell>
                 <TableCell className="font-medium">{s.full_name}</TableCell>
+                <TableCell>{s.phone ?? "—"}</TableCell>
                 <TableCell>{s.category_name}</TableCell>
                 <TableCell><StatusBadge status={s.status} /></TableCell>
                 <TableCell className="text-muted-foreground">{formatDate(s.created_at)}</TableCell>

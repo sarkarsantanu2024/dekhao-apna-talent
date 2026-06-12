@@ -2,15 +2,18 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { RotateCcw, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
+import { RotateCcw, AlertCircle, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/common/status-badge";
 import { PaymentUploadForm } from "@/components/forms/payment-upload-form";
 import { PaymentResubmitDialog } from "@/components/forms/payment-resubmit-dialog";
+import { PaymentEditDialog } from "@/components/forms/payment-edit-dialog";
+import { confirm } from "@/components/ui/confirm-dialog";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { useCenters, usePayments } from "@/services";
+import { store, useCenters, usePayments } from "@/services";
 import type { Payment } from "@/types";
 
 export default function CenterPaymentsPage() {
@@ -21,6 +24,22 @@ export default function CenterPaymentsPage() {
   const { data: rows, loading } = usePayments({ centerId });
 
   const [resubmitTarget, setResubmitTarget] = useState<Payment | null>(null);
+  const [editTarget, setEditTarget] = useState<Payment | null>(null);
+
+  const onDelete = async (p: Payment) => {
+    if (!(await confirm({
+      title: "Delete this payment?",
+      description: `The payment${p.student_name ? ` for ${p.student_name}` : ""} will be removed. This cannot be undone.`,
+      confirmText: "Delete",
+      destructive: true,
+    }))) return;
+    try {
+      await store.deletePayment(p.id);
+      toast.success("Payment deleted");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Delete failed");
+    }
+  };
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
@@ -58,7 +77,13 @@ export default function CenterPaymentsPage() {
               ) : rows.length === 0 ? (
                 <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">No payments yet.</TableCell></TableRow>
               ) : rows.map((p) => (
-                <PaymentRow key={p.id} payment={p} onResubmit={() => setResubmitTarget(p)} />
+                <PaymentRow
+                  key={p.id}
+                  payment={p}
+                  onResubmit={() => setResubmitTarget(p)}
+                  onEdit={() => setEditTarget(p)}
+                  onDelete={() => onDelete(p)}
+                />
               ))}
             </TableBody>
           </Table>
@@ -70,12 +95,28 @@ export default function CenterPaymentsPage() {
         onOpenChange={(v) => !v && setResubmitTarget(null)}
         payment={resubmitTarget}
       />
+      <PaymentEditDialog
+        open={editTarget !== null}
+        onOpenChange={(v) => !v && setEditTarget(null)}
+        payment={editTarget}
+      />
     </div>
   );
 }
 
-function PaymentRow({ payment: p, onResubmit }: { payment: Payment; onResubmit: () => void }) {
+function PaymentRow({
+  payment: p,
+  onResubmit,
+  onEdit,
+  onDelete,
+}: {
+  payment: Payment;
+  onResubmit: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
   const isRejected = p.status === "rejected";
+  const isApproved = p.status === "approved";
   return (
     <>
       <TableRow className={isRejected ? "bg-destructive/5" : undefined}>
@@ -86,29 +127,38 @@ function PaymentRow({ payment: p, onResubmit }: { payment: Payment; onResubmit: 
         <TableCell><StatusBadge status={p.status} /></TableCell>
         <TableCell className="text-muted-foreground">{formatDate(p.created_at)}</TableCell>
         <TableCell className="text-right">
-          {isRejected ? (
-            <Button size="sm" variant="outline" onClick={onResubmit} className="gap-1.5">
-              <RotateCcw className="size-3.5" /> Resubmit
-            </Button>
+          {isApproved ? (
+            <span className="text-xs text-muted-foreground">Verified — locked</span>
           ) : (
-            <span className="text-xs text-muted-foreground">—</span>
+            <div className="flex items-center justify-end gap-1">
+              {isRejected ? (
+                <Button size="sm" variant="outline" onClick={onResubmit} className="gap-1.5">
+                  <RotateCcw className="size-3.5" /> Resubmit
+                </Button>
+              ) : (
+                <Button size="icon" variant="ghost" aria-label="Edit payment" onClick={onEdit}>
+                  <Pencil className="size-4" />
+                </Button>
+              )}
+              <Button size="icon" variant="ghost" aria-label="Delete payment" onClick={onDelete}>
+                <Trash2 className="size-4" />
+              </Button>
+            </div>
           )}
         </TableCell>
       </TableRow>
 
-      {/* Inline rejection note callout */}
-      {isRejected && (
-        <TableRow className="bg-destructive/5 hover:bg-destructive/5">
+      {/* Inline admin note — shown for rejected and admin-reverted (pending) rows */}
+      {p.review_note?.trim() && (p.status === "rejected" || p.status === "pending") && (
+        <TableRow className="bg-amber-50 hover:bg-amber-50">
           <TableCell colSpan={7} className="!py-2">
             <div className="flex items-start gap-2 text-sm">
-              <AlertCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
+              <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-600" />
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-destructive">
+                <span className="text-xs font-semibold uppercase tracking-wider text-amber-700">
                   Admin&apos;s note ·
                 </span>{" "}
-                <span className="text-foreground/90">
-                  {p.review_note?.trim() ? p.review_note : "No reason given. Upload a clearer screenshot."}
-                </span>
+                <span className="text-foreground/90">{p.review_note}</span>
               </div>
             </div>
           </TableCell>

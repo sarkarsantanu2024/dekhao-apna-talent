@@ -6,6 +6,7 @@ import {
   Building2,
   IndianRupee,
   FileCheck2,
+  CreditCard,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,10 +53,12 @@ export function DashboardOverview({
           ? <StatCard label="Total centres" value={stats.centers} icon={Building2} />
           : <StatCard label="Active chest cards" value={stats.activeStudents} icon={FileCheck2} />}
         <StatCard label="Collected (approved)" value={formatCurrency(stats.collected)} icon={IndianRupee} />
-        {scope === "global"
-          ? <StatCard label="Active chest cards" value={stats.activeStudents} icon={FileCheck2} />
-          : <StatCard label="Pending payments"   value={stats.pendingPayments} icon={Users} />}
+        {/* Students registered but whose payment isn't approved yet (= still "approved", not "active"). */}
+        <StatCard label="Payment pending" value={stats.approvedStudents} icon={CreditCard} />
       </div>
+      <p className="-mt-2 text-xs text-muted-foreground">
+        “Payment pending” = students awaiting payment approval. “Active” = students whose payment is approved (chest card unlocked).
+      </p>
 
       {/* Student status breakdown */}
       <Card>

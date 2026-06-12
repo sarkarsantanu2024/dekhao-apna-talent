@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FileUpload } from "@/components/ui/file-upload";
 import {
   Select,
   SelectContent,
@@ -126,6 +127,13 @@ export function StudentForm({
           performance_topic: values.performance_topic ?? null,
           performance_details: values.performance_details ?? null,
           created_by: null,
+        });
+        await store.logEvent({
+          type: "students_added",
+          audience: "admin",
+          message: `added student ${created.full_name}`,
+          center_id: values.center_id ?? centerId,
+          center_name: values.center_name,
         });
         toast.success(`Student saved — roll ${created.roll_number}`);
         router.push("/center/students");
@@ -232,14 +240,19 @@ export function StudentForm({
         <Input {...form.register("pincode")} />
       </Field>
 
-      <Field label="Photo" icon={ImageIcon} required hint={form.watch("photo_url") ? "Photo attached ✓" : "JPG or PNG, max 3 MB"}>
-        <Input type="file" accept="image/*" onChange={async (ev) => {
-          const f = ev.target.files?.[0];
-          if (!f) return;
-          if (f.size > 3 * 1024 * 1024) { toast.error("Max 3 MB"); return; }
-          const url = await onPhoto(f);
-          if (url) { form.setValue("photo_url", url); toast.success("Photo attached"); }
-        }} />
+      <Field label="Photo" icon={ImageIcon} required>
+        <FileUpload
+          accept="image/*"
+          previewUrl={form.watch("photo_url") || null}
+          fileName={form.watch("photo_url") ? "Photo attached" : null}
+          hint="JPG or PNG, max 3 MB"
+          onFile={async (f) => {
+            if (!f) return form.setValue("photo_url", "");
+            if (f.size > 3 * 1024 * 1024) { toast.error("Max 3 MB"); return; }
+            const url = await onPhoto(f);
+            if (url) { form.setValue("photo_url", url); toast.success("Photo attached"); }
+          }}
+        />
       </Field>
 
       <div className="md:col-span-2">

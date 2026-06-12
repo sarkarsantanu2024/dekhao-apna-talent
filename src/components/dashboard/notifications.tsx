@@ -2,10 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Bell, CheckCheck, CreditCard, UserCheck, AlertTriangle, RotateCcw } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Bell, CheckCheck, CreditCard, AlertTriangle, RotateCcw, Users, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useStats, useStudents, usePayments, useCenters } from "@/services";
+import { useStats, useStudents, useEvents } from "@/services";
 import { formatDate } from "@/lib/utils";
+import type { ActivityEvent } from "@/types";
 
 type Role = "admin" | "center_owner";
 
@@ -18,15 +20,48 @@ type NotificationItem = {
   tone: "info" | "warn" | "ok";
 };
 
+const SEEN_KEY = "dat:notif-seen";
+
+/** Per-event-type presentation. Each type belongs to one audience/destination. */
+const EVENT_META: Record<ActivityEvent["type"], { icon: NotificationItem["icon"]; href: string; tone: NotificationItem["tone"] }> = {
+  students_added:      { icon: Users,         href: "/admin/students",  tone: "info" },
+  payment_uploaded:    { icon: CreditCard,    href: "/admin/payments",  tone: "info" },
+  payment_resubmitted: { icon: RotateCcw,     href: "/admin/payments",  tone: "info" },
+  payment_approved:    { icon: Check,         href: "/center/downloads", tone: "ok" },
+  payment_rejected:    { icon: X,             href: "/center/payments", tone: "warn" },
+  payment_reverted:    { icon: RotateCcw,     href: "/center/payments", tone: "warn" },
+  student_rejected:    { icon: AlertTriangle, href: "/center/students", tone: "warn" },
+};
+
+function eventToItem(e: ActivityEvent): NotificationItem {
+  const meta = EVENT_META[e.type];
+  return {
+    id: e.id,
+    icon: meta.icon,
+    // Admin feed names the centre; centre feed reads as a complete sentence.
+    text: e.audience === "admin"
+      ? <><strong>{e.center_name ?? "A centre"}</strong> {e.message}</>
+      : <>{e.message}</>,
+    href: meta.href,
+    date: e.created_at,
+    tone: meta.tone,
+  };
+}
+
 /**
- * Notification bell. Derives the list from current store state so we don't
- * need a separate notifications table. For demo this is plenty — when wired
- * to Supabase Realtime later, swap the data source inside `useNotifications`.
+ * Notification bell. Activity events drive the feed (centre actions → admin,
+ * admin actions → the affected centre); a few live stats round it out.
  */
 export function NotificationBell({ role }: { role: Role }) {
-  const items = useNotifications(role);
+  const { data: allEvents } = useEvents();
+  const { items, relevantEvents } = useNotifications(role, allEvents);
   const [open, setOpen] = useState(false);
+  const [seenAt, setSeenAt] = useState("");
   const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") setSeenAt(window.localStorage.getItem(SEEN_KEY) ?? "");
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -42,19 +77,25 @@ export function NotificationBell({ role }: { role: Role }) {
     };
   }, [open]);
 
-  const unread = items.length;
+  const unread = relevantEvents.filter((e) => e.created_at > seenAt).length;
+
+  const markSeen = () => {
+    const now = new Date().toISOString();
+    setSeenAt(now);
+    if (typeof window !== "undefined") window.localStorage.setItem(SEEN_KEY, now);
+  };
 
   return (
     <div ref={rootRef} className="relative">
       <button
         type="button"
         aria-label={`Notifications (${unread} new)`}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen((v) => { const next = !v; if (next) markSeen(); return next; })}
         className="relative inline-flex size-9 items-center justify-center rounded-full border hover:bg-accent"
       >
         <Bell className="size-4" />
         {unread > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground">
+          <span className="absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground">
             {unread > 9 ? "9+" : unread}
           </span>
         )}
@@ -110,27 +151,16 @@ export function NotificationBell({ role }: { role: Role }) {
 
 /* ---------- derivation logic ---------- */
 
-function useNotifications(role: Role): NotificationItem[] {
+function useNotifications(role: Role, events: ActivityEvent[]): { items: NotificationItem[]; relevantEvents: ActivityEvent[] } {
+  const { data: session } = useSession();
   const { data: stats } = useStats();
-  const { data: centers } = useCenters();
-  const centerId = centers[0]?.id;
-
-  // For centre, scope the queries
+  const centerId = session?.user?.centerId ?? null;
   const { data: myStudents } = useStudents(role === "center_owner" && centerId ? { centerId } : undefined);
-  const { data: myPayments } = usePayments(role === "center_owner" && centerId ? { centerId } : undefined);
 
-  return useMemo<NotificationItem[]>(() => {
+  return useMemo(() => {
     if (role === "admin") {
-      const items: NotificationItem[] = [];
-      if (stats.pendingStudents > 0) {
-        items.push({
-          id: "n-pending-students",
-          icon: UserCheck,
-          text: <><strong>{stats.pendingStudents}</strong> student{stats.pendingStudents === 1 ? "" : "s"} waiting for approval</>,
-          href: "/admin/students?filter=pending",
-          tone: "warn",
-        });
-      }
+      const relevant = events.filter((e) => e.audience === "admin");
+      const items: NotificationItem[] = relevant.slice(0, 20).map(eventToItem);
       if (stats.pendingPayments > 0) {
         items.push({
           id: "n-pending-payments",
@@ -149,54 +179,24 @@ function useNotifications(role: Role): NotificationItem[] {
           tone: "ok",
         });
       }
-      return items;
+      return { items, relevantEvents: relevant };
     }
 
-    // Centre owner
-    const items: NotificationItem[] = [];
-    const rejStudents = myStudents.filter((s) => s.status === "rejected");
-    const rejPayments = myPayments.filter((p) => p.status === "rejected");
-    const pendingPayments = myPayments.filter((p) => p.status === "pending");
-    const approvedReady = myStudents.filter((s) => s.status === "approved");
-
-    if (rejPayments.length > 0) {
-      items.push({
-        id: "n-rej-payments",
-        icon: AlertTriangle,
-        text: <><strong>{rejPayments.length}</strong> payment{rejPayments.length === 1 ? "" : "s"} rejected — needs a fresh screenshot</>,
-        href: "/center/payments",
-        tone: "warn",
-      });
-    }
-    if (rejStudents.length > 0) {
-      items.push({
-        id: "n-rej-students",
-        icon: AlertTriangle,
-        text: <><strong>{rejStudents.length}</strong> student{rejStudents.length === 1 ? "" : "s"} rejected by admin — edit & resubmit</>,
-        href: "/center/students",
-        tone: "warn",
-      });
-    }
-    if (pendingPayments.length > 0) {
-      items.push({
-        id: "n-pending-payments-mine",
-        icon: RotateCcw,
-        text: <><strong>{pendingPayments.length}</strong> payment{pendingPayments.length === 1 ? "" : "s"} awaiting admin verification</>,
-        href: "/center/payments",
-        tone: "info",
-      });
-    }
-    if (approvedReady.length > 0) {
+    // Centre owner — admin actions on this centre + a couple of live hints.
+    const relevant = events.filter((e) => e.audience === "center" && e.center_id === centerId);
+    const items: NotificationItem[] = relevant.slice(0, 20).map(eventToItem);
+    const ready = myStudents.filter((s) => s.status === "active");
+    if (ready.length > 0) {
       items.push({
         id: "n-ready-cards",
         icon: CheckCheck,
-        text: <><strong>{approvedReady.length}</strong> chest card{approvedReady.length === 1 ? "" : "s"} ready to download</>,
+        text: <><strong>{ready.length}</strong> chest card{ready.length === 1 ? "" : "s"} ready to download</>,
         href: "/center/downloads",
         tone: "ok",
       });
     }
-    return items;
-  }, [role, stats, myStudents, myPayments]);
+    return { items, relevantEvents: relevant };
+  }, [role, events, stats, myStudents, centerId]);
 }
 
 /* Re-export Bell so consumers don't need a second lucide import */

@@ -19,7 +19,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { store, STORE_CHANGED } from "./index";
 import type { DashboardStats } from "./store";
-import type { Category, Center, Payment, PaymentStatus, Student, StudentStatus } from "@/types";
+import type { ActivityEvent, Category, Center, Payment, PaymentStatus, Student, StudentStatus } from "@/types";
 
 type Result<T> = { data: T; loading: boolean; error: Error | null; reload: () => void };
 
@@ -87,4 +87,8 @@ export function usePayments(opts?: { status?: PaymentStatus; centerId?: string }
 
 export function useCategories() {
   return useAsync<Category[]>([], useCallback(() => store.listCategories(), []));
+}
+
+export function useEvents() {
+  return useAsync<ActivityEvent[]>([], useCallback(() => store.listEvents(), []));
 }

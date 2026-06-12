@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { FileUpload } from "@/components/ui/file-upload";
 import { store } from "@/services";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Payment } from "@/types";
@@ -72,7 +73,7 @@ export function PaymentResubmitDialog({ open, onOpenChange, payment }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="theme-grey border bg-background text-foreground sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Resubmit payment</DialogTitle>
           <DialogDescription>
@@ -114,13 +115,12 @@ export function PaymentResubmitDialog({ open, onOpenChange, payment }: Props) {
 
           <div className="grid gap-1.5">
             <Label>New payment screenshot</Label>
-            <Input
-              type="file"
+            <FileUpload
               accept="image/*,application/pdf"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              required
+              onFile={setFile}
+              fileName={file?.name}
+              hint="PNG / JPG / PDF up to 5 MB"
             />
-            <p className="text-xs text-muted-foreground">PNG / JPG / PDF up to 5 MB.</p>
           </div>
 
           <DialogFooter>

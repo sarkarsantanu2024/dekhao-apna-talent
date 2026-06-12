@@ -18,6 +18,7 @@ import type {
   Student,
   StudentStatus,
   PaymentStatus,
+  ActivityEvent,
 } from "@/types";
 import {
   emitStoreChange,
@@ -41,6 +42,7 @@ interface Snapshot {
   categories: Category[];
   students: Student[];
   payments: Payment[];
+  events: ActivityEvent[];
   rollCounters: Record<string, number>; // by category prefix
 }
 
@@ -49,6 +51,7 @@ const empty: Snapshot = {
   categories: [],
   students: [],
   payments: [],
+  events: [],
   rollCounters: {},
 };
 
@@ -77,6 +80,12 @@ function write(s: Snapshot): void {
 
 function uid(prefix = "id"): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
+}
+
+/** Prepend an activity event, capping the log to the most recent 100. */
+function logEventInto(s: Snapshot, input: Omit<ActivityEvent, "id" | "created_at">): ActivityEvent[] {
+  const event: ActivityEvent = { ...input, id: uid("evt"), created_at: nowIso() };
+  return [event, ...(s.events ?? [])].slice(0, 100);
 }
 
 function nowIso(): string {
@@ -289,7 +298,19 @@ export const localStore: DataStore = {
     const s = read();
     const idx = s.students.findIndex((x) => x.id === id);
     if (idx < 0) throw new Error("Student not found");
-    s.students[idx] = { ...s.students[idx], ...patch, updated_at: nowIso() };
+    const before = s.students[idx];
+    s.students[idx] = { ...before, ...patch, updated_at: nowIso() };
+    // Admin rejecting a student → notify that centre.
+    if (patch.status === "rejected" && before.status !== "rejected") {
+      const st = s.students[idx];
+      s.events = logEventInto(s, {
+        type: "student_rejected",
+        audience: "center",
+        message: `Student ${st.full_name} was rejected by admin — edit & re-submit`,
+        center_id: st.center_id,
+        center_name: st.center_name,
+      });
+    }
     write(s);
     return s.students[idx];
   },
@@ -383,6 +404,13 @@ export const localStore: DataStore = {
       created_at: nowIso(),
     };
     s.payments.unshift(row);
+    s.events = logEventInto(s, {
+      type: "payment_uploaded",
+      audience: "admin",
+      message: `uploaded a payment${row.student_name ? ` for ${row.student_name}` : ""}`,
+      center_id: row.center_id,
+      center_name: row.center_name,
+    });
     write(s);
     return row;
   },
@@ -413,6 +441,14 @@ export const localStore: DataStore = {
         s.students[si] = { ...s.students[si], status: "active", updated_at: nowIso() };
       }
     }
+    const ap = s.payments[idx];
+    s.events = logEventInto(s, {
+      type: "payment_approved",
+      audience: "center",
+      message: `Payment${ap.student_name ? ` for ${ap.student_name}` : ""} approved — chest card unlocked`,
+      center_id: ap.center_id,
+      center_name: ap.center_name,
+    });
     write(s);
     return s.payments[idx];
   },
@@ -427,6 +463,99 @@ export const localStore: DataStore = {
       reviewed_at: nowIso(),
       review_note: note ?? null,
     };
+    const rp = s.payments[idx];
+    s.events = logEventInto(s, {
+      type: "payment_rejected",
+      audience: "center",
+      message: `Payment${rp.student_name ? ` for ${rp.student_name}` : ""} rejected${note ? `: ${note}` : ""} — please re-submit`,
+      center_id: rp.center_id,
+      center_name: rp.center_name,
+    });
+    write(s);
+    return s.payments[idx];
+  },
+
+  async updatePayment(id, patch) {
+    const s = read();
+    const idx = s.payments.findIndex((p) => p.id === id);
+    if (idx < 0) throw new Error("Payment not found");
+    const prev = s.payments[idx];
+    s.payments[idx] = {
+      ...prev,
+      amount: patch.amount ?? prev.amount,
+      transaction_ref: patch.transaction_ref !== undefined ? patch.transaction_ref : prev.transaction_ref,
+      screenshot_url: patch.screenshot_url ?? prev.screenshot_url,
+    };
+    write(s);
+    return s.payments[idx];
+  },
+
+  async deletePayment(id) {
+    const s = read();
+    const idx = s.payments.findIndex((p) => p.id === id);
+    if (idx < 0) return;
+    const prev = s.payments[idx];
+    s.payments.splice(idx, 1);
+    // If an approved payment is deleted, reverse its side-effects.
+    if (prev.status === "approved") {
+      if (prev.student_id) {
+        const si = s.students.findIndex((st) => st.id === prev.student_id);
+        if (si >= 0 && s.students[si].status === "active") {
+          s.students[si] = { ...s.students[si], status: "approved", updated_at: nowIso() };
+        }
+      }
+      if (prev.center_id) {
+        const stillApproved = s.payments.some((p) => p.center_id === prev.center_id && p.status === "approved");
+        if (!stillApproved) {
+          const ci = s.centers.findIndex((c) => c.id === prev.center_id);
+          if (ci >= 0) s.centers[ci] = { ...s.centers[ci], participating: false };
+        }
+      }
+    }
+    write(s);
+  },
+
+  async revertPayment(id, note) {
+    const s = read();
+    const idx = s.payments.findIndex((p) => p.id === id);
+    if (idx < 0) throw new Error("Payment not found");
+    const prev = s.payments[idx];
+    const wasApproved = prev.status === "approved";
+    // Send the payment back to the review queue, keeping the admin's reason note.
+    s.payments[idx] = {
+      ...prev,
+      status: "pending",
+      reviewed_by: null,
+      reviewed_at: null,
+      review_note: note ?? null,
+    };
+    if (wasApproved) {
+      // The student it activated goes back to "approved" (chest card re-locks).
+      if (prev.student_id) {
+        const si = s.students.findIndex((st) => st.id === prev.student_id);
+        if (si >= 0 && s.students[si].status === "active") {
+          s.students[si] = { ...s.students[si], status: "approved", updated_at: nowIso() };
+        }
+      }
+      // If the centre has no other approved payment left, it stops participating.
+      if (prev.center_id) {
+        const stillApproved = s.payments.some((p) => p.center_id === prev.center_id && p.status === "approved");
+        if (!stillApproved) {
+          const ci = s.centers.findIndex((c) => c.id === prev.center_id);
+          if (ci >= 0) s.centers[ci] = { ...s.centers[ci], participating: false };
+        }
+      }
+    }
+    s.events = logEventInto(s, {
+      type: "payment_reverted",
+      audience: "center",
+      message:
+        `Admin moved your payment${prev.student_name ? ` for ${prev.student_name}` : ""} back to pending` +
+        `${note ? `. Reason: ${note}` : ""}. ` +
+        `Open Payments → Edit to upload a clearer screenshot or fix the details; it will be reviewed again.`,
+      center_id: prev.center_id,
+      center_name: prev.center_name,
+    });
     write(s);
     return s.payments[idx];
   },
@@ -450,8 +579,25 @@ export const localStore: DataStore = {
       review_note: null,
       created_at: nowIso(), // bump so it floats to the top of admin's queue
     };
+    s.events = logEventInto(s, {
+      type: "payment_resubmitted",
+      audience: "admin",
+      message: `re-submitted a payment${prev.student_name ? ` for ${prev.student_name}` : ""}`,
+      center_id: prev.center_id,
+      center_name: prev.center_name,
+    });
     write(s);
     return s.payments[idx];
+  },
+
+  /* ----- activity feed ----- */
+  async listEvents() {
+    return (read().events ?? []).slice().sort((a, b) => b.created_at.localeCompare(a.created_at));
+  },
+  async logEvent(input) {
+    const s = read();
+    s.events = logEventInto(s, input);
+    write(s);
   },
 
   /* ----- categories ----- */

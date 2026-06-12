@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { FileUpload } from "@/components/ui/file-upload";
 import { store } from "@/services";
 import { calcAge } from "@/lib/utils";
 import type { Category, Center, Student, StudentStatus } from "@/types";
@@ -239,26 +240,21 @@ export function StudentDialog({
 
           <div className="sm:col-span-2">
             <Field label="Photo *">
-              <div className="flex items-center gap-3">
-                {form.photo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={form.photo_url} alt="" className="size-12 shrink-0 rounded-md border object-cover" />
-                ) : null}
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={async (e) => {
-                    const f = e.target.files?.[0];
-                    if (!f) return;
-                    if (f.size > 3 * 1024 * 1024) return toast.error("Max 3 MB");
-                    const url = await readPhoto(f);
-                    if (url) {
-                      set("photo_url", url);
-                      toast.success("Photo attached");
-                    }
-                  }}
-                />
-              </div>
+              <FileUpload
+                accept="image/*"
+                previewUrl={form.photo_url || null}
+                fileName={form.photo_url ? "Photo attached" : null}
+                hint="JPG / PNG up to 3 MB"
+                onFile={async (f) => {
+                  if (!f) return set("photo_url", "");
+                  if (f.size > 3 * 1024 * 1024) return toast.error("Max 3 MB");
+                  const url = await readPhoto(f);
+                  if (url) {
+                    set("photo_url", url);
+                    toast.success("Photo attached");
+                  }
+                }}
+              />
             </Field>
           </div>
 

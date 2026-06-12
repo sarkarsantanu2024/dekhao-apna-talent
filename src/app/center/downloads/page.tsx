@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { Download, Loader2, Files, Lock } from "lucide-react";
+import { Download, Loader2, Files, Lock, ImageOff } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -26,6 +26,7 @@ import {
   downloadChestCard,
   downloadAllChestCards,
   isDownloadable,
+  hasPhoto,
 } from "@/lib/pdf/generate-chest-card";
 import type { Student } from "@/types";
 
@@ -37,9 +38,8 @@ export default function CenterDownloadsPage() {
   const centerId = center?.id;
   const { data: rows, loading } = useStudents({ centerId });
 
-  // A student becomes `active` (downloadable) only when an admin approves that
-  // student's payment — so `isDownloadable` already encodes "paid & approved".
-  const eligible = useMemo(() => rows.filter(isDownloadable), [rows]);
+  // A student is downloadable only when active (payment approved) AND has a photo.
+  const eligible = useMemo(() => rows.filter((s) => isDownloadable(s) && hasPhoto(s)), [rows]);
   const allEligible = rows.length > 0 && eligible.length === rows.length;
 
   const [singleBusy, setSingleBusy] = useState<string | null>(null);
@@ -80,21 +80,21 @@ export default function CenterDownloadsPage() {
         <div className="min-w-0">
           <CardTitle>Chest card downloads</CardTitle>
           <CardDescription>
-            Each chest card unlocks once an admin approves that student&apos;s payment.
+            A chest card unlocks when the student&apos;s payment is approved <strong>and</strong> they have a photo.
             {rows.length > 0 && (
               allEligible
-                ? <> · All {rows.length} students paid &amp; approved — bulk download is unlocked.</>
-                : <> · {eligible.length} of {rows.length} ready — the rest await payment approval.</>
+                ? <> · All {rows.length} ready — bulk download is unlocked.</>
+                : <> · {eligible.length} of {rows.length} ready.</>
             )}
           </CardDescription>
         </div>
         <Button
           onClick={onBulk}
-          disabled={!allEligible || bulk !== null}
+          disabled={eligible.length < 2 || bulk !== null}
           title={
-            allEligible
-              ? "Download all chest cards as one PDF (two per page)"
-              : "Bulk download unlocks when every student's payment is approved"
+            eligible.length >= 2
+              ? "Download all ready chest cards as one PDF (two per page)"
+              : "Bulk download unlocks once 2 or more students are ready"
           }
           className="gap-2 shrink-0 sm:self-start"
         >
@@ -106,7 +106,7 @@ export default function CenterDownloadsPage() {
           ) : (
             <>
               <Files className="size-4" />
-              Download all (PDF)
+              Download all ({eligible.length})
             </>
           )}
         </Button>
@@ -132,7 +132,9 @@ export default function CenterDownloadsPage() {
                 <TableCell colSpan={5} className="text-center text-muted-foreground">No students yet.</TableCell>
               </TableRow>
             ) : rows.map((s) => {
-              const ok = isDownloadable(s);
+              const active = isDownloadable(s);
+              const photo = hasPhoto(s);
+              const ok = active && photo;
               const busy = singleBusy === s.id;
               return (
                 <TableRow key={s.id}>
@@ -146,9 +148,13 @@ export default function CenterDownloadsPage() {
                         {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
                         {busy ? "Generating…" : "Download PDF"}
                       </Button>
+                    ) : !active ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">
+                        <Lock className="size-3.5" /> Payment not approved
+                      </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Lock className="size-3.5" /> Awaiting payment approval
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700">
+                        <ImageOff className="size-3.5" /> Photo required
                       </span>
                     )}
                   </TableCell>
