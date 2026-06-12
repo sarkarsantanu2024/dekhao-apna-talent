@@ -34,7 +34,7 @@ const KEY = "dat:store:v1";
  * Bump this version whenever the seed shape changes — every browser will
  * re-seed on next visit instead of holding stale ids that no longer line up.
  */
-const SEED_VERSION = "v3";
+const SEED_VERSION = "v4";
 const SEEDED_FLAG = "dat:store:seeded";
 
 interface Snapshot {

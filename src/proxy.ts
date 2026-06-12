@@ -6,6 +6,8 @@ import { authConfig } from "@/lib/auth/auth.config";
 // (the file-backed centre login lookup in auth.ts) leak into the edge bundle.
 const { auth } = NextAuth(authConfig);
 
+// `proxy` is this Next version's replacement for the deprecated `middleware`
+// file convention. The NextAuth-wrapped handler is exported as default.
 export default auth((req) => {
   const { nextUrl } = req;
   const session = req.auth;

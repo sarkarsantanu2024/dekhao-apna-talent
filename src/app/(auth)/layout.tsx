@@ -22,10 +22,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         style={{ animationDelay: "1.6s" }}
       />
 
-      {/* Logo */}
+      {/* Logo — left-aligned to match the brand panel content padding */}
       <header className="absolute inset-x-0 top-0 z-30">
-        <div className="container mx-auto flex h-20 items-center px-6">
-          <Link href="/" className="group flex items-center gap-2 font-black uppercase tracking-[0.14em]">
+        <div className="flex h-20 items-center px-6 lg:px-12 xl:px-16">
+          <Link href="/" className="group flex items-center gap-2 text-sm font-black uppercase tracking-[0.14em]">
             <span className="inline-flex size-9 items-center justify-center rounded-full bg-brand-gradient transition-transform group-hover:rotate-90">
               <Star className="size-4 text-white" fill="currentColor" />
             </span>

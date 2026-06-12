@@ -245,7 +245,7 @@ export function StudentForm({
           accept="image/*"
           previewUrl={form.watch("photo_url") || null}
           fileName={form.watch("photo_url") ? "Photo attached" : null}
-          hint="JPG or PNG, max 3 MB"
+          hint="Portrait passport-style (head & shoulders). JPG/PNG — keep it small: ~400×500 px, under 100 KB. This photo is printed on the chest card."
           onFile={async (f) => {
             if (!f) return form.setValue("photo_url", "");
             if (f.size > 3 * 1024 * 1024) { toast.error("Max 3 MB"); return; }

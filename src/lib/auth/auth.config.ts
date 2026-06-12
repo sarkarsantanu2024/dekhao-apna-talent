@@ -17,6 +17,14 @@ declare module "next-auth" {
  * the local centre-logins file) lives in auth.ts, used only in the Node runtime.
  */
 export const authConfig = {
+  // NextAuth needs a secret in production (to sign/verify the JWT session cookie).
+  // Reads AUTH_SECRET / NEXTAUTH_SECRET when set; falls back to a fixed demo
+  // value so the deployed demo doesn't 500. SET A REAL `AUTH_SECRET` in Vercel
+  // before any real/production use.
+  secret:
+    process.env.AUTH_SECRET ??
+    process.env.NEXTAUTH_SECRET ??
+    "dekhao-apna-talent-demo-secret-please-set-AUTH_SECRET-in-production",
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
   trustHost: true,
