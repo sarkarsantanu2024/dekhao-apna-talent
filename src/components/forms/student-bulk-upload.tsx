@@ -321,8 +321,16 @@ export function StudentBulkUpload({
         }
       }
 
-      if (added)
+      if (added) {
+        await store.logEvent({
+          type: "students_added",
+          audience: "admin",
+          message: `added ${added} student${added > 1 ? "s" : ""} via spreadsheet`,
+          center_id: centerId,
+          center_name: centerName,
+        });
         toast.success(`Imported ${added} student${added > 1 ? "s" : ""}.`);
+      }
       if (errors.length) {
         toast.error(
           `${errors.length} row(s) skipped. ${errors.slice(0, 3).join(" · ")}${errors.length > 3 ? " …" : ""}`,

@@ -92,6 +92,29 @@ export interface Payment {
   created_at: string;
 }
 
+export type ActivityType =
+  // Centre actions → shown to admin
+  | "students_added"
+  | "payment_uploaded"
+  | "payment_resubmitted"
+  // Admin actions → shown to the affected centre
+  | "payment_approved"
+  | "payment_rejected"
+  | "payment_reverted"
+  | "student_rejected";
+
+/** A notification feed entry. `audience` decides who sees it. */
+export interface ActivityEvent {
+  id: string;
+  type: ActivityType;
+  /** "admin" = a centre acted (admin sees it); "center" = admin acted (that centre sees it). */
+  audience: "admin" | "center";
+  message: string;
+  center_id: string | null;
+  center_name: string | null;
+  created_at: string;
+}
+
 export interface ChestCard {
   id: string;
   student_id: string;

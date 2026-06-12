@@ -2,17 +2,17 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Check, X } from "lucide-react";
+import { Check, X, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { StatusBadge } from "@/components/common/status-badge";
 import { PaymentActions } from "@/components/admin/payment-actions";
-import { confirm } from "@/components/ui/confirm-dialog";
+import { confirm, prompt } from "@/components/ui/confirm-dialog";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { store, usePayments } from "@/services";
-import type { PaymentStatus } from "@/types";
+import type { Payment, PaymentStatus } from "@/types";
 
 const FILTERS: { value: PaymentStatus | "all"; label: string }[] = [
   { value: "all", label: "All" },
@@ -64,6 +64,26 @@ export default function AdminPaymentsPage() {
     }
     setSelected(new Set());
     toast.success(`${kind === "approve" ? "Approved" : "Rejected"} ${ok} payment${ok !== 1 ? "s" : ""}`);
+  };
+
+  const onRevert = async (p: Payment) => {
+    const wasApproved = p.status === "approved";
+    const note = await prompt({
+      title: "Undo this decision?",
+      description: wasApproved
+        ? `This payment goes back to “pending” and ${p.student_name ?? "the student"}'s chest card re-locks. Tell the centre why you changed it and what to fix — they'll see this and can re-submit.`
+        : "This payment goes back to “pending”. Tell the centre why and what to fix — they'll see this note.",
+      placeholder: "Reason (e.g. amount mismatch — upload the correct screenshot)",
+      confirmText: "Undo",
+      destructive: true,
+    });
+    if (note === null) return; // cancelled
+    try {
+      await store.revertPayment(p.id, note || undefined);
+      toast.success("Moved back to pending — centre notified");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not undo");
+    }
   };
 
   return (
@@ -141,11 +161,29 @@ export default function AdminPaymentsPage() {
                   {p.status === "pending" ? (
                     <PaymentActions id={p.id} />
                   ) : (
-                    <span className="text-xs text-muted-foreground">
-                      {p.status === "approved" ? "Approved" : "Rejected"}
-                      {p.reviewed_by ? ` · ${p.reviewed_by}` : ""}
-                      {p.review_note ? ` · ${p.review_note}` : ""}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {p.status === "approved" ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                          <Check className="size-3.5" /> Verified by {p.reviewed_by ?? "admin"}
+                        </span>
+                      ) : (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700">
+                            <X className="size-3.5" /> Rejected by {p.reviewed_by ?? "admin"}
+                          </span>
+                          {p.review_note && <span className="text-[11px] text-muted-foreground">“{p.review_note}”</span>}
+                        </div>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 gap-1 px-2 text-xs text-muted-foreground"
+                        title="Undo this decision — sends the payment back to pending"
+                        onClick={() => onRevert(p)}
+                      >
+                        <RotateCcw className="size-3.5" /> Undo
+                      </Button>
+                    </div>
                   )}
                 </TableCell>
               </TableRow>

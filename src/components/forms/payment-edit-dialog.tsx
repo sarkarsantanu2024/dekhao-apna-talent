@@ -5,17 +5,16 @@ import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/ui/file-upload";
 import { store } from "@/services";
-import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Payment } from "@/types";
 
 const fileToDataUrl = (file: File): Promise<string> =>
@@ -32,7 +31,7 @@ type Props = {
   payment: Payment | null;
 };
 
-export function PaymentResubmitDialog({ open, onOpenChange, payment }: Props) {
+export function PaymentEditDialog({ open, onOpenChange, payment }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [amount, setAmount] = useState("");
   const [ref, setRef] = useState("");
@@ -49,21 +48,21 @@ export function PaymentResubmitDialog({ open, onOpenChange, payment }: Props) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!payment) return;
-    if (!file) return toast.error("Pick a new screenshot");
-    if (file.size > 5 * 1024 * 1024) return toast.error("Max 5 MB");
+    if (!amount || Number(amount) <= 0) return toast.error("Enter a valid amount");
+    if (file && file.size > 5 * 1024 * 1024) return toast.error("Max 5 MB");
 
     setBusy(true);
     try {
-      const screenshot_url = await fileToDataUrl(file);
-      await store.resubmitPayment(payment.id, {
-        screenshot_url,
-        amount: Number(amount) || payment.amount,
+      const screenshot_url = file ? await fileToDataUrl(file) : undefined;
+      await store.updatePayment(payment.id, {
+        amount: Number(amount),
         transaction_ref: ref || null,
+        screenshot_url,
       });
-      toast.success("Resubmitted — awaiting admin verification");
+      toast.success("Payment updated");
       onOpenChange(false);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Resubmit failed");
+      toast.error(err instanceof Error ? err.message : "Update failed");
     } finally {
       setBusy(false);
     }
@@ -75,37 +74,17 @@ export function PaymentResubmitDialog({ open, onOpenChange, payment }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="theme-grey border bg-background text-foreground sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Resubmit payment</DialogTitle>
+          <DialogTitle>Edit payment</DialogTitle>
           <DialogDescription>
-            The admin rejected this submission on {formatDate(payment.reviewed_at ?? payment.created_at)}.
-            Upload a fresh screenshot and the row moves back to pending.
+            Correct the amount, reference, or screenshot for {payment.student_name ?? "this student"}.
           </DialogDescription>
         </DialogHeader>
-
-        {/* Rejection reason */}
-        <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
-          <p className="text-xs font-semibold uppercase tracking-wider text-destructive">
-            Admin&apos;s rejection note
-          </p>
-          <p className="mt-1 text-foreground">
-            {payment.review_note?.trim() ? payment.review_note : "No reason provided. Re-upload a clearer screenshot."}
-          </p>
-        </div>
 
         <form onSubmit={submit} className="grid gap-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-1.5">
               <Label>Amount (₹)</Label>
-              <Input
-                type="number"
-                min={1}
-                step="1"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-              <p className="text-[10px] text-muted-foreground">
-                Previously {formatCurrency(payment.amount)}
-              </p>
+              <Input type="number" min={1} step="1" value={amount} onChange={(e) => setAmount(e.target.value)} />
             </div>
             <div className="grid gap-1.5">
               <Label>Transaction reference</Label>
@@ -114,20 +93,18 @@ export function PaymentResubmitDialog({ open, onOpenChange, payment }: Props) {
           </div>
 
           <div className="grid gap-1.5">
-            <Label>New payment screenshot</Label>
+            <Label>Replace screenshot (optional)</Label>
             <FileUpload
               accept="image/*,application/pdf"
               onFile={setFile}
               fileName={file?.name}
-              hint="PNG / JPG / PDF up to 5 MB"
+              hint="Leave empty to keep the current screenshot · PNG / JPG / PDF up to 5 MB"
             />
           </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={busy}>
-              {busy ? "Submitting…" : "Resubmit for verification"}
-            </Button>
+            <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

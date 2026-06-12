@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FileUpload } from "@/components/ui/file-upload";
 import { store, useCenters, useStudents, usePayments } from "@/services";
 
 const fileToDataUrl = (file: File): Promise<string> =>
@@ -111,8 +112,12 @@ export function PaymentUploadForm() {
       </div>
       <div className="space-y-2">
         <Label>Payment screenshot</Label>
-        <Input type="file" accept="image/*,application/pdf" onChange={(e) => setFile(e.target.files?.[0] ?? null)} required />
-        <p className="text-xs text-muted-foreground">PNG/JPG/PDF up to 5 MB.</p>
+        <FileUpload
+          accept="image/*,application/pdf"
+          onFile={setFile}
+          fileName={file?.name}
+          hint="PNG / JPG / PDF up to 5 MB"
+        />
       </div>
       <Button type="submit" disabled={pending || payableStudents.length === 0} className="w-full">
         {pending ? "Submitting…" : "Submit for approval"}

@@ -30,10 +30,25 @@ export function isDownloadable(s: Pick<Student, "status">): boolean {
   return DOWNLOADABLE_STATUSES.includes(s.status);
 }
 
-/** Filename pattern used everywhere (single & bulk). */
-export function chestCardFilename(s: Pick<Student, "roll_number" | "full_name" | "id">): string {
-  const safe = (s.roll_number ?? s.full_name ?? s.id).replace(/[^\w\-]+/g, "_");
-  return `chest-card-${safe}.pdf`;
+/** A chest card can only be generated when the student has a photo. */
+export function hasPhoto(s: Pick<Student, "photo_url">): boolean {
+  return Boolean(s.photo_url && s.photo_url.trim());
+}
+
+function sanitize(s: string): string {
+  return s.trim().replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "x";
+}
+
+function todayDMY(): string {
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dd}-${mm}-${d.getFullYear()}`;
+}
+
+/** Single-card filename: "<Centre>-<Student>-DD-MM-YYYY.pdf". */
+export function chestCardFilename(s: Pick<Student, "center_name" | "full_name">): string {
+  return `${sanitize(s.center_name)}-${sanitize(s.full_name)}-${todayDMY()}.pdf`;
 }
 
 /** Generate a single chest-card PDF as a Blob (card on top, second slot blank). */
@@ -71,6 +86,9 @@ async function markActivatedOnce(student: Student): Promise<void> {
  * Auto-activates the student on first successful download.
  */
 export async function downloadChestCard(student: Student): Promise<void> {
+  if (!hasPhoto(student)) {
+    throw new Error("This student has no photo — add a photo before downloading the chest card");
+  }
   const blob = await generateChestCardBlob(student);
   const { saveAs } = await import("file-saver");
   saveAs(blob, chestCardFilename(student));
@@ -86,8 +104,9 @@ export async function downloadAllChestCards(
   students: Student[],
   opts?: { onProgress?: (done: number, total: number) => void; fileName?: string },
 ): Promise<void> {
-  const eligible = students.filter(isDownloadable);
-  if (eligible.length === 0) throw new Error("No approved students to download");
+  // Only students that are active AND have a photo can produce a card.
+  const eligible = students.filter((s) => isDownloadable(s) && hasPhoto(s));
+  if (eligible.length === 0) throw new Error("No students ready — they need an approved payment and a photo");
 
   opts?.onProgress?.(0, eligible.length);
   const blob = await generateChestCardsSheetBlob(eligible);

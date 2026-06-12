@@ -11,6 +11,7 @@
  */
 
 import type {
+  ActivityEvent,
   Category,
   Center,
   Payment,
@@ -84,6 +85,17 @@ export interface DataStore {
   createPayment(input: NewPayment): Promise<Payment>;
   approvePayment(id: string, note?: string): Promise<Payment>;
   rejectPayment(id: string, note?: string): Promise<Payment>;
+  /** Undo an approve/reject: moves the payment back to "pending" and reverses
+   *  any side-effects (student activation, centre participation). `note` is the
+   *  admin's reason, surfaced to the centre. */
+  revertPayment(id: string, note?: string): Promise<Payment>;
+  /** Centre edits a payment's amount / ref / screenshot (before it's finalised). */
+  updatePayment(
+    id: string,
+    patch: { amount?: number; transaction_ref?: string | null; screenshot_url?: string },
+  ): Promise<Payment>;
+  /** Delete a payment. Reverses side-effects if it had been approved. */
+  deletePayment(id: string): Promise<void>;
   /**
    * Centre owner re-uploads a fresh screenshot (optionally with corrected
    * amount / transaction ref) for a previously rejected payment. The row
@@ -93,6 +105,10 @@ export interface DataStore {
     id: string,
     patch: { screenshot_url: string; amount?: number; transaction_ref?: string | null },
   ): Promise<Payment>;
+
+  /** Activity feed (admin-facing). Most recent first. */
+  listEvents(): Promise<ActivityEvent[]>;
+  logEvent(input: Omit<ActivityEvent, "id" | "created_at">): Promise<void>;
 
   listCategories(): Promise<Category[]>;
   updateCategory(id: string, patch: Partial<Category>): Promise<Category>;

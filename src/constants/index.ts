@@ -28,6 +28,7 @@ export const ADMIN_NAV = [
   { href: "/admin/students",  label: "Students",   icon: "group" },
   { href: "/admin/centers",   label: "Centers",    icon: "storefront" },
   { href: "/admin/payments",  label: "Payments",   icon: "payments" },
+  { href: "/admin/downloads", label: "Chest Cards", icon: "badge" },
   { href: "/admin/categories",label: "Categories", icon: "category" },
   { href: "/admin/reports",   label: "Reports",    icon: "bar_chart" },
 ];

@@ -48,7 +48,13 @@ export const supabaseStore: DataStore = {
   createPayment:   async () => { throw new Error("Not implemented yet"); },
   approvePayment:  async () => { throw new Error("Not implemented yet"); },
   rejectPayment:   async () => { throw new Error("Not implemented yet"); },
+  revertPayment:   async () => { throw new Error("Not implemented yet"); },
+  updatePayment:   async () => { throw new Error("Not implemented yet"); },
+  deletePayment:   async () => { throw new Error("Not implemented yet"); },
   resubmitPayment: async () => { throw new Error("Not implemented yet"); },
+
+  listEvents:      async () => { throw new Error("Not implemented yet"); },
+  logEvent:        async () => { throw new Error("Not implemented yet"); },
 
   listCategories:  async () => { throw new Error("Not implemented yet"); },
   updateCategory:  async () => { throw new Error("Not implemented yet"); },

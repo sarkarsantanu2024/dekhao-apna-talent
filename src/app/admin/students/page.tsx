@@ -179,16 +179,16 @@ export default function AdminStudentsPage() {
                   aria-label="Select all"
                 />
               </TableHead>
-              <TableHead>Roll</TableHead><TableHead>Name</TableHead><TableHead>Category</TableHead>
+              <TableHead>Roll</TableHead><TableHead>Name</TableHead><TableHead>Phone</TableHead><TableHead>Category</TableHead>
               <TableHead>Centre</TableHead><TableHead>Status</TableHead><TableHead>Added</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading && filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">
+              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">
                 {query ? "No students match your search." : `No ${filter === "all" ? "" : filter + " "}students.`}
               </TableCell></TableRow>
             ) : filtered.map((s) => (
@@ -202,6 +202,7 @@ export default function AdminStudentsPage() {
                 </TableCell>
                 <TableCell className="font-mono text-xs">{s.roll_number}</TableCell>
                 <TableCell className="font-medium">{s.full_name}</TableCell>
+                <TableCell>{s.phone ?? "—"}</TableCell>
                 <TableCell>{s.category_name}</TableCell>
                 <TableCell>{s.center_name}</TableCell>
                 <TableCell><StatusBadge status={s.status} /></TableCell>

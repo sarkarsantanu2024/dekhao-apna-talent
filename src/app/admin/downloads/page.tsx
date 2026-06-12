@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Download, Loader2, Files, Lock, ImageOff } from "lucide-react";
 import {
@@ -20,8 +19,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/common/status-badge";
-import { useCenters, useStudents } from "@/services";
+import { useStudents } from "@/services";
 import {
   downloadChestCard,
   downloadAllChestCards,
@@ -30,20 +30,22 @@ import {
 } from "@/lib/pdf/generate-chest-card";
 import type { Student } from "@/types";
 
-export default function CenterDownloadsPage() {
-  const { data: session } = useSession();
-  const { data: centers } = useCenters();
-  const sessionCenterId = session?.user?.centerId ?? null;
-  const center   = centers.find((c) => c.id === sessionCenterId) ?? centers[0] ?? null;
-  const centerId = center?.id;
-  const { data: rows, loading } = useStudents({ centerId });
-
-  // A student is downloadable only when active (payment approved) AND has a photo.
-  const eligible = useMemo(() => rows.filter((s) => isDownloadable(s) && hasPhoto(s)), [rows]);
-  const allEligible = rows.length > 0 && eligible.length === rows.length;
-
+export default function AdminDownloadsPage() {
+  const { data: rows, loading } = useStudents();
+  const [query, setQuery] = useState("");
   const [singleBusy, setSingleBusy] = useState<string | null>(null);
-  const [bulk, setBulk] = useState<{ done: number; total: number } | null>(null);
+  const [bulk, setBulk] = useState(false);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((s) =>
+      [s.full_name, s.roll_number, s.center_name, s.category_name].some((v) => v?.toLowerCase().includes(q)),
+    );
+  }, [rows, query]);
+
+  // Across all centres, students ready to print (active + photo).
+  const eligible = useMemo(() => rows.filter((s) => isDownloadable(s) && hasPhoto(s)), [rows]);
 
   const onSingle = async (s: Student) => {
     setSingleBusy(s.id);
@@ -58,19 +60,16 @@ export default function CenterDownloadsPage() {
   };
 
   const onBulk = async () => {
-    setBulk({ done: 0, total: eligible.length });
+    setBulk(true);
     try {
       await downloadAllChestCards(eligible, {
-        onProgress: (done, total) => setBulk({ done, total }),
-        fileName: center
-          ? `chest-cards-${center.center_name.replace(/\s+/g, "-").toLowerCase()}.pdf`
-          : undefined,
+        fileName: `chest-cards-all-${new Date().toISOString().slice(0, 10)}.pdf`,
       });
       toast.success(`Bundled ${eligible.length} chest cards`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Bulk download failed");
     } finally {
-      setBulk(null);
+      setBulk(false);
     }
   };
 
@@ -80,58 +79,45 @@ export default function CenterDownloadsPage() {
         <div className="min-w-0">
           <CardTitle>Chest card downloads</CardTitle>
           <CardDescription>
-            A chest card unlocks when the student&apos;s payment is approved <strong>and</strong> they have a photo.
-            {rows.length > 0 && (
-              allEligible
-                ? <> · All {rows.length} ready — bulk download is unlocked.</>
-                : <> · {eligible.length} of {rows.length} ready.</>
-            )}
+            Print any active student&apos;s chest card, or bundle every ready student into one PDF.
+            {rows.length > 0 && <> · {eligible.length} of {rows.length} ready.</>}
           </CardDescription>
         </div>
         <Button
           onClick={onBulk}
-          disabled={eligible.length < 2 || bulk !== null}
-          title={
-            eligible.length >= 2
-              ? "Download all ready chest cards as one PDF (two per page)"
-              : "Bulk download unlocks once 2 or more students are ready"
-          }
+          disabled={bulk || eligible.length < 2}
+          title={eligible.length >= 2 ? "Download all ready chest cards as one PDF" : "Bulk download unlocks once 2 or more students are ready"}
           className="gap-2 shrink-0 sm:self-start"
         >
-          {bulk ? (
-            <>
-              <Loader2 className="size-4 animate-spin" />
-              Generating…
-            </>
-          ) : (
-            <>
-              <Files className="size-4" />
-              Download all ({eligible.length})
-            </>
-          )}
+          {bulk ? <><Loader2 className="size-4 animate-spin" /> Generating…</> : <><Files className="size-4" /> Download all ({eligible.length})</>}
         </Button>
       </CardHeader>
       <CardContent>
+        <div className="mb-4">
+          <Input
+            placeholder="Search name, roll, centre…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="h-9 w-full sm:w-72"
+          />
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Roll</TableHead>
               <TableHead>Name</TableHead>
+              <TableHead>Centre</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Chest card</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading && rows.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">Loading…</TableCell>
-              </TableRow>
-            ) : rows.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">No students yet.</TableCell>
-              </TableRow>
-            ) : rows.map((s) => {
+            {loading && filtered.length === 0 ? (
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
+            ) : filtered.length === 0 ? (
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">No students match.</TableCell></TableRow>
+            ) : filtered.map((s) => {
               const active = isDownloadable(s);
               const photo = hasPhoto(s);
               const ok = active && photo;
@@ -140,6 +126,7 @@ export default function CenterDownloadsPage() {
                 <TableRow key={s.id}>
                   <TableCell className="font-mono text-xs">{s.roll_number ?? "—"}</TableCell>
                   <TableCell className="font-medium">{s.full_name}</TableCell>
+                  <TableCell>{s.center_name}</TableCell>
                   <TableCell>{s.category_name}</TableCell>
                   <TableCell><StatusBadge status={s.status} /></TableCell>
                   <TableCell className="text-right">
