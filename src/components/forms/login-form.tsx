@@ -43,14 +43,26 @@ export function LoginForm() {
     <div className="space-y-5">
       <form onSubmit={form.handleSubmit(doLogin)} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="userId">User ID</Label>
-          <Input id="userId" autoComplete="username" placeholder="e.g. pintu.gupta" {...form.register("userId")} />
-          {form.formState.errors.userId && <p className="text-xs text-destructive">{form.formState.errors.userId.message}</p>}
+          <Label htmlFor="userId" className="text-white/70">User ID</Label>
+          <Input
+            id="userId"
+            autoComplete="username"
+            placeholder="e.g. pintu.gupta"
+            className="border-white/15 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-fuchsia-400/50"
+            {...form.register("userId")}
+          />
+          {form.formState.errors.userId && <p className="text-xs text-rose-300">{form.formState.errors.userId.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" autoComplete="current-password" {...form.register("password")} />
-          {form.formState.errors.password && <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>}
+          <Label htmlFor="password" className="text-white/70">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            className="border-white/15 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-fuchsia-400/50"
+            {...form.register("password")}
+          />
+          {form.formState.errors.password && <p className="text-xs text-rose-300">{form.formState.errors.password.message}</p>}
         </div>
         {err && <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{err}</p>}
         <Button type="submit" className="w-full" disabled={pending}>{pending ? "Signing in…" : "Sign in"}</Button>

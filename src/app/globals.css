@@ -23,7 +23,7 @@
   --border: oklch(0.24 0.02 285);
   --input: oklch(0.20 0.02 285);
   --ring: oklch(0.64 0.25 303);
-  --radius: 0.85rem;
+  --radius: 0.55rem;
 
   /* Brand gradient stops — reused by .text-gradient / .bg-brand-gradient */
   --brand: #a855f7;
