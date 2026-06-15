@@ -34,7 +34,7 @@ const KEY = "dat:store:v1";
  * Bump this version whenever the seed shape changes — every browser will
  * re-seed on next visit instead of holding stale ids that no longer line up.
  */
-const SEED_VERSION = "v4";
+const SEED_VERSION = "v5";
 const SEEDED_FLAG = "dat:store:seeded";
 
 interface Snapshot {
@@ -114,85 +114,12 @@ const SEED_CATEGORIES: Category[] = [
  */
 export const DEMO_CENTRE_ID = "11111111-1111-1111-1111-111111111111";
 
+// Fresh start: just the one centre the built-in `centre.owner` login maps to.
+// No students, no payments — add your own to test the flow from scratch.
 const SEED_CENTERS: Center[] = [
-  { id: DEMO_CENTRE_ID,  center_name: "Mind Mantra · Dumdum",        owner_name: "Centre Owner",    phone: "+91 98300 00000", whatsapp: "+91 98300 00000", address: "Dumdum Road",            city: "Kolkata",   state: "West Bengal", pincode: "700028", start_date: `${EVENT_YEAR}-01-15`, participating: true,  login_id: null, login_password: null, event_year: EVENT_YEAR, created_at: nowIso() },
-  { id: "ctr_kol_north", center_name: "Mind Mantra · Salt Lake",    owner_name: "Riya Banerjee",   phone: "+91 98300 11111", whatsapp: "+91 98300 11111", address: "Sector V, Salt Lake",    city: "Kolkata",   state: "West Bengal", pincode: "700091", start_date: `${EVENT_YEAR}-01-20`, participating: true,  login_id: null, login_password: null, event_year: EVENT_YEAR, created_at: nowIso() },
-  { id: "ctr_kol_south", center_name: "Mind Mantra · Tollygunge",   owner_name: "Arjun Sen",       phone: "+91 98300 22222", whatsapp: "+91 98300 22222", address: "Charu Avenue",           city: "Kolkata",   state: "West Bengal", pincode: "700033", start_date: `${EVENT_YEAR}-02-01`, participating: false, login_id: null, login_password: null, event_year: EVENT_YEAR, created_at: nowIso() },
-  { id: "ctr_howrah",    center_name: "Mind Mantra · Howrah",       owner_name: "Pratima Roy",     phone: "+91 98300 33333", whatsapp: "+91 98300 33333", address: "Maidan Road",            city: "Howrah",    state: "West Bengal", pincode: "711101", start_date: `${EVENT_YEAR}-02-05`, participating: true,  login_id: null, login_password: null, event_year: EVENT_YEAR, created_at: nowIso() },
-  { id: "ctr_durgapur",  center_name: "Mind Mantra · Durgapur",     owner_name: "Subir Das",       phone: "+91 98300 44444", whatsapp: "+91 98300 44444", address: "City Centre",            city: "Durgapur",  state: "West Bengal", pincode: "713216", start_date: `${EVENT_YEAR}-02-10`, participating: false, login_id: null, login_password: null, event_year: EVENT_YEAR, created_at: nowIso() },
+  { id: DEMO_CENTRE_ID, center_name: "Mind Mantra · Dumdum", owner_name: "Centre Owner", phone: "+91 98300 00000", whatsapp: "+91 98300 00000", address: "Dumdum Road", city: "Kolkata", state: "West Bengal", pincode: "700028", start_date: `${EVENT_YEAR}-01-15`, participating: false, login_id: null, login_password: null, event_year: EVENT_YEAR, created_at: nowIso() },
 ];
 
-const SEED_STUDENT_NAMES = [
-  "Aarav Sharma",   "Anika Banerjee", "Ishaan Roy",      "Diya Sen",
-  "Vihaan Bose",    "Saanvi Ghosh",   "Reyansh Mukherjee", "Anaya Dutta",
-  "Aditya Pal",     "Myra Chakraborty", "Kabir Chatterjee", "Aarohi Mitra",
-  "Aryan Das",      "Pari Mondal",    "Vivaan Khan",     "Tara Saha",
-];
-
-function seedStudents(snapshot: Snapshot): Student[] {
-  const created: Student[] = [];
-  SEED_STUDENT_NAMES.forEach((name, idx) => {
-    const center = SEED_CENTERS[idx % SEED_CENTERS.length];
-    const cat    = SEED_CATEGORIES[idx % SEED_CATEGORIES.length];
-    const status: StudentStatus = idx % 5 === 0 ? "pending" : idx % 7 === 0 ? "rejected" : "approved";
-    const age = 7 + (idx % 7);
-    created.push({
-      id: uid("stu"),
-      center_id: center.id,
-      center_name: center.center_name,
-      full_name: name,
-      guardian_name: name.split(" ")[1] + " (Parent)",
-      dob: `${EVENT_YEAR - age}-0${(idx % 9) + 1}-15`,
-      age,
-      class: `Class ${age - 5}`,
-      school_name: `${center.city} Public School`,
-      category_id: cat.id,
-      category_name: cat.name,
-      phone: "+91 98300 " + String(55555 + idx).padStart(5, "0"),
-      whatsapp: null,
-      address: null,
-      city: center.city,
-      state: center.state,
-      pincode: center.pincode,
-      photo_url: `https://i.pravatar.cc/200?u=${encodeURIComponent(name)}`,
-      roll_number: nextRoll(snapshot, cat.prefix),
-      status,
-      event_year: EVENT_YEAR,
-      performance_topic: cat.slug === "dance" ? "Bharatanatyam" : cat.slug === "song" ? "Rabindrasangeet" : null,
-      performance_details: null,
-      created_by: null,
-      created_at: new Date(Date.now() - idx * 86400000).toISOString(),
-      updated_at: nowIso(),
-    });
-  });
-  return created;
-}
-
-function seedPayments(snapshot: Snapshot): Payment[] {
-  return SEED_CENTERS.map((c, i) => {
-    const status: PaymentStatus = i === 0 ? "pending" : i === 1 ? "pending" : i === 2 ? "approved" : "approved";
-    // Link each seed payment to a student of the same centre, so approving it
-    // unlocks that student's chest card.
-    const student = snapshot.students.find((s) => s.center_id === c.id) ?? null;
-    return {
-      id: uid("pay"),
-      center_id: c.id,
-      center_name: c.center_name,
-      student_id: student?.id ?? null,
-      student_name: student?.full_name ?? null,
-      uploaded_by: null,
-      amount: 1600 + i * 400,
-      transaction_ref: `UPI${EVENT_YEAR}${String(10000 + i)}`,
-      screenshot_url: `https://picsum.photos/seed/payment-${i}/600/800`,
-      status,
-      reviewed_by: status === "approved" ? "admin" : null,
-      reviewed_at: status === "approved" ? nowIso() : null,
-      review_note: null,
-      event_year: EVENT_YEAR,
-      created_at: new Date(Date.now() - i * 86400000 * 2).toISOString(),
-    };
-  });
-}
 
 /* ---------- DataStore implementation ---------- */
 
@@ -203,8 +130,8 @@ export const localStore: DataStore = {
       const snap = structuredClone(empty);
       snap.categories = SEED_CATEGORIES;
       snap.centers = SEED_CENTERS;
-      snap.students = seedStudents(snap);
-      snap.payments = seedPayments(snap);
+      snap.students = []; // fresh start — no demo students
+      snap.payments = []; // fresh start — no demo payments
       write(snap);
       window.localStorage.setItem(SEEDED_FLAG, SEED_VERSION);
     }

@@ -82,17 +82,18 @@ export function PageLoader() {
   return (
     <div
       ref={root}
-      className="fixed inset-0 z-[100] flex flex-col bg-[#0B0B0F] text-white"
+      className="fixed inset-0 z-[100] flex flex-col bg-band-butter text-foreground"
     >
       {/* Top meta row */}
-      <div className="flex items-start justify-between px-6 pt-8 sm:px-10">
+      <div className="flex items-center justify-between px-6 pt-8 sm:px-10">
         <span className="overflow-hidden">
-          <span data-meta className="block font-mono text-[11px] uppercase tracking-[0.3em] text-white/50">
+          <span data-meta className="flex items-center gap-2 font-fun text-sm font-semibold text-crayon-grape">
+            <span className="material-symbols-rounded text-crayon-coral" style={{ fontSize: 20 }}>auto_awesome</span>
             Mind Mantra Abacus
           </span>
         </span>
         <span className="overflow-hidden">
-          <span data-meta className="block font-mono text-[11px] uppercase tracking-[0.3em] text-[#A855F7]">
+          <span data-meta className="block font-fun text-sm font-semibold text-crayon-coral">
             2026
           </span>
         </span>
@@ -100,12 +101,12 @@ export function PageLoader() {
 
       {/* Masked headline */}
       <div className="flex flex-1 items-center px-6 sm:px-10">
-        <h2 className="font-black uppercase leading-[0.82] tracking-tight text-[16vw] sm:text-[12vw]">
+        <h2 className="font-display font-extrabold leading-[0.9] tracking-tight text-[15vw] sm:text-[11vw]">
           {WORDS.map((w, i) => (
             <span key={w} className="block overflow-hidden">
               <span
                 data-line
-                className={`block ${i === WORDS.length - 1 ? "text-[#A855F7]" : ""}`}
+                className={`block ${i === WORDS.length - 1 ? "text-crayon-coral" : ""}`}
               >
                 {w}
               </span>
@@ -118,19 +119,19 @@ export function PageLoader() {
       <div className="px-6 pb-8 sm:px-10">
         <div className="flex items-end justify-between">
           <span className="overflow-hidden">
-            <span data-meta className="block font-mono text-[11px] uppercase tracking-[0.3em] text-white/50">
-              Loading
+            <span data-meta className="block font-fun text-sm font-semibold text-muted-foreground">
+              Loading the fun…
             </span>
           </span>
-          <span className="font-black tabular-nums leading-none text-5xl sm:text-7xl">
+          <span className="font-display font-extrabold tabular-nums leading-none text-5xl sm:text-7xl">
             <span ref={counter}>0</span>
-            <span className="text-[#A855F7]">%</span>
+            <span className="text-crayon-coral">%</span>
           </span>
         </div>
-        <span className="relative mt-5 block h-[2px] w-full overflow-hidden bg-white/10">
+        <span className="relative mt-5 block h-2 w-full overflow-hidden rounded-full bg-card">
           <span
             ref={bar}
-            className="absolute inset-y-0 left-0 w-full origin-left scale-x-0 bg-[#A855F7]"
+            className="absolute inset-y-0 left-0 w-full origin-left scale-x-0 rounded-full bg-crayon-coral"
           />
         </span>
       </div>

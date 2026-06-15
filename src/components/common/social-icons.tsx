@@ -36,8 +36,8 @@ export function WhatsappIcon({ className = "size-4" }: P) {
 }
 
 export const SOCIALS = [
-  { href: "https://instagram.com", label: "Instagram", Icon: InstagramIcon },
-  { href: "https://facebook.com", label: "Facebook", Icon: FacebookIcon },
-  { href: "https://youtube.com", label: "YouTube", Icon: YoutubeIcon },
-  { href: "https://wa.me/919804243159", label: "WhatsApp", Icon: WhatsappIcon },
+  { href: "https://instagram.com", label: "Instagram", Icon: InstagramIcon, hover: "hover:bg-[#E1306C]" },
+  { href: "https://facebook.com", label: "Facebook", Icon: FacebookIcon, hover: "hover:bg-[#1877F2]" },
+  { href: "https://youtube.com", label: "YouTube", Icon: YoutubeIcon, hover: "hover:bg-[#FF0000]" },
+  { href: "https://wa.me/919804243159", label: "WhatsApp", Icon: WhatsappIcon, hover: "hover:bg-[#25D366]" },
 ];
