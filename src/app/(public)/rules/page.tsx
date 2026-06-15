@@ -1,5 +1,6 @@
 import { PageHero } from "@/components/common/page-hero";
 import { ScrollReveal } from "@/components/common/scroll-reveal";
+import { Band, Doodles } from "@/components/common/playful";
 
 export const metadata = { title: "Competition Guidelines" };
 
@@ -7,6 +8,8 @@ const RULES = [
   {
     title: "Dance Category",
     fee: "₹400",
+    icon: "music_note",
+    color: "bg-crayon-coral",
     items: [
       "Every participant must fill up the registration form.",
       "District-wise auditions on specific dates.",
@@ -19,6 +22,8 @@ const RULES = [
   {
     title: "Song Category",
     fee: "₹400",
+    icon: "mic",
+    color: "bg-crayon-grape",
     items: [
       "Every participant must fill up the registration form.",
       "District-wise auditions on specific dates.",
@@ -31,6 +36,8 @@ const RULES = [
   {
     title: "Mental Math Olympiad",
     fee: "Centre FREE · District ₹250 · Finale TBA",
+    icon: "calculate",
+    color: "bg-crayon-sky",
     items: [
       "Open to students L1 to L8.",
       "Practice the sample/practice set thoroughly before participating.",
@@ -42,6 +49,8 @@ const RULES = [
   {
     title: "Other Talent",
     fee: "₹400",
+    icon: "auto_awesome",
+    color: "bg-crayon-mint",
     items: [
       "Send a performance video with your details for shortlisting.",
       "Selected participants then fill the registration form.",
@@ -56,38 +65,36 @@ export default function RulesPage() {
     <>
       <PageHero
         eyebrow="Guidelines"
-        title={<>Competition <span className="text-gradient">rules.</span></>}
-        subtitle="Read the rules for each category before you register."
+        title={<>The simple <span className="text-gradient">rules.</span></>}
+        subtitle="Have a quick read with your grown-ups before you register for each category."
+        nextBg="cream"
       />
-      <section className="border-t border-white/10 py-20">
-        <div className="container mx-auto max-w-5xl px-6">
-          <ScrollReveal stagger className="space-y-px overflow-hidden rounded-2xl border border-white/10 bg-white/10">
+      <Band bg="cream" innerClassName="relative py-20 sm:py-24">
+        <Doodles />
+        <div className="container relative mx-auto max-w-5xl px-6">
+          <ScrollReveal stagger className="grid gap-6 md:grid-cols-2">
             {RULES.map((r) => (
-              <div key={r.title} data-reveal-item className="bg-black p-8 sm:p-10">
-                <div className="grid gap-4 md:grid-cols-[16px_1fr]">
-                  <span className="mt-3 h-2.5 w-2.5 rounded-full bg-brand-gradient" />
-                  <div>
-                    <div className="flex flex-wrap items-baseline justify-between gap-3">
-                      <h2 className="text-2xl font-black uppercase tracking-tight sm:text-3xl">{r.title}</h2>
-                      <span className="rounded-full border border-[#A855F7]/40 bg-[#A855F7]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-gradient">
-                        {r.fee}
-                      </span>
-                    </div>
-                    <ul className="mt-6 space-y-3 text-white/70">
-                      {r.items.map((it) => (
-                        <li key={it} className="flex gap-3">
-                          <span className="mt-2.5 inline-block size-1.5 shrink-0 rounded-full bg-[#A855F7]" />
-                          <span>{it}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+              <div key={r.title} data-reveal-item className="flex flex-col rounded-3xl border-2 border-border bg-card p-7 shadow-pop">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <span className={`inline-flex size-13 items-center justify-center rounded-2xl ${r.color} text-white shadow-pop-sm`}>
+                    <span className="material-symbols-rounded" style={{ fontSize: 28, fontVariationSettings: "'FILL' 0" }}>{r.icon}</span>
+                  </span>
+                  <span className="rounded-full bg-muted px-3 py-1.5 text-xs font-bold text-foreground">{r.fee}</span>
                 </div>
+                <h2 className="mt-5 text-2xl font-extrabold tracking-tight">{r.title}</h2>
+                <ul className="mt-5 space-y-3">
+                  {r.items.map((it) => (
+                    <li key={it} className="flex gap-3 text-muted-foreground">
+                      <span className="material-symbols-rounded mt-0.5 shrink-0 text-crayon-mint" style={{ fontSize: 20, fontVariationSettings: "'FILL' 0" }}>check_circle</span>
+                      <span>{it}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </ScrollReveal>
         </div>
-      </section>
+      </Band>
     </>
   );
 }

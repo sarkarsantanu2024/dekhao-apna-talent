@@ -11,12 +11,12 @@ export function SocialRail() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={s.label}
-          className="group inline-flex size-10 items-center justify-center rounded-full border border-white/15 bg-black/40 text-white/70 backdrop-blur transition-all hover:border-transparent hover:bg-brand-gradient hover:text-white"
+          className={`group inline-flex size-11 items-center justify-center rounded-full border-2 border-border bg-card text-foreground/70 transition-all hover:-translate-y-0.5 hover:border-transparent hover:text-white ${s.hover}`}
         >
-          <s.Icon className="size-4 transition-transform group-hover:scale-110" />
+          <s.Icon className="size-[18px] transition-transform group-hover:scale-110" />
         </a>
       ))}
-      <span className="mt-1 h-12 w-px bg-gradient-to-b from-white/30 to-transparent" />
+      <span className="mt-1 h-12 w-px bg-gradient-to-b from-border to-transparent" />
     </div>
   );
 }
