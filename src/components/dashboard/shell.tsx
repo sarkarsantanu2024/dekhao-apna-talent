@@ -183,7 +183,7 @@ export function DashboardShell({ nav, title, user, children }: Props) {
 
 function SidebarBrand({ title, collapsed }: { title: string; collapsed: boolean }) {
   return (
-    <Link href="/" className={cn("flex h-16 items-center gap-2.5 border-b px-4 font-bold", SIDEBAR_BORDER)}>
+    <div className={cn("flex h-16 items-center gap-2.5 border-b px-4 font-bold", SIDEBAR_BORDER)}>
       <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-md bg-white/10 p-1">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/mma-logo-white.png" alt="MindMantra Abacus" className="size-full object-contain" />
@@ -191,7 +191,7 @@ function SidebarBrand({ title, collapsed }: { title: string; collapsed: boolean 
       {!collapsed && (
         <span className="truncate text-sm leading-tight text-white">{title}</span>
       )}
-    </Link>
+    </div>
   );
 }
 
