@@ -9,7 +9,7 @@ export default async function CenterLayout({ children }: { children: React.React
   if (session.user.role !== "center_owner") redirect("/admin/dashboard");
 
   return (
-    <DashboardShell nav={CENTER_NAV} title="Centre" user={session.user}>
+    <DashboardShell nav={CENTER_NAV} title={session.user.name || "Centre"} user={session.user}>
       {children}
     </DashboardShell>
   );
