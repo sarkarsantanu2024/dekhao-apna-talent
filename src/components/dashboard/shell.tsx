@@ -104,7 +104,7 @@ export function DashboardShell({ nav, title, user, children }: Props) {
       {/* ---- Desktop sidebar (dark navy) ---- */}
       <aside
         className={cn(
-          "hidden shrink-0 border-r transition-[width] duration-300 md:flex md:flex-col",
+          "sticky top-0 hidden h-screen shrink-0 self-start border-r transition-[width] duration-300 md:flex md:flex-col",
           SIDEBAR_BG, SIDEBAR_BORDER, SIDEBAR_TEXT,
           collapsed ? "md:w-16" : "md:w-60",
         )}

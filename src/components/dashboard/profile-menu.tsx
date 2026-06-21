@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { LogOut, User, Settings } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 type SessionUser = {
@@ -12,8 +11,8 @@ type SessionUser = {
 };
 
 /**
- * Avatar chip in the topbar with a dropdown menu (account, settings, sign out).
- * Shows initials when no avatar image is supplied.
+ * Avatar chip in the topbar with a dropdown showing the account summary and a
+ * sign-out action. Shows initials when no avatar image is supplied.
  */
 export function ProfileMenu({ user }: { user: SessionUser }) {
   const [open, setOpen] = useState(false);
@@ -66,26 +65,6 @@ export function ProfileMenu({ user }: { user: SessionUser }) {
             <p className="truncate text-xs text-muted-foreground">{user.email}</p>
             <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">{roleLabel}</p>
           </div>
-          <ul className="py-1 text-sm">
-            <li>
-              <Link
-                href={user.role === "admin" ? "/admin/dashboard" : "/center/dashboard"}
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-2 px-4 py-2 hover:bg-muted"
-              >
-                <User className="size-4" /> My profile
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={user.role === "admin" ? "/admin/categories" : "/center/dashboard"}
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-2 px-4 py-2 hover:bg-muted"
-              >
-                <Settings className="size-4" /> Settings
-              </Link>
-            </li>
-          </ul>
           <div className="border-t">
             <button
               type="button"

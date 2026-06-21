@@ -22,3 +22,27 @@ export function calcAge(dob: string | Date): number {
   if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
   return age;
 }
+
+/** Label for rows that have no area/city set. */
+export const UNGROUPED_AREA = "Other / Unspecified";
+
+/**
+ * Group a list by area / city / locality. Returns `[area, items][]` sorted
+ * alphabetically, with the "unspecified" bucket pushed last. Empty/blank areas
+ * collapse into `UNGROUPED_AREA`.
+ */
+export function groupByArea<T>(
+  items: T[],
+  getArea: (item: T) => string | null | undefined,
+): [string, T[]][] {
+  const map = new Map<string, T[]>();
+  for (const item of items) {
+    const area = getArea(item)?.trim() || UNGROUPED_AREA;
+    const bucket = map.get(area);
+    if (bucket) bucket.push(item);
+    else map.set(area, [item]);
+  }
+  return [...map.entries()].sort(([a], [b]) =>
+    a === UNGROUPED_AREA ? 1 : b === UNGROUPED_AREA ? -1 : a.localeCompare(b),
+  );
+}

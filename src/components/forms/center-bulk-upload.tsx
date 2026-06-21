@@ -6,7 +6,8 @@ import { Upload, FileSpreadsheet, Download } from "lucide-react";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { store } from "@/services";
-import type { Center } from "@/types";
+import { EVENT_YEAR } from "@/constants";
+import type { Category, Center } from "@/types";
 
 type Props = {
   onDone?: () => void;
@@ -111,6 +112,85 @@ const SAMPLE_ROWS: string[][] = [
   ],
 ];
 
+/* ============================================================================
+ * ⚠️ DEMO-ONLY LOGIC — REMOVE FOR REAL DATA ⚠️
+ * ----------------------------------------------------------------------------
+ * The block below auto-generates fake students for every centre imported from
+ * the CSV, purely so the client demo shows populated Students / Dashboard /
+ * Reports pages. It is NOT part of the real flow.
+ *
+ * When real data is confirmed: delete `seedStudentsForCenter` (and the name
+ * pools + STUDENTS_PER_CENTER) and remove the call to it inside `handleFile`.
+ * Then only the real centres are imported and real students sync in normally.
+ * ========================================================================== */
+
+const STUDENTS_PER_CENTER = 5;
+
+const FIRST_NAMES = [
+  "Aarav", "Anika", "Ishaan", "Diya", "Vihaan", "Saanvi", "Reyansh", "Anaya",
+  "Aditya", "Myra", "Kabir", "Aarohi", "Aryan", "Pari", "Vivaan", "Tara",
+  "Rohan", "Sara", "Dev", "Ira",
+];
+const LAST_NAMES = [
+  "Sharma", "Banerjee", "Roy", "Sen", "Bose", "Ghosh", "Mukherjee", "Dutta",
+  "Pal", "Chakraborty", "Chatterjee", "Mitra", "Das", "Mondal", "Saha",
+];
+
+/**
+ * Create a batch of demo students for a freshly-imported centre, so every
+ * real centre lands with a populated Students list (and feeds the dashboard /
+ * reports) instead of being empty. Each student gets a real roll number from
+ * the store's counter via `createStudent`.
+ */
+async function seedStudentsForCenter(
+  center: Center,
+  categories: Category[],
+  startIndex: number,
+): Promise<number> {
+  if (!categories.length) return 0;
+  let made = 0;
+  for (let i = 0; i < STUDENTS_PER_CENTER; i++) {
+    const g = startIndex + i; // global index → keeps names varied across centres
+    const first = FIRST_NAMES[g % FIRST_NAMES.length];
+    const last = LAST_NAMES[(g * 3 + 1) % LAST_NAMES.length];
+    const cat = categories[i % categories.length];
+    const age = 7 + (g % 7);
+    const phoneTail = String(10000 + (g % 90000)).padStart(5, "0");
+    try {
+      await store.createStudent({
+        full_name: `${first} ${last}`,
+        guardian_name: `${last} (Parent)`,
+        dob: `${EVENT_YEAR - age}-${String((g % 12) + 1).padStart(2, "0")}-15`,
+        age,
+        class: `Class ${Math.max(1, age - 5)}`,
+        school_name: `${center.city ?? "City"} Public School`,
+        category_id: cat.id,
+        category_name: cat.name,
+        center_id: center.id,
+        center_name: center.center_name,
+        phone: `+91 90000 ${phoneTail}`,
+        whatsapp: `+91 90000 ${phoneTail}`,
+        address: center.address ?? "—",
+        city: center.city,
+        state: center.state,
+        pincode: center.pincode,
+        // No placeholder photo on purpose: the chest card only unlocks once the
+        // centre owner uploads a real student image (plus payment approval).
+        photo_url: null,
+        performance_topic: null,
+        performance_details: null,
+        created_by: null,
+        // All demo students start as "pending" for the client demo.
+        status: "pending",
+      });
+      made++;
+    } catch {
+      /* skip individual failures, keep going */
+    }
+  }
+  return made;
+}
+
 export function CenterBulkUpload({ onDone }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [busy, setBusy] = useState(false);
@@ -129,76 +209,91 @@ export function CenterBulkUpload({ onDone }: Props) {
         return;
       }
 
-      // Existing centres + already-seen-in-file → skip duplicates.
+      // Existing centres + already-seen-in-file → skip exact duplicates so a
+      // re-upload doesn't double the list (and re-seed students). Any column
+      // layout is accepted — we map by alias and take whatever is present.
       const existing = await store.listCenters();
       const seen = new Set(existing.map(centerKey));
 
-      let added = 0;
-      const errors: string[] = [];
+      const createdCenters: Center[] = [];
+      let skipped = 0;
 
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        const rowNo = i + 2; // header is row 1
 
         const center_name = pick(
           row,
-          "centre name",
-          "center name",
-          "centre",
-          "center",
-          "name",
+          "centre name", "center name", "centre", "center",
+          "name", "branch", "branch name", "institute", "institution",
+          "academy", "school", "centre/branch",
         );
-        if (!center_name || center_name.length < 2) {
-          errors.push(`Row ${rowNo}: missing centre name`);
-          continue;
-        }
+        // The only hard requirement: a non-empty centre name. Everything else
+        // is optional — don't block the row, just take what the CSV provides.
+        if (!center_name) { skipped++; continue; }
 
-        const city = pick(row, "city", "town") || null;
+        const city = pick(row, "city", "town", "location", "district") || null;
         const key = centerKey({ center_name, city });
-        if (seen.has(key)) {
-          errors.push(`Row ${rowNo}: duplicate "${center_name}"`);
-          continue;
-        }
+        if (seen.has(key)) { skipped++; continue; }
 
-        const phone = pick(row, "phone", "mobile", "contact", "phone number");
+        const phone = pick(row, "phone", "mobile", "contact", "phone number", "mobile no", "contact no", "contact number");
         try {
-          await store.createCenter({
+          const created = await store.createCenter({
             center_name,
             owner_name:
-              pick(row, "owner", "owner name", "contact person") || null,
+              pick(row, "owner", "owner name", "contact person", "proprietor", "incharge", "person") || null,
             phone: phone || null,
             whatsapp:
-              pick(row, "whatsapp", "whatsapp number", "whatsapp no") ||
+              pick(row, "whatsapp", "whatsapp number", "whatsapp no", "wa") ||
               phone ||
               null,
-            address: pick(row, "address") || null,
+            address: pick(row, "address", "addr", "location") || null,
             city,
-            state: pick(row, "state") || null,
-            pincode: pick(row, "pincode", "pin", "zip") || null,
+            state: pick(row, "state", "province") || null,
+            pincode: pick(row, "pincode", "pin", "zip", "postal", "postal code") || null,
             start_date:
               toISODate(
-                rawPick(row, "start date", "startdate", "joined", "join date"),
+                rawPick(row, "start date", "startdate", "joined", "join date", "date"),
               ) || null,
             // New centres start as not participating — the flag auto-flips to
             // true once they upload a valid payment screenshot.
             participating: false,
           });
           seen.add(key);
-          added++;
-        } catch (err) {
-          errors.push(
-            `Row ${rowNo}: ${err instanceof Error ? err.message : "failed"}`,
+          createdCenters.push(created);
+        } catch {
+          skipped++;
+        }
+      }
+
+      const added = createdCenters.length;
+
+      // Populate each freshly-imported centre with demo students so the
+      // Students/Dashboard/Reports views show real per-centre data.
+      let studentsMade = 0;
+      if (added) {
+        const categories = await store.listCategories();
+        for (let i = 0; i < createdCenters.length; i++) {
+          studentsMade += await seedStudentsForCenter(
+            createdCenters[i],
+            categories,
+            i * STUDENTS_PER_CENTER,
           );
         }
       }
 
-      if (added)
-        toast.success(`Imported ${added} centre${added > 1 ? "s" : ""}.`);
-      if (errors.length) {
-        toast.error(
-          `${errors.length} row(s) skipped. ${errors.slice(0, 3).join(" · ")}${errors.length > 3 ? " …" : ""}`,
+      if (added) {
+        toast.success(
+          `Imported ${added} centre${added > 1 ? "s" : ""}` +
+            (studentsMade ? ` with ${studentsMade} students` : "") +
+            ".",
         );
       }
+      if (skipped) {
+        toast.message(
+          `${skipped} row${skipped > 1 ? "s" : ""} skipped (blank or duplicate centre name).`,
+        );
+      }
+      if (!added && !skipped) toast.error("No centre rows found in that file.");
       if (added) onDone?.();
     } catch (err) {
       toast.error(

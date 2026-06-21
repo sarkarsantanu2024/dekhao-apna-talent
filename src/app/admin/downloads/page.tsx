@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Download, Loader2, Files, Lock, ImageOff } from "lucide-react";
+import { Download, Loader2, Files, Lock, ImageOff, MapPin } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/common/status-badge";
 import { useStudents } from "@/services";
+import { groupByArea } from "@/lib/utils";
 import {
   downloadChestCard,
   downloadAllChestCards,
@@ -46,6 +47,9 @@ export default function AdminDownloadsPage() {
 
   // Across all centres, students ready to print (active + photo).
   const eligible = useMemo(() => rows.filter((s) => isDownloadable(s) && hasPhoto(s)), [rows]);
+
+  // Students grouped by area / city / locality.
+  const groups = useMemo(() => groupByArea(filtered, (s) => s.city), [filtered]);
 
   const onSingle = async (s: Student) => {
     setSingleBusy(s.id);
@@ -101,55 +105,70 @@ export default function AdminDownloadsPage() {
             className="h-9 w-full sm:w-72"
           />
         </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Roll</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Centre</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Chest card</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading && filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
-            ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">No students match.</TableCell></TableRow>
-            ) : filtered.map((s) => {
-              const active = isDownloadable(s);
-              const photo = hasPhoto(s);
-              const ok = active && photo;
-              const busy = singleBusy === s.id;
-              return (
-                <TableRow key={s.id}>
-                  <TableCell className="font-mono text-xs">{s.roll_number ?? "—"}</TableCell>
-                  <TableCell className="font-medium">{s.full_name}</TableCell>
-                  <TableCell>{s.center_name}</TableCell>
-                  <TableCell>{s.category_name}</TableCell>
-                  <TableCell><StatusBadge status={s.status} /></TableCell>
-                  <TableCell className="text-right">
-                    {ok ? (
-                      <Button size="sm" onClick={() => onSingle(s)} disabled={busy} className="gap-1.5">
-                        {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
-                        {busy ? "Generating…" : "Download PDF"}
-                      </Button>
-                    ) : !active ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">
-                        <Lock className="size-3.5" /> Payment not approved
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700">
-                        <ImageOff className="size-3.5" /> Photo required
-                      </span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+        {loading && filtered.length === 0 ? (
+          <p className="py-6 text-center text-sm text-muted-foreground">Loading…</p>
+        ) : filtered.length === 0 ? (
+          <p className="py-6 text-center text-sm text-muted-foreground">No students match.</p>
+        ) : (
+          <div className="space-y-6">
+            {groups.map(([area, items]) => (
+              <section key={area}>
+                <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                  <MapPin className="size-4 text-primary" />
+                  {area}
+                  <span className="text-xs font-normal text-muted-foreground">({items.length})</span>
+                </h3>
+                <div className="overflow-hidden rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Roll</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Centre</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Chest card</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {items.map((s) => {
+                        const active = isDownloadable(s);
+                        const photo = hasPhoto(s);
+                        const ok = active && photo;
+                        const busy = singleBusy === s.id;
+                        return (
+                          <TableRow key={s.id}>
+                            <TableCell className="font-mono text-xs">{s.roll_number ?? "—"}</TableCell>
+                            <TableCell className="font-medium">{s.full_name}</TableCell>
+                            <TableCell>{s.center_name}</TableCell>
+                            <TableCell>{s.category_name}</TableCell>
+                            <TableCell><StatusBadge status={s.status} /></TableCell>
+                            <TableCell className="text-right">
+                              {ok ? (
+                                <Button size="sm" onClick={() => onSingle(s)} disabled={busy} className="gap-1.5">
+                                  {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
+                                  {busy ? "Generating…" : "Download PDF"}
+                                </Button>
+                              ) : !active ? (
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">
+                                  <Lock className="size-3.5" /> Payment not approved
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700">
+                                  <ImageOff className="size-3.5" /> Photo required
+                                </span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              </section>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

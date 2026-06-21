@@ -1,12 +1,18 @@
 /**
- * TEMPORARY fixed logins (User ID + password).
+ * Fixed platform-admin logins (User ID + password).
  *
- * Until Supabase auth + a real users table are wired up, the portal authenticates
- * against this list: two platform admins and one demo centre owner. When Supabase
- * is connected, replace this whole file (and the credentials provider in auth.ts).
+ * The two admin identities are fixed, but their PASSWORDS come from environment
+ * variables so no real credential ever lives in source control:
  *
- * The centre owner's `centerId` matches the seeded demo centre in
- * src/services/local-store.ts (DEMO_CENTRE_ID).
+ *   ADMIN_PASSWORD_PINTU      → pintu.gupta
+ *   ADMIN_PASSWORD_SANTANU    → santanu.sarkar
+ *
+ * In production these MUST be set (in Vercel). If unset in production the admin
+ * is dropped from the list (can't sign in) rather than falling back to a weak
+ * default. Outside production a dev fallback keeps local work frictionless.
+ *
+ * Centre owners don't have fixed logins — their credentials are derived
+ * deterministically from the centre row (see lib/auth/center-credentials.ts).
  */
 
 export type FixedUser = {
@@ -18,12 +24,15 @@ export type FixedUser = {
   centerId: string | null;
 };
 
-export const FIXED_USERS: FixedUser[] = [
+/** Dev convenience only — never used in production builds. */
+const devFallback = (pwd: string) => (process.env.NODE_ENV === "production" ? "" : pwd);
+
+const ALL_ADMINS: FixedUser[] = [
   {
     id: "u-admin-1",
     name: "Pintu Gupta",
     userId: "pintu.gupta",
-    password: "12345",
+    password: process.env.ADMIN_PASSWORD_PINTU ?? devFallback("12345"),
     role: "admin",
     centerId: null,
   },
@@ -31,16 +40,10 @@ export const FIXED_USERS: FixedUser[] = [
     id: "u-admin-2",
     name: "Santanu Sarkar",
     userId: "santanu.sarkar",
-    password: "12345",
+    password: process.env.ADMIN_PASSWORD_SANTANU ?? devFallback("12345"),
     role: "admin",
     centerId: null,
   },
-  {
-    id: "u-centre",
-    name: "Centre Owner",
-    userId: "centre.owner",
-    password: "12345",
-    role: "center_owner",
-    centerId: "11111111-1111-1111-1111-111111111111",
-  },
 ];
+
+export const FIXED_USERS: FixedUser[] = ALL_ADMINS.filter((u) => u.password.length > 0);
