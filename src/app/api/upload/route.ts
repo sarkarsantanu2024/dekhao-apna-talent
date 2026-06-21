@@ -35,3 +35,49 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ url, path, bucket });
 }
+
+/** Pull `{ bucket, path }` out of a Supabase Storage public/signed URL. */
+function parseStorageUrl(u: string): { bucket: string; path: string } | null {
+  const m = /\/storage\/v1\/object\/(?:public|sign)\/([^/]+)\/(.+?)(?:\?|$)/.exec(u);
+  if (!m) return null;
+  return { bucket: m[1], path: decodeURIComponent(m[2]) };
+}
+
+/**
+ * Delete one or more previously-uploaded files from Storage. Accepts the URLs
+ * the app stored on the row, so callers don't need to track bucket/path.
+ */
+export async function DELETE(req: Request) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  let body: { urls?: string | string[] };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  const list = Array.isArray(body.urls) ? body.urls : body.urls ? [body.urls] : [];
+
+  // Group paths by bucket so each bucket is cleared in a single call.
+  const byBucket = new Map<string, string[]>();
+  for (const u of list) {
+    if (typeof u !== "string") continue;
+    const parsed = parseStorageUrl(u);
+    if (parsed && ALLOWED_BUCKETS.has(parsed.bucket)) {
+      const arr = byBucket.get(parsed.bucket) ?? [];
+      arr.push(parsed.path);
+      byBucket.set(parsed.bucket, arr);
+    }
+  }
+
+  const sb = supabaseAdmin();
+  let removed = 0;
+  const errors: string[] = [];
+  for (const [bucket, paths] of byBucket) {
+    const { error } = await sb.storage.from(bucket).remove(paths);
+    if (error) errors.push(error.message);
+    else removed += paths.length;
+  }
+  return NextResponse.json({ ok: errors.length === 0, removed, errors });
+}

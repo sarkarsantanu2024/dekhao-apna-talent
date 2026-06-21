@@ -9,14 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FileUpload } from "@/components/ui/file-upload";
 import { store, useCenters, useStudents, usePayments } from "@/services";
-
-const fileToDataUrl = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result));
-    r.onerror = () => reject(r.error);
-    r.readAsDataURL(file);
-  });
+import { uploadFile } from "@/lib/upload";
 
 export function PaymentUploadForm() {
   const router = useRouter();
@@ -56,7 +49,7 @@ export function PaymentUploadForm() {
 
     start(async () => {
       try {
-        const screenshot_url = await fileToDataUrl(file);
+        const screenshot_url = await uploadFile(file, "payment-screenshots");
         await store.createPayment({
           center_id: myCenter.id,
           center_name: myCenter.center_name,

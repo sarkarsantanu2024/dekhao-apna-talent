@@ -19,9 +19,9 @@ type Row = Record<string, unknown>;
 type Filter = (row: Row) => boolean;
 
 // ─── Seed data ─────────────────────────────────────────────────────────────
-const CENTRE_ID = "11111111-1111-1111-1111-111111111111";
-const ADMIN_HASH  = bcrypt.hashSync("Admin@123",  10);
-const CENTRE_HASH = bcrypt.hashSync("Centre@123", 10);
+// Only the platform admin + competition categories are seeded. Centres,
+// students and payments start empty — real centres are uploaded by the admin.
+const ADMIN_HASH = bcrypt.hashSync("Admin@123", 10);
 
 const CAT = {
   dance:  { id: "c0000001-0000-0000-0000-000000000001", name: "Dance",                slug: "dance",        prefix: "DANCE", fee: 400, active: true, description: null },
@@ -31,7 +31,6 @@ const CAT = {
 };
 
 const nowIso = () => new Date().toISOString();
-const year   = () => new Date().getFullYear();
 
 const db: Record<string, Row[]> = {
   users: [
@@ -46,32 +45,8 @@ const db: Record<string, Row[]> = {
       created_at: nowIso(),
       updated_at: nowIso(),
     },
-    {
-      id: "u0000002-0000-0000-0000-000000000002",
-      name: "Centre Owner",
-      email: "centre@dekhaoapnatalent.com",
-      password_hash: CENTRE_HASH,
-      role: "center_owner",
-      center_id: CENTRE_ID,
-      phone: "+91-9000000000",
-      created_at: nowIso(),
-      updated_at: nowIso(),
-    },
   ],
-  centers: [
-    {
-      id: CENTRE_ID,
-      center_name: "Mind Mantra · Dumdum",
-      owner_name: "Centre Owner",
-      phone: "+91-9000000000",
-      address: null,
-      city: "Kolkata",
-      state: "West Bengal",
-      pincode: "700028",
-      event_year: year(),
-      created_at: nowIso(),
-    },
-  ],
+  centers: [],
   categories: [CAT.dance, CAT.song, CAT.math, CAT.other],
   students: [],
   payments: [],
@@ -244,6 +219,10 @@ const storage = {
     },
     async createSignedUrl(path: string, _ttl: number) {
       return { data: { signedUrl: fileStore.get(`${bucket}/${path}`) ?? "" }, error: null };
+    },
+    async remove(paths: string[]) {
+      for (const p of paths) fileStore.delete(`${bucket}/${p}`);
+      return { data: paths.map((name) => ({ name })), error: null };
     },
   }),
 };

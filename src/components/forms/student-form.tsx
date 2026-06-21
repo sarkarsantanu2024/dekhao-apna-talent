@@ -39,6 +39,7 @@ import { studentSchema, type StudentInput } from "@/lib/validations/student";
 import type { Category } from "@/types";
 import { calcAge, cn } from "@/lib/utils";
 import { store } from "@/services";
+import { uploadFile } from "@/lib/upload";
 import { studentKey } from "@/components/forms/student-bulk-upload";
 
 type Props = {
@@ -80,14 +81,6 @@ export function StudentForm({
     if (typeof el.showPicker === "function") el.showPicker();
     else el.focus();
   };
-
-  const onPhoto = (file: File): Promise<string | null> =>
-    new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : null);
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(file);
-    });
 
   const onSubmit = (values: StudentInput) =>
     start(async () => {
@@ -249,8 +242,13 @@ export function StudentForm({
           onFile={async (f) => {
             if (!f) return form.setValue("photo_url", "");
             if (f.size > 3 * 1024 * 1024) { toast.error("Max 3 MB"); return; }
-            const url = await onPhoto(f);
-            if (url) { form.setValue("photo_url", url); toast.success("Photo attached"); }
+            try {
+              const url = await uploadFile(f, "student-photos");
+              form.setValue("photo_url", url);
+              toast.success("Photo attached");
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : "Photo upload failed");
+            }
           }}
         />
       </Field>

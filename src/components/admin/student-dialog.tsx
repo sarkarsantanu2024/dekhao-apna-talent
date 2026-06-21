@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/ui/file-upload";
 import { store } from "@/services";
+import { uploadFile } from "@/lib/upload";
 import { calcAge } from "@/lib/utils";
 import type { Category, Center, Student, StudentStatus } from "@/types";
 
@@ -49,15 +50,6 @@ const blank = {
   performance_details: "",
   status: "pending" as StudentStatus,
 };
-
-function readPhoto(file: File): Promise<string | null> {
-  return new Promise((resolve) => {
-    const r = new FileReader();
-    r.onload = () => resolve(typeof r.result === "string" ? r.result : null);
-    r.onerror = () => resolve(null);
-    r.readAsDataURL(file);
-  });
-}
 
 export function StudentDialog({
   open,
@@ -248,10 +240,12 @@ export function StudentDialog({
                 onFile={async (f) => {
                   if (!f) return set("photo_url", "");
                   if (f.size > 3 * 1024 * 1024) return toast.error("Max 3 MB");
-                  const url = await readPhoto(f);
-                  if (url) {
+                  try {
+                    const url = await uploadFile(f, "student-photos");
                     set("photo_url", url);
                     toast.success("Photo attached");
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : "Photo upload failed");
                   }
                 }}
               />

@@ -4,11 +4,37 @@ import { z } from "zod";
 import { FIXED_USERS } from "@/lib/auth/users";
 import { authConfig } from "@/lib/auth/auth.config";
 import { findCenterLogin } from "@/lib/auth/center-login-store";
+import { buildCenterCredentials } from "@/lib/auth/center-credentials";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { isDemoMode } from "@/lib/supabase/mock-client";
+import type { Center } from "@/types";
 
 const credSchema = z.object({
   userId: z.string().min(3),
   password: z.string().min(4),
 });
+
+/**
+ * Validate a centre login against Supabase by deriving each centre's
+ * deterministic credentials (same logic as the Credentials page) and matching.
+ * Stateless — no file needed — so it works on serverless hosts (Vercel).
+ */
+async function findSupabaseCenterLogin(userId: string, password: string) {
+  try {
+    const { data, error } = await supabaseAdmin()
+      .from("centers")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error || !data) return null;
+    const creds = buildCenterCredentials(data as unknown as Center[]);
+    const match = creds.find(
+      (c) => c.login_id.toLowerCase() === userId && c.login_password === password,
+    );
+    return match ? { center_id: match.center.id, center_name: match.center.center_name, login_id: match.login_id } : null;
+  } catch {
+    return null;
+  }
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -38,8 +64,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           };
         }
 
-        // 2) Locally-generated centre logins (demo stopgap, file-backed).
-        const centre = await findCenterLogin(userId, password);
+        // 2) Centre owners — deterministic per-centre credentials.
+        //    Supabase mode derives them from the centres table (stateless,
+        //    Vercel-safe); local demo falls back to the file-backed store.
+        const centre = isDemoMode()
+          ? await findCenterLogin(userId, password)
+          : await findSupabaseCenterLogin(userId, password);
         if (centre) {
           return {
             id: `centre:${centre.center_id}`,

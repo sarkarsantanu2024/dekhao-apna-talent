@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/common/status-badge";
+import { ScreenshotLink } from "@/components/common/screenshot-link";
 import { PaymentUploadForm } from "@/components/forms/payment-upload-form";
 import { PaymentResubmitDialog } from "@/components/forms/payment-resubmit-dialog";
 import { PaymentEditDialog } from "@/components/forms/payment-edit-dialog";
@@ -123,7 +124,7 @@ function PaymentRow({
         <TableCell className="font-medium">{p.student_name ?? "—"}</TableCell>
         <TableCell>{formatCurrency(p.amount)}</TableCell>
         <TableCell className="font-mono text-xs">{p.transaction_ref ?? "—"}</TableCell>
-        <TableCell><a href={p.screenshot_url} target="_blank" rel="noreferrer" className="text-primary hover:underline">View</a></TableCell>
+        <TableCell><ScreenshotLink url={p.screenshot_url} /></TableCell>
         <TableCell><StatusBadge status={p.status} /></TableCell>
         <TableCell className="text-muted-foreground">{formatDate(p.created_at)}</TableCell>
         <TableCell className="text-right">

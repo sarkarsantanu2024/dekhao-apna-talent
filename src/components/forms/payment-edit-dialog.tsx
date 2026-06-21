@@ -15,15 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/ui/file-upload";
 import { store } from "@/services";
+import { uploadFile } from "@/lib/upload";
 import type { Payment } from "@/types";
-
-const fileToDataUrl = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result));
-    r.onerror = () => reject(r.error);
-    r.readAsDataURL(file);
-  });
 
 type Props = {
   open: boolean;
@@ -53,7 +46,7 @@ export function PaymentEditDialog({ open, onOpenChange, payment }: Props) {
 
     setBusy(true);
     try {
-      const screenshot_url = file ? await fileToDataUrl(file) : undefined;
+      const screenshot_url = file ? await uploadFile(file, "payment-screenshots") : undefined;
       await store.updatePayment(payment.id, {
         amount: Number(amount),
         transaction_ref: ref || null,
