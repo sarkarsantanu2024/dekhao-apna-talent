@@ -93,7 +93,7 @@ export function HorizontalCategories() {
                 className="group lift relative flex w-full flex-col overflow-hidden rounded-2xl border border-ink/10 bg-card shadow-pop-sm md:h-[480px] md:w-[370px]"
               >
                 {/* image window */}
-                <div className="relative aspect-[16/11] w-full overflow-hidden">
+                <div className="relative aspect-[16/10] w-full overflow-hidden">
                   {bg && (
                     <Image
                       src={bg}

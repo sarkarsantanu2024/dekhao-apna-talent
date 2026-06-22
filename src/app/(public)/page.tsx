@@ -208,7 +208,7 @@ export default function HomePage() {
                 data-reveal-item
                 href="/gallery"
                 className={`group relative block overflow-hidden rounded-2xl bg-ink ${
-                  i === 0 ? "col-span-2 row-span-2" : i === 3 ? "lg:col-span-2" : ""
+                  i === 0 ? "col-span-2 row-span-2" : i === 3 ? "lg:col-span-2 lg:row-span-2" : ""
                 }`}
               >
                 <Image
