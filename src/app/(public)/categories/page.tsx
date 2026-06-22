@@ -39,7 +39,7 @@ export default function CategoriesPage() {
                   className="group lift flex flex-col overflow-hidden rounded-2xl border border-ink/10 bg-card shadow-pop-sm"
                 >
                   {/* image header */}
-                  <div className="relative aspect-[16/9] w-full overflow-hidden">
+                  <div className="relative aspect-[16/10] w-full overflow-hidden">
                     {bg && (
                       <Image
                         src={bg}
