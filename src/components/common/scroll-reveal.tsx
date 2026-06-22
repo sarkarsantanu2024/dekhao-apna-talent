@@ -30,12 +30,15 @@ export function ScrollReveal({ children, stagger = false, y = 30, delay = 0, cla
       if (targets.length === 0) return;
 
       gsap.from(targets, {
-        opacity: 0,
-        y,
-        duration: 0.9,
+        autoAlpha: 0,
+        // Rows of staggered items fade in WITHOUT vertical movement, so cards
+        // in a grid stay perfectly top-aligned throughout the reveal. A single
+        // (non-stagger) target keeps the gentle rise.
+        y: stagger ? 0 : y,
+        duration: stagger ? 0.7 : 0.9,
         ease: "power3.out",
         delay,
-        stagger: stagger ? 0.12 : 0,
+        stagger: stagger ? 0.1 : 0,
         scrollTrigger: {
           trigger: ref.current,
           start: "top 85%",

@@ -1,29 +1,25 @@
+import { Star } from "lucide-react";
+
 type Props = {
   items: readonly string[];
   className?: string;
 };
 
-/** Bright candy ticker. Duplicates content so CSS translateX -50% loops seamlessly. */
+/** Editorial running banner — ink band, serif words, gold star separators.
+ *  Content is duplicated so the CSS translateX(-50%) loop is seamless. */
 export function Marquee({ items, className }: Props) {
-  const dots = ["#ff6b6b", "#ffc83d", "#2ec4b6", "#4da8ff", "#9b5de5"];
   return (
     <div
-      className={`relative overflow-hidden border-y-4 border-foreground/10 bg-brand-gradient ${className ?? ""}`}
+      className={`on-ink relative overflow-hidden border-y border-ink/10 bg-ink py-5 ${className ?? ""}`}
+      style={{ ["--ink" as string]: "#1b1510" }}
     >
-      <div className="marquee-track flex w-max items-center gap-10 whitespace-nowrap py-4">
+      <div className="marquee-track flex w-max items-center whitespace-nowrap">
         {[...items, ...items].map((it, i) => (
-          <span
-            key={i}
-            className="inline-flex items-center gap-10 text-[clamp(1.1rem,2.2vw,1.8rem)] font-extrabold uppercase tracking-tight text-white"
-          >
-            {it}
-            <span
-              aria-hidden
-              className="material-symbols-rounded"
-              style={{ color: dots[i % dots.length], fontSize: 22, fontVariationSettings: "'FILL' 1" }}
-            >
-              star
+          <span key={i} className="inline-flex items-center text-[#f3ead9]">
+            <span className="font-display text-[clamp(1.05rem,2.2vw,1.7rem)] font-medium tracking-tight">
+              {it}
             </span>
+            <Star className="mx-7 size-3.5 shrink-0 text-gold-soft" strokeWidth={0} fill="currentColor" />
           </span>
         ))}
       </div>

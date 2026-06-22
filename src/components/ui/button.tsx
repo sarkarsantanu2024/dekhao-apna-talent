@@ -4,29 +4,31 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-0.5 [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-fun text-sm font-semibold tracking-tight transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:translate-y-px [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground hover:brightness-110",
-        /* Big rounded pill — primary CTA on the kids' public site (coral) */
+          "bg-ink text-primary-foreground shadow-pop-sm hover:bg-ink-soft hover:-translate-y-0.5",
+        /* Signature CTA — a warm gold "medal" pill (premium + joyful) */
         fun:
-          "font-display rounded-full bg-crayon-coral font-extrabold tracking-wide text-white hover:brightness-105 hover:-translate-y-0.5 active:translate-y-0.5",
+          "rounded-full bg-gold font-bold text-ink shadow-gold hover:brightness-[1.04] hover:-translate-y-0.5",
+        /* Dark editorial pill */
         candy:
-          "font-display rounded-full bg-crayon-grape font-extrabold tracking-wide text-white hover:brightness-105 hover:-translate-y-0.5 active:translate-y-0.5",
+          "rounded-full bg-ink font-bold text-primary-foreground shadow-pop-sm hover:bg-ink-soft hover:-translate-y-0.5",
         destructive: "bg-destructive text-white hover:brightness-110",
+        /* Ghost-bordered → fills with ink on hover (editorial) */
         outline:
-          "border-2 border-border bg-card text-foreground hover:border-primary hover:text-primary hover:-translate-y-0.5",
-        secondary: "bg-secondary text-secondary-foreground hover:brightness-105",
+          "border border-ink/20 bg-transparent text-foreground hover:border-ink hover:bg-ink hover:text-primary-foreground hover:-translate-y-0.5",
+        secondary: "bg-secondary text-secondary-foreground hover:brightness-[0.98]",
         ghost: "hover:bg-muted hover:text-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+        link: "text-gold-deep underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-5 py-2",
-        sm: "h-8 rounded-lg px-3 text-xs",
-        lg: "h-12 rounded-full px-7 text-base",
-        xl: "h-14 rounded-full px-9 text-lg",
+        sm: "h-9 rounded-full px-4 text-xs",
+        lg: "h-12 rounded-full px-7 text-[0.95rem]",
+        xl: "h-14 rounded-full px-9 text-base",
         icon: "size-10",
       },
     },

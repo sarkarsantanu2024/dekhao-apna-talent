@@ -1,44 +1,50 @@
+import { Trophy, Calculator, Award } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { PRIZES } from "@/constants";
-import { Icon } from "@/components/common/icon";
 import { PageHero } from "@/components/common/page-hero";
 import { ScrollReveal } from "@/components/common/scroll-reveal";
-import { Band, Doodles } from "@/components/common/playful";
+import { Band } from "@/components/common/playful";
 
 export const metadata = { title: "Prize Details" };
 
-const RANK_COLOR = ["bg-crayon-sun", "bg-crayon-sky", "bg-crayon-coral", "bg-crayon-mint"];
+/** Rank accent: gold · silver · bronze/clay · sage */
+const RANK_COLOR = ["#c79233", "#9aa0a6", "#b07a4e", "#4f8a76"];
 
 export default function PrizesPage() {
   return (
     <>
       <PageHero
         eyebrow="Prizes"
-        title={<>Cash prizes <span className="text-gradient">& awards!</span></>}
+        title={<>Cash prizes <span className="text-gradient">& honours.</span></>}
         subtitle="Cash prizes for finalists — plus a medal, award and certificate for everyone who steps on stage."
-        nextBg="cream"
       />
-      <Band bg="cream" to="grape" innerClassName="relative py-20 sm:py-24">
-        <Doodles />
+      <Band bg="cream" innerClassName="relative py-24 sm:py-28">
         <div className="container relative mx-auto max-w-5xl px-6">
           <ScrollReveal stagger className="grid gap-6 md:grid-cols-2">
             <div data-reveal-item>
-              <PrizeCard title="Dance & Song" icon="emoji_events" accent="bg-crayon-coral" rows={PRIZES.danceSong} />
+              <PrizeCard title="Dance & Song" Icon={Trophy} rows={PRIZES.danceSong} />
             </div>
             <div data-reveal-item>
-              <PrizeCard title="Abacus (per level)" icon="calculate" accent="bg-crayon-sky" rows={PRIZES.abacus} />
+              <PrizeCard title="Abacus (per level)" Icon={Calculator} rows={PRIZES.abacus} />
             </div>
           </ScrollReveal>
         </div>
       </Band>
 
-      <Band bg="grape" innerClassName="relative py-16 sm:py-20">
+      <Band bg="white" innerClassName="relative py-20 sm:py-24">
         <div className="container relative mx-auto max-w-3xl px-6">
-          <div className="rounded-3xl bg-brand-gradient p-8 text-center text-white shadow-pop sm:p-10">
-            <Icon name="workspace_premium" size={48} filled />
-            <h2 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl">India-Level Records</h2>
-            <p className="mt-3 text-white/90">
-              The top 5 abacus students get the chance to attempt India-Level Records by Mind Mantra Abacus!
-            </p>
+          <div
+            className="on-ink relative overflow-hidden rounded-2xl bg-ink p-10 text-center text-[#f3ead9] shadow-pop sm:p-12"
+            style={{ ["--ink" as string]: "#1b1510" }}
+          >
+            <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(199,146,51,0.22),transparent_55%)]" />
+            <div className="relative">
+              <Award className="mx-auto size-12 text-gold-soft" strokeWidth={1.5} />
+              <h2 className="mt-4 font-display text-2xl font-semibold tracking-tight sm:text-3xl">India-Level Records</h2>
+              <p className="mx-auto mt-3 max-w-md leading-relaxed text-[#f3ead9]/75">
+                The top 5 abacus students earn the chance to attempt India-Level Records by Mind Mantra Abacus.
+              </p>
+            </div>
           </div>
         </div>
       </Band>
@@ -48,35 +54,40 @@ export default function PrizesPage() {
 
 function PrizeCard({
   title,
-  icon,
-  accent,
+  Icon,
   rows,
 }: {
   title: string;
-  icon: string;
-  accent: string;
+  Icon: LucideIcon;
   rows: readonly { rank: string; amount: number }[];
 }) {
   return (
-    <div className="h-full rounded-3xl border-2 border-border bg-card p-7 shadow-pop">
-      <span className={`inline-flex size-14 items-center justify-center rounded-2xl ${accent} text-white shadow-pop-sm`}>
-        <span className="material-symbols-rounded" style={{ fontSize: 30, fontVariationSettings: "'FILL' 0" }}>{icon}</span>
-      </span>
-      <h2 className="mt-5 text-2xl font-extrabold tracking-tight">{title}</h2>
-      <ul className="mt-6 space-y-3">
+    <div className="h-full rounded-2xl border border-ink/10 bg-card p-8 shadow-pop-sm">
+      <div className="flex items-center gap-3">
+        <span className="inline-flex size-12 items-center justify-center rounded-full bg-secondary text-gold-deep">
+          <Icon className="size-6" strokeWidth={1.5} />
+        </span>
+        <h2 className="font-display text-2xl font-semibold tracking-tight">{title}</h2>
+      </div>
+      <ul className="mt-7 divide-y divide-border">
         {rows.map((r, i) => (
-          <li key={r.rank} className="flex items-center justify-between rounded-2xl bg-muted px-4 py-3">
-            <span className="inline-flex items-center gap-2 font-bold text-foreground">
-              <span className={`inline-flex size-7 items-center justify-center rounded-full ${RANK_COLOR[i % RANK_COLOR.length]} text-xs font-extrabold text-white`}>
+          <li key={r.rank} className="flex items-center justify-between py-3.5">
+            <span className="inline-flex items-center gap-3 font-medium text-foreground">
+              <span
+                className="inline-flex size-7 items-center justify-center rounded-full text-xs font-bold text-white"
+                style={{ background: RANK_COLOR[i % RANK_COLOR.length] }}
+              >
                 {i + 1}
               </span>
               {r.rank}
             </span>
-            <span className="font-display text-xl font-extrabold text-foreground">₹{r.amount.toLocaleString("en-IN")}</span>
+            <span className="font-display text-xl font-semibold text-foreground">₹{r.amount.toLocaleString("en-IN")}</span>
           </li>
         ))}
       </ul>
-      <p className="mt-5 font-fun text-sm font-semibold text-muted-foreground">+ award and certificate for all</p>
+      <p className="mt-6 border-t border-border pt-5 text-sm text-muted-foreground">
+        + award and certificate for all participants
+      </p>
     </div>
   );
 }

@@ -17,10 +17,16 @@ const USE_LOCAL_MEDIA = false;
 /* ---------- helpers ---------- */
 /** A file under /public/images (e.g. local("hero/hero.mp4") → /images/hero/hero.mp4). */
 const local = (path: string) => `/images/${path}`;
-/** Keyword-based placeholder (LoremFlickr) — returns a topically-relevant photo.
- *  `lock` keeps the same image stable for a given slot. */
-const flick = (keyword: string, lock: number, w = 1200, h = 900) =>
-  `https://loremflickr.com/${w}/${h}/${encodeURIComponent(keyword)}?lock=${lock}`;
+/** Bundled, offline-safe placeholder PHOTO. Returns one of the local dummy
+ *  event photos in /public/images/placeholders/photos (no network — reliable
+ *  on any connection), chosen deterministically by `lock` so each slot stays
+ *  stable across reloads. These are stand-ins — replace with real audition/
+ *  event photos by dropping files in /public/images and flipping
+ *  USE_LOCAL_MEDIA, or just edit the arrays below.
+ *  NOTE: `w`/`h` are accepted for call-site compatibility but unused. */
+const PHOTO_COUNT = 14;
+const photo = (n: number) => `/images/placeholders/photos/p${(Math.abs(Math.round(n)) % PHOTO_COUNT) + 1}.jpg`;
+const flick = (_keyword: string, lock: number, _w = 1200, _h = 900) => photo(lock);
 
 /* ---------- hero ---------- */
 export const HERO_VIDEO = USE_LOCAL_MEDIA
@@ -33,6 +39,54 @@ export const HERO_VIDEO = USE_LOCAL_MEDIA
       poster:
         "https://images.pexels.com/photos/1916821/pexels-photo-1916821.jpeg?auto=compress&cs=tinysrgb&w=1920",
     };
+
+/* ════════════════════════════════════════════════════════════════════════
+   HERO MEDIA CAROUSEL  (home page hero, right side)
+   A mixed slider of whatever you have for the inaugural launch — audition
+   photos, an mp4 reel, a YouTube/Facebook clip, even a live-stream embed.
+   Drop your real media here; the <HeroMedia> slider renders each `kind`.
+
+   Slide kinds:
+     { kind: "video",    src, poster, caption? }   ← local mp4 (public folder) or CDN
+     { kind: "image",    src, alt, caption? }       ← photo (local or CDN)
+     { kind: "youtube",  id, caption? }             ← YouTube video id (the part after v=)
+     { kind: "facebook", url, caption? }            ← full public FB video/post URL
+     { kind: "embed",    url, caption? }            ← any iframe src: live stream, Vimeo…
+
+   To go live: drop files in /public/images/hero/ (see README), flip
+   USE_LOCAL_MEDIA at the top of this file, and edit captions below.
+   ════════════════════════════════════════════════════════════════════════ */
+export type HeroSlide =
+  | { kind: "video"; src: string; poster: string; caption?: string }
+  | { kind: "image"; src: string; alt: string; caption?: string }
+  | { kind: "youtube"; id: string; caption?: string }
+  | { kind: "facebook"; url: string; caption?: string }
+  | { kind: "embed"; url: string; caption?: string };
+
+export const HERO_MEDIA: HeroSlide[] = USE_LOCAL_MEDIA
+  ? [
+      { kind: "video", src: local("hero/hero.mp4"), poster: local("hero/hero-poster.jpg"), caption: "First look · 2026" },
+      { kind: "image", src: local("hero/slide-1.jpg"), alt: "Young performer on stage", caption: "Audition day" },
+      { kind: "image", src: local("hero/slide-2.jpg"), alt: "Proud parents cheering", caption: "Every cheer counts" },
+      { kind: "image", src: local("hero/slide-3.jpg"), alt: "Backstage excitement", caption: "Backstage smiles" },
+      // Examples — uncomment & edit once you have the links:
+      // { kind: "youtube",  id: "dQw4w9WgXcQ", caption: "Launch reel" },
+      // { kind: "facebook", url: "https://www.facebook.com/MindMantra/videos/123456789/", caption: "On Facebook" },
+      // { kind: "embed",    url: "https://www.youtube.com/embed/live_stream?channel=XXXX", caption: "Live now" },
+    ]
+  : [
+      {
+        // Video plays from a CDN; if the network can't reach it, the local
+        // poster still shows. Swap src for your own /public mp4 anytime.
+        kind: "video",
+        src: "https://videos.pexels.com/video-files/3196284/3196284-uhd_2560_1440_25fps.mp4",
+        poster: photo(0),
+        caption: "First look · 2026",
+      },
+      { kind: "image", src: photo(4), alt: "Young performer on stage", caption: "Audition day" },
+      { kind: "image", src: photo(3), alt: "A song from the heart", caption: "Every voice matters" },
+      { kind: "image", src: photo(1), alt: "Lights, crowd, the big stage", caption: "The national stage" },
+    ];
 
 /* ---------- judges (used on home + about pages) ---------- */
 /* Drop real headshots at public/images/judges/<file>. These are always local. */

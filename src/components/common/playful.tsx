@@ -130,15 +130,15 @@ function Shape({ kind, color, size }: { kind: ShapeKind; color: string; size: nu
   }
 }
 
-type DoodleSpec = { kind: ShapeKind; className: string; color: string; size: number; delay?: number };
+type DoodleSpec = { kind: ShapeKind; className: string; color: string; size: number; delay?: number; opacity?: number };
 
+/* Editorial restraint: a sparse scatter of fine-line stars / rings in the
+   signature gold + ink, low opacity. Decoration that whispers, not shouts. */
 const DEFAULT_DOODLES: DoodleSpec[] = [
-  { kind: "sun", className: "left-[5%] top-[12%]", color: "var(--c-sun)", size: 44, delay: 0 },
-  { kind: "cloud", className: "right-[8%] top-[14%]", color: "var(--c-sky)", size: 48, delay: 0.6 },
-  { kind: "star", className: "left-[14%] bottom-[18%]", color: "var(--c-coral)", size: 26, delay: 1 },
-  { kind: "squiggle", className: "right-[16%] bottom-[24%]", color: "var(--c-grape)", size: 52, delay: 1.4 },
-  { kind: "balloon", className: "left-[46%] top-[6%]", color: "var(--c-bubblegum)", size: 28, delay: 0.3 },
-  { kind: "leaf", className: "right-[40%] bottom-[12%]", color: "var(--c-mint)", size: 26, delay: 0.9 },
+  { kind: "star", className: "left-[6%] top-[16%]", color: "var(--gold)", size: 22, delay: 0, opacity: 0.5 },
+  { kind: "ring", className: "right-[9%] top-[20%]", color: "var(--ink)", size: 16, delay: 0.8, opacity: 0.12 },
+  { kind: "star", className: "right-[18%] bottom-[20%]", color: "var(--gold)", size: 14, delay: 1.2, opacity: 0.45 },
+  { kind: "ring", className: "left-[15%] bottom-[18%]", color: "var(--gold)", size: 20, delay: 0.4, opacity: 0.25 },
 ];
 
 export function Doodles({
@@ -153,7 +153,11 @@ export function Doodles({
   return (
     <div aria-hidden className={`pointer-events-none absolute inset-0 -z-0 overflow-hidden ${className}`} style={style}>
       {items.map((d, i) => (
-        <span key={i} className={`absolute opacity-80 animate-bob ${d.className}`} style={{ animationDelay: `${d.delay ?? 0}s` }}>
+        <span
+          key={i}
+          className={`absolute animate-bob ${d.className}`}
+          style={{ animationDelay: `${d.delay ?? 0}s`, opacity: d.opacity ?? 0.4 }}
+        >
           <Shape kind={d.kind} color={d.color} size={d.size} />
         </span>
       ))}
@@ -161,10 +165,11 @@ export function Doodles({
   );
 }
 
-/** Hand-drawn underline stroke — wrap a highlighted heading word. */
+/** Refined gold underline stroke — wrap a highlighted heading word. A single
+ *  hand-drawn gold sweep, thin enough to read as an editorial flourish. */
 export function Squiggle({
   children,
-  color = "var(--c-sun)",
+  color = "var(--gold)",
   className = "",
 }: {
   children: ReactNode;
@@ -174,8 +179,8 @@ export function Squiggle({
   return (
     <span className={`relative inline-block ${className}`}>
       <span className="relative z-10">{children}</span>
-      <svg aria-hidden viewBox="0 0 120 16" preserveAspectRatio="none" className="absolute -bottom-1 left-0 z-0 h-[0.36em] w-full">
-        <path d="M3 9 C30 3,60 14,90 7 S116 5,117 8" fill="none" stroke={color} strokeWidth="6" strokeLinecap="round" />
+      <svg aria-hidden viewBox="0 0 120 12" preserveAspectRatio="none" className="absolute -bottom-1 left-0 z-0 h-[0.22em] w-full">
+        <path d="M2 7 C28 2,62 10,90 5 S116 4,118 6" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
       </svg>
     </span>
   );

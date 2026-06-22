@@ -1,7 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import {
+  Medal, Award, Drama, Coins, MessageCircleHeart, UsersRound,
+  ClipboardList, MicVocal, Star, Trophy, Camera, Plus, Quote,
+  ArrowRight, ArrowUpRight, Sparkles,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/common/icon";
 import { LATEST_MOMENTS, JUDGES } from "@/constants/media";
 import { VideoHero } from "@/components/common/video-hero";
 import { Marquee } from "@/components/common/marquee";
@@ -10,40 +15,40 @@ import { MaskReveal } from "@/components/common/mask-reveal";
 import { CountUp } from "@/components/common/count-up";
 import { Magnetic } from "@/components/common/magnetic";
 import { HorizontalCategories } from "@/components/common/horizontal-categories";
-import { Band, Wave, Doodles, Squiggle } from "@/components/common/playful";
+import { Band } from "@/components/common/playful";
 
 const TICKER = [
   "Dance", "Sing", "Mind Math", "Magic", "Art", "Storytelling", "Acting", "Be a Star",
 ];
 
-const PERKS = [
-  { icon: "military_tech", color: "bg-crayon-sun",   title: "Shiny medal", body: "Every single participant takes home a special medal. No one goes empty-handed!" },
-  { icon: "workspace_premium", color: "bg-crayon-grape", title: "Real certificate", body: "A judge-signed certificate to show your school, family and friends." },
-  { icon: "stadium",       color: "bg-crayon-coral",  title: "National stage", body: "Top kids perform on a big lights-and-music stage in Kolkata." },
-  { icon: "savings",       color: "bg-crayon-mint",   title: "Cash prizes",   body: "Win up to ₹5,000 plus exciting awards across every category." },
-  { icon: "reviews",       color: "bg-crayon-sky",    title: "Star feedback", body: "Tips and cheers from famous singers and TV stars — just for you." },
-  { icon: "diversity_3",   color: "bg-crayon-bubblegum", title: "New friends", body: "Meet talented kids from 200+ centres across Eastern India." },
+const PERKS: { Icon: LucideIcon; title: string; body: string }[] = [
+  { Icon: Medal,             title: "A shining medal",   body: "Every single participant takes one home. On this stage, no one leaves empty-handed." },
+  { Icon: Award,             title: "Signed certificate", body: "A judge-signed certificate to carry proudly to school, family and friends." },
+  { Icon: Drama,             title: "The national stage", body: "Finalists perform under lights and music on a grand stage in Kolkata." },
+  { Icon: Coins,             title: "Cash prizes",       body: "Win up to ₹5,000, plus standout awards across every single category." },
+  { Icon: MessageCircleHeart, title: "Star feedback",    body: "Encouragement and tips from celebrated singers and television stars." },
+  { Icon: UsersRound,        title: "A new circle",      body: "Meet talented children from across the Mind Mantra network of 200+ centres." },
 ];
 
-const PROCESS = [
-  { n: "1", color: "bg-crayon-coral", icon: "app_registration", title: "Sign up at a centre", body: "Join through your nearest Mind Mantra centre and get your very own chest card." },
-  { n: "2", color: "bg-crayon-sun",   icon: "groups",           title: "Show your talent", body: "Perform in the district audition round in front of friendly judges." },
-  { n: "3", color: "bg-crayon-mint",  icon: "celebration",      title: "Reach the finale", body: "Selected stars perform on the big National Stage in Kolkata." },
-  { n: "4", color: "bg-crayon-grape", icon: "emoji_events",     title: "Win & celebrate", body: "Take home medals, certificates, cash prizes and a chance at records!" },
+const PROCESS: { Icon: LucideIcon; title: string; body: string }[] = [
+  { Icon: ClipboardList, title: "Enrol at a centre", body: "Join through your nearest Mind Mantra centre and receive your very own chest card." },
+  { Icon: MicVocal,      title: "Take the stage",    body: "Perform in the district audition round before a warm, encouraging panel of judges." },
+  { Icon: Star,          title: "Reach the finale",  body: "Selected stars are invited to the grand National Finale in Kolkata." },
+  { Icon: Trophy,        title: "Win & celebrate",   body: "Take home medals, certificates, cash prizes — and a memory for life." },
 ];
 
-const PARENT_VOICES = [
-  { name: "Ananya's Mom", role: "Parent · Howrah", quote: "My daughter was so shy. After the stage, she walks into school like a star. Best thing we ever did!", color: "text-crayon-coral" },
-  { name: "Rohan, age 11", role: "Dance · Finalist", quote: "The lights, the judges, the crowd cheering — it felt like a real TV show. I want to do it again!", color: "text-crayon-grape" },
-  { name: "Mr. Das", role: "Centre Owner · Durgapur", quote: "Registration was easy and the kids were thrilled. Parents keep asking when the next one starts.", color: "text-crayon-sky" },
+const VOICES = [
+  { name: "Ananya's mother", role: "Parent · Howrah", quote: "Mind Mantra gave my daughter focus and confidence. A real stage to perform on is exactly what these children deserve — we signed up the very first day." },
+  { name: "Rohan, age 11", role: "Young performer", quote: "Lights, judges, a cheering crowd — it sounds like a real television show. I can't wait to be one of the first ever to perform!" },
+  { name: "Mr. Das", role: "Centre Owner · Durgapur", quote: "After years of abacus classes, a flagship talent event from Mind Mantra is something parents have been waiting for. The response has been wonderful." },
 ];
 
 const FAQ = [
-  { q: "Who can join?", a: "Any child aged 6 to 14 can join through a participating Mind Mantra centre. All skill levels are welcome!" },
-  { q: "What can my child perform?", a: "Dance, Song, Mental Math Olympiad, or any other special talent like magic, art, acting or storytelling." },
-  { q: "Is it safe and supervised?", a: "Yes. Every round is organised through trusted centres with supervised, kid-friendly judging and clear guidelines." },
-  { q: "Does everyone get something?", a: "Absolutely. Every participant receives a medal and a certificate — winning is a bonus, taking part is the real prize." },
-  { q: "How do we register?", a: "Visit your nearest centre or ask them to register you online. Centres assign a chest card and you're ready to shine!" },
+  { q: "Who can take part?", a: "Any child aged 6 to 14 can join through a participating Mind Mantra centre. Every skill level is welcome — this is for everyone." },
+  { q: "What can my child perform?", a: "Dance, Song, the Mental Math Olympiad, or any special talent — magic, art, acting or storytelling." },
+  { q: "Is it safe and well supervised?", a: "Yes. Every round runs through trusted centres with supervised, child-friendly judging and clear guidelines." },
+  { q: "Does everyone receive something?", a: "Absolutely. Every participant receives a medal and a certificate. Winning is a bonus — taking part is the real prize." },
+  { q: "How do we register?", a: "Visit your nearest centre or ask them to register you online. Your centre assigns a chest card and you're ready to shine." },
 ];
 
 export default function HomePage() {
@@ -52,75 +57,83 @@ export default function HomePage() {
       <VideoHero />
       <Marquee items={TICKER} />
 
-      {/* 01 — Perks */}
-      <Band bg="white" to="butter" innerClassName="relative py-20 sm:py-28">
-        <Doodles />
+      {/* 01 — The Rewards (editorial card index) */}
+      <Band bg="white" innerClassName="relative py-24 sm:py-32">
         <div className="container relative mx-auto px-6">
-          <div className="mx-auto max-w-2xl text-center">
-            <Eyebrow icon="redeem" label="Everyone's a winner" centered />
-            <MaskReveal as="h2" className="mt-5 text-3xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
-              Every star takes home{" "}
-              <Squiggle color="var(--c-sun)"><span className="text-gradient">something special.</span></Squiggle>
-            </MaskReveal>
-            <ScrollReveal>
-              <p className="mt-5 text-lg text-muted-foreground">
-                It&apos;s not just about winning — it&apos;s about shining bright and having tons of fun on the way.
+          <div className="grid gap-10 md:grid-cols-12 md:items-end">
+            <div className="md:col-span-7">
+              <Eyebrow index="No. 01" label="The Rewards" />
+              <MaskReveal as="h2" className="mt-6 max-w-2xl font-display text-4xl font-semibold leading-[1.02] tracking-[-0.02em] sm:text-6xl">
+                Every star takes home{" "}
+                <span className="italic text-gold-deep">something to treasure.</span>
+              </MaskReveal>
+            </div>
+            <ScrollReveal className="md:col-span-5">
+              <p className="text-lg leading-relaxed text-muted-foreground">
+                It was never only about winning. The inaugural edition is built so every child
+                leaves taller — with a medal in hand and a memory that lasts.
               </p>
             </ScrollReveal>
           </div>
 
-          <ScrollReveal stagger className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {PERKS.map((p) => (
-              <div key={p.title} data-reveal-item className="lift rounded-3xl border-2 border-border bg-card p-6 shadow-pop">
-                <span className={`inline-flex size-14 items-center justify-center rounded-2xl ${p.color} text-white shadow-pop-sm`}>
-                  <span className="material-symbols-rounded" style={{ fontSize: 30, fontVariationSettings: "'FILL' 0" }}>{p.icon}</span>
+          <ScrollReveal stagger className="mt-16 grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
+            {PERKS.map((p, i) => (
+              <div key={p.title} data-reveal-item className="group relative bg-card p-8 transition-colors hover:bg-secondary/50">
+                <span className="absolute right-6 top-6 font-display text-sm italic text-border">
+                  {String(i + 1).padStart(2, "0")}
                 </span>
-                <h3 className="mt-5 text-xl font-extrabold tracking-tight">{p.title}</h3>
-                <p className="mt-2 text-muted-foreground">{p.body}</p>
+                <span className="inline-flex size-12 items-center justify-center rounded-full bg-secondary text-gold-deep transition-colors group-hover:bg-gold group-hover:text-ink">
+                  <p.Icon className="size-5" strokeWidth={1.75} />
+                </span>
+                <h3 className="mt-6 font-display text-xl font-semibold tracking-tight">{p.title}</h3>
+                <p className="mt-2 leading-relaxed text-muted-foreground">{p.body}</p>
               </div>
             ))}
           </ScrollReveal>
         </div>
       </Band>
 
-      {/* 02 — Categories (pinned horizontal, butter band) */}
+      {/* 02 — Categories (pinned horizontal) */}
       <HorizontalCategories />
 
-      {/* 03 — Stats band (rainbow) */}
-      <section className="relative isolate overflow-hidden bg-brand-gradient pt-16 pb-2 sm:pt-20">
-        <Doodles className="opacity-40" />
+      {/* 03 — Stats (ink editorial band) */}
+      <section className="on-ink relative isolate overflow-hidden bg-ink py-20 text-[#f3ead9] sm:py-24" style={{ ["--ink" as string]: "#1b1510" }}>
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold to-transparent" />
+        <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 size-72 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(199,146,51,0.18),transparent_70%)]" />
         <div className="container relative mx-auto px-6">
-          <ScrollReveal stagger className="grid grid-cols-2 gap-8 text-center text-white md:grid-cols-4">
+          <ScrollReveal stagger className="grid grid-cols-2 gap-y-12 divide-gold/20 text-center md:grid-cols-4 md:divide-x">
             <Stat to={200} suffix="+" label="Centres" />
             <Stat to={5000} prefix="₹" label="Top prize" />
             <Stat to={14} prefix="6–" label="Age group" />
-            <Stat to={4} label="Categories" />
+            <Stat to={1} prefix="Season " label="Inaugural" plain />
           </ScrollReveal>
         </div>
-        <Wave to="mint" />
       </section>
 
-      {/* 04 — How it works */}
-      <Band bg="mint" to="white" innerClassName="relative py-20 sm:py-28">
-        <Doodles />
+      {/* 04 — How it works (stepped path) */}
+      <Band bg="cream" innerClassName="relative py-24 sm:py-32">
         <div className="container relative mx-auto px-6">
           <div className="mx-auto max-w-2xl text-center">
-            <Eyebrow icon="map" label="Your journey" centered />
-            <MaskReveal as="h2" className="mt-5 text-3xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
+            <Eyebrow index="No. 03" label="The Journey" centered />
+            <MaskReveal as="h2" className="mt-6 font-display text-4xl font-semibold leading-[1.02] tracking-[-0.02em] sm:text-6xl">
               From your centre to the{" "}
-              <Squiggle color="var(--c-coral)"><span className="text-gradient">big stage!</span></Squiggle>
+              <span className="italic text-gold-deep">national stage.</span>
             </MaskReveal>
           </div>
 
-          <ScrollReveal stagger className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {PROCESS.map((p) => (
-              <div key={p.n} data-reveal-item className="lift relative rounded-3xl border-2 border-border bg-card p-6 pt-8 shadow-pop">
-                <span className={`absolute -top-5 left-6 inline-flex size-12 items-center justify-center rounded-2xl ${p.color} font-display text-2xl font-extrabold text-white shadow-pop-sm`}>
-                  {p.n}
+          <ScrollReveal stagger className="relative mt-20 grid gap-y-12 md:grid-cols-4 md:gap-x-8">
+            {/* connecting hairline */}
+            <div aria-hidden className="absolute inset-x-[12%] top-6 hidden h-px bg-gradient-to-r from-gold/0 via-gold/50 to-gold/0 md:block" />
+            {PROCESS.map((p, i) => (
+              <div key={p.title} data-reveal-item className="relative text-center">
+                <div className="relative mx-auto grid size-12 place-items-center rounded-full border border-gold/40 bg-background">
+                  <span className="font-display text-base italic text-gold-deep">{i + 1}</span>
+                </div>
+                <span className="mt-6 inline-flex text-foreground/70">
+                  <p.Icon className="size-7" strokeWidth={1.5} />
                 </span>
-                <span className="material-symbols-rounded text-foreground/80" style={{ fontSize: 40 }}>{p.icon}</span>
-                <h3 className="mt-3 text-xl font-extrabold tracking-tight">{p.title}</h3>
-                <p className="mt-2 text-muted-foreground">{p.body}</p>
+                <h3 className="mt-3 font-display text-xl font-semibold tracking-tight">{p.title}</h3>
+                <p className="mx-auto mt-2 max-w-xs leading-relaxed text-muted-foreground">{p.body}</p>
               </div>
             ))}
           </ScrollReveal>
@@ -128,158 +141,193 @@ export default function HomePage() {
       </Band>
 
       {/* 05 — Star judges */}
-      <Band bg="white" to="pink" innerClassName="relative py-20 sm:py-28">
+      <Band bg="butter" innerClassName="relative py-24 sm:py-32">
         <div className="container relative mx-auto grid gap-12 px-6 md:grid-cols-12">
           <div className="md:col-span-4">
             <div className="md:sticky md:top-28">
-              <Eyebrow icon="star" label="Star judges" />
-              <MaskReveal as="h2" className="mt-5 text-3xl font-extrabold leading-[1.1] tracking-tight sm:text-4xl">
+              <Eyebrow index="No. 04" label="The Panel" />
+              <MaskReveal as="h2" className="mt-6 font-display text-4xl font-semibold leading-[1.03] tracking-[-0.02em] sm:text-5xl">
                 Judged by faces you{" "}
-                <Squiggle color="var(--c-grape)"><span className="text-gradient">know & love.</span></Squiggle>
+                <span className="italic text-gold-deep">know &amp; love.</span>
               </MaskReveal>
               <ScrollReveal>
-                <p className="mt-5 max-w-md text-muted-foreground">
-                  Perform at the national finale in front of celebrated stars of Bengali music and television — and get their cheers and tips!
+                <p className="mt-6 max-w-md leading-relaxed text-muted-foreground">
+                  At the national finale, children perform before celebrated stars of Bengali
+                  music and television — and receive their warmth, applause and guidance.
                 </p>
               </ScrollReveal>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 md:col-span-8">
+          <div className="grid grid-cols-2 gap-5 md:col-span-8">
             {JUDGES.map((j) => (
-              <div key={j.name} className="group relative aspect-[3/4] overflow-hidden rounded-3xl border-4 border-card shadow-pop">
+              <figure key={j.name} className="group relative aspect-[3/4] overflow-hidden rounded-2xl bg-ink">
                 <Image
                   src={j.src}
                   alt={j.name}
                   fill
                   sizes="(max-width: 768px) 50vw, 33vw"
-                  className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
+                  className="object-cover object-top transition-transform duration-[1.1s] ease-out group-hover:scale-105"
                 />
-                <div className="absolute inset-0 z-10 bg-gradient-to-t from-foreground via-foreground/20 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 z-20 p-5">
-                  <p className="inline-flex rounded-full bg-card/90 px-3 py-1 text-[11px] font-bold text-crayon-grape backdrop-blur">{j.role}</p>
-                  <p className="mt-2 text-xl font-extrabold tracking-tight text-white">{j.name}</p>
-                  <p className="mt-1 max-h-0 translate-y-2 overflow-hidden text-sm leading-snug text-white/85 opacity-0 transition-all duration-500 ease-out group-hover:max-h-28 group-hover:translate-y-0 group-hover:opacity-100">{j.bio}</p>
-                </div>
-              </div>
+                <div className="absolute inset-0 z-10 bg-gradient-to-t from-ink via-ink/15 to-transparent" />
+                <figcaption className="absolute inset-x-0 bottom-0 z-20 p-6">
+                  <p className="eyebrow text-gold-soft">{j.role}</p>
+                  <p className="mt-2 font-display text-2xl font-semibold tracking-tight text-[#f8f1e3]">{j.name}</p>
+                  <p className="mt-2 max-h-0 translate-y-2 overflow-hidden text-sm leading-relaxed text-[#f3ead9]/80 opacity-0 transition-all duration-500 ease-out group-hover:max-h-28 group-hover:translate-y-0 group-hover:opacity-100">{j.bio}</p>
+                </figcaption>
+              </figure>
             ))}
           </div>
         </div>
       </Band>
 
-      {/* 06 — Gallery preview */}
-      <Band bg="pink" to="grape" innerClassName="relative py-20 sm:py-28">
+      {/* 06 — The stage that awaits (inaugural: a glimpse, not a past archive) */}
+      <Band bg="white" innerClassName="relative py-24 sm:py-32">
         <div className="container mx-auto px-6">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
-              <Eyebrow icon="photo_camera" label="Latest moments" />
-              <MaskReveal as="h2" className="mt-5 text-3xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
-                Look at all the{" "}
-                <Squiggle color="var(--c-mint)"><span className="text-gradient">happy faces!</span></Squiggle>
+              <Eyebrow index="No. 05" label="The Stage Awaits" />
+              <MaskReveal as="h2" className="mt-6 font-display text-4xl font-semibold leading-[1.02] tracking-[-0.02em] sm:text-6xl">
+                Picture your child{" "}
+                <span className="italic text-gold-deep">up there.</span>
               </MaskReveal>
             </div>
-            <Button asChild variant="outline" size="lg" className="font-display font-bold">
+            <Button asChild variant="outline" size="lg">
               <Link href="/gallery" className="inline-flex items-center gap-2">
-                See full gallery
-                <Icon name="arrow_forward" size={18} />
+                Visit the gallery
+                <ArrowRight className="size-4" strokeWidth={1.75} />
               </Link>
             </Button>
           </div>
 
-          <ScrollReveal stagger className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {LATEST_MOMENTS.map((p) => (
-              <Link key={p.id} data-reveal-item href="/gallery" className="group lift relative block aspect-[4/3] overflow-hidden rounded-3xl border-4 border-card shadow-pop">
+          {/* asymmetric editorial mosaic */}
+          <ScrollReveal stagger className="mt-14 grid auto-rows-[200px] grid-cols-2 gap-4 lg:grid-cols-4">
+            {LATEST_MOMENTS.slice(0, 6).map((p, i) => (
+              <Link
+                key={p.id}
+                data-reveal-item
+                href="/gallery"
+                className={`group relative block overflow-hidden rounded-2xl bg-ink ${
+                  i === 0 ? "col-span-2 row-span-2" : i === 3 ? "lg:col-span-2" : ""
+                }`}
+              >
                 <Image
                   src={p.src}
                   alt={p.alt}
                   fill
                   sizes="(max-width: 1024px) 50vw, 33vw"
-                  className="object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
+                  className="object-cover transition-transform duration-[1.1s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
                 />
-                <span className="absolute left-4 top-4 rounded-full bg-background/90 px-3 py-1 text-[11px] font-extrabold text-crayon-grape shadow-pop-sm backdrop-blur">{p.tag}</span>
-                <span className="absolute inset-x-0 bottom-0 translate-y-full bg-gradient-to-t from-foreground via-foreground/70 to-transparent p-4 text-sm font-medium text-white transition-transform duration-500 group-hover:translate-y-0">{p.alt}</span>
+                <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-background/85 px-3 py-1 text-[11px] font-semibold text-foreground backdrop-blur">
+                  <Camera className="size-3" strokeWidth={2} />
+                  {p.tag}
+                </span>
+                <span className="absolute inset-x-0 bottom-0 translate-y-3 p-4 text-sm font-medium text-[#f8f1e3] opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">{p.alt}</span>
               </Link>
             ))}
           </ScrollReveal>
         </div>
       </Band>
 
-      {/* 07 — Parent & kid voices (dark band for contrast) */}
-      <Band bg="ink" innerClassName="relative py-20 sm:py-28">
-        <Doodles />
+      {/* 07 — Why families trust Mind Mantra (ink, big pull-quotes) */}
+      <section className="on-ink relative isolate overflow-hidden bg-ink py-24 text-[#f3ead9] sm:py-32" style={{ ["--ink" as string]: "#1b1510" }}>
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold to-transparent" />
         <div className="container relative mx-auto px-6">
           <div className="mx-auto max-w-2xl text-center">
-            <Eyebrow icon="favorite" label="Why families love it" centered />
-            <MaskReveal as="h2" className="mt-5 text-3xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl">
-              Confidence that lasts{" "}
-              <Squiggle color="var(--c-sun)"><span className="text-gradient">long after the stage.</span></Squiggle>
+            <Eyebrow index="No. 06" label="In Their Words" centered light />
+            <MaskReveal as="h2" className="mt-6 font-display text-4xl font-semibold leading-[1.03] tracking-[-0.02em] text-[#f8f1e3] sm:text-6xl">
+              Confidence that lasts long{" "}
+              <span className="italic text-gold-soft">after the stage.</span>
             </MaskReveal>
           </div>
 
-          <ScrollReveal stagger className="mt-14 grid gap-5 md:grid-cols-3">
-            {PARENT_VOICES.map((t) => (
-              <figure key={t.name} data-reveal-item className="lift flex flex-col rounded-3xl border-2 border-border bg-card p-6 shadow-pop">
-                <span className={`material-symbols-rounded ${t.color}`} style={{ fontSize: 40, fontVariationSettings: "'FILL' 0" }}>format_quote</span>
-                <blockquote className="mt-2 flex-1 text-lg font-medium leading-snug text-foreground">“{t.quote}”</blockquote>
-                <figcaption className="mt-5 border-t-2 border-border pt-4">
-                  <p className="font-extrabold">{t.name}</p>
-                  <p className="text-sm text-muted-foreground">{t.role}</p>
+          <ScrollReveal stagger className="mt-16 grid gap-6 md:grid-cols-3">
+            {VOICES.map((t) => (
+              <figure key={t.name} data-reveal-item className="flex flex-col rounded-2xl border border-[#f3ead9]/12 bg-[#f3ead9]/[0.03] p-8">
+                <Quote className="size-7 text-gold-soft" strokeWidth={1.5} />
+                <blockquote className="mt-5 flex-1 font-display text-lg italic leading-relaxed text-[#f5ecda]">
+                  {t.quote}
+                </blockquote>
+                <figcaption className="mt-6 border-t border-[#f3ead9]/12 pt-5">
+                  <p className="font-semibold text-[#f8f1e3]">{t.name}</p>
+                  <p className="eyebrow mt-1 text-gold-soft/80">{t.role}</p>
                 </figcaption>
               </figure>
             ))}
           </ScrollReveal>
         </div>
-      </Band>
+      </section>
 
-      {/* 08 — FAQ */}
-      <Band bg="sky" to="cream" innerClassName="relative py-20 sm:py-28">
-        <div className="container relative mx-auto max-w-3xl px-6">
-          <div className="text-center">
-            <Eyebrow icon="help" label="Got questions?" centered />
-            <MaskReveal as="h2" className="mt-5 text-3xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
-              Quick answers for{" "}
-              <Squiggle color="var(--c-coral)"><span className="text-gradient">grown-ups.</span></Squiggle>
-            </MaskReveal>
+      {/* 08 — FAQ (refined accordion) */}
+      <Band bg="cream" innerClassName="relative py-24 sm:py-32">
+        <div className="container relative mx-auto grid gap-12 px-6 md:grid-cols-12">
+          <div className="md:col-span-4">
+            <div className="md:sticky md:top-28">
+              <Eyebrow index="No. 07" label="Good to Know" />
+              <MaskReveal as="h2" className="mt-6 font-display text-4xl font-semibold leading-[1.03] tracking-[-0.02em] sm:text-5xl">
+                Quick answers for{" "}
+                <span className="italic text-gold-deep">grown-ups.</span>
+              </MaskReveal>
+            </div>
           </div>
-
-          <div className="mt-12 space-y-4">
-            {FAQ.map((f) => (
-              <details key={f.q} className="group rounded-3xl border-2 border-border bg-card p-5 shadow-pop-sm [&_summary::-webkit-details-marker]:hidden">
-                <summary className="flex cursor-pointer items-center justify-between gap-4 text-lg font-extrabold tracking-tight">
-                  {f.q}
-                  <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-foreground transition-transform group-open:rotate-45">
-                    <span className="material-symbols-rounded" style={{ fontSize: 22 }}>add</span>
-                  </span>
-                </summary>
-                <p className="mt-3 text-muted-foreground">{f.a}</p>
-              </details>
-            ))}
+          <div className="md:col-span-8">
+            <div className="border-t border-border">
+              {FAQ.map((f) => (
+                <details key={f.q} className="group border-b border-border [&_summary::-webkit-details-marker]:hidden">
+                  <summary className="flex cursor-pointer items-center justify-between gap-6 py-6 font-display text-xl font-semibold tracking-tight transition-colors hover:text-gold-deep">
+                    {f.q}
+                    <span className="grid size-8 shrink-0 place-items-center rounded-full border border-border text-foreground transition-all group-open:rotate-45 group-open:border-gold group-open:bg-gold group-open:text-ink">
+                      <Plus className="size-4" strokeWidth={2} />
+                    </span>
+                  </summary>
+                  <p className="max-w-2xl pb-6 leading-relaxed text-muted-foreground">{f.a}</p>
+                </details>
+              ))}
+            </div>
           </div>
         </div>
       </Band>
 
-      {/* 09 — Final CTA */}
-      <section className="relative isolate overflow-hidden bg-band-cream py-24 sm:py-32">
-        <Doodles />
+      {/* 09 — Final CTA (dramatic inaugural) */}
+      <section className="relative isolate overflow-hidden bg-band-butter py-24 sm:py-32">
         <div className="container relative mx-auto px-6">
-          <div className="mx-auto max-w-4xl rounded-[2.5rem] border-4 border-card bg-brand-gradient p-10 text-center text-white shadow-pop sm:p-16">
-            <span className="material-symbols-rounded animate-wiggle" style={{ fontSize: 56, fontVariationSettings: "'FILL' 0" }}>celebration</span>
-            <MaskReveal as="h2" byChar stagger={0.03} className="mx-auto mt-4 block text-balance text-4xl font-extrabold leading-[1.0] tracking-tight sm:text-6xl">
-              Your stage is waiting!
-            </MaskReveal>
-            <ScrollReveal>
-              <p className="mx-auto mt-5 max-w-xl text-lg text-white/90">
-                Medals, judge feedback, certificates and a national-stage chance — all the fun is included. Join through your nearest Mind Mantra centre!
-              </p>
-              <Magnetic className="mt-9 inline-block">
-                <Button asChild variant="candy" size="xl" className="bg-card text-crayon-grape hover:brightness-100">
-                  <Link href="/categories" className="inline-flex items-center gap-2">
-                    Explore the categories
-                    <Icon name="arrow_forward" size={20} />
-                  </Link>
-                </Button>
-              </Magnetic>
-            </ScrollReveal>
+          <div
+            className="on-ink relative mx-auto max-w-5xl overflow-hidden rounded-[2rem] bg-ink px-8 py-16 text-center text-[#f3ead9] shadow-float sm:px-16 sm:py-20"
+            style={{ ["--ink" as string]: "#1b1510" }}
+          >
+            <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(230,185,78,0.22),transparent_55%)]" />
+            <div className="relative">
+              <span className="inline-flex items-center gap-2 rounded-full border border-gold/30 px-4 py-1.5">
+                <Sparkles className="size-4 text-gold-soft" strokeWidth={1.75} />
+                <span className="eyebrow text-gold-soft">The Inaugural Edition · 2026</span>
+              </span>
+              <MaskReveal as="h2" byChar stagger={0.02} className="mx-auto mt-7 block text-balance font-display text-4xl font-semibold leading-[1.0] tracking-[-0.02em] text-[#f8f1e3] sm:text-6xl">
+                Be part of the very first.
+              </MaskReveal>
+              <ScrollReveal>
+                <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#f3ead9]/75">
+                  Medals, judge feedback, certificates and a national-stage moment — the
+                  story of Dekhao Apna Talent begins now. Join through your nearest centre.
+                </p>
+                <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+                  <Magnetic className="inline-block">
+                    <Button asChild variant="fun" size="xl">
+                      <Link href="/categories" className="inline-flex items-center gap-2">
+                        Explore the categories
+                        <ArrowRight className="size-4" strokeWidth={2} />
+                      </Link>
+                    </Button>
+                  </Magnetic>
+                  <Button asChild size="xl" className="border border-[#f3ead9]/25 bg-transparent text-[#f3ead9] hover:bg-[#f3ead9] hover:text-ink">
+                    <Link href="/contact" className="inline-flex items-center gap-2">
+                      Find a centre
+                      <ArrowUpRight className="size-4" strokeWidth={2} />
+                    </Link>
+                  </Button>
+                </div>
+              </ScrollReveal>
+            </div>
           </div>
         </div>
       </section>
@@ -287,22 +335,31 @@ export default function HomePage() {
   );
 }
 
-function Eyebrow({ icon, label, centered = false }: { icon: string; label: string; centered?: boolean }) {
+function Eyebrow({ index, label, centered = false, light = false }: { index: string; label: string; centered?: boolean; light?: boolean }) {
   return (
-    <div className={`inline-flex items-center gap-2 rounded-full bg-card px-4 py-1.5 shadow-pop-sm ${centered ? "mx-auto" : ""}`}>
-      <span className="material-symbols-rounded text-crayon-sun" style={{ fontSize: 18, fontVariationSettings: "'FILL' 0" }}>{icon}</span>
-      <span className="font-fun text-base font-semibold text-crayon-grape">{label}</span>
+    <div className={`flex items-center gap-4 ${centered ? "justify-center" : ""}`}>
+      <span className={`h-px w-10 ${light ? "bg-gold-soft" : "bg-gold"}`} />
+      <span className={`eyebrow ${light ? "text-gold-soft" : "text-gold-deep"}`}>
+        {index} — {label}
+      </span>
     </div>
   );
 }
 
-function Stat({ to, prefix, suffix, label }: { to: number; prefix?: string; suffix?: string; label: string }) {
+function Stat({ to, prefix, suffix, label, plain = false }: { to: number; prefix?: string; suffix?: string; label: string; plain?: boolean }) {
   return (
-    <div data-reveal-item>
-      <p className="font-display text-4xl font-extrabold sm:text-6xl">
-        <CountUp to={to} prefix={prefix} suffix={suffix} />
+    <div data-reveal-item className="px-4">
+      <p className="font-display text-5xl font-semibold tracking-tight text-gold-soft sm:text-6xl">
+        {plain ? (
+          <>
+            <span className="text-3xl sm:text-4xl">{prefix}</span>
+            {to}
+          </>
+        ) : (
+          <CountUp to={to} prefix={prefix} suffix={suffix} />
+        )}
       </p>
-      <p className="mt-2 font-fun text-sm font-semibold uppercase tracking-wider text-white/85">{label}</p>
+      <p className="eyebrow mt-3 text-[#f3ead9]/60">{label}</p>
     </div>
   );
 }

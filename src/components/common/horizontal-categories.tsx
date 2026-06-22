@@ -6,17 +6,18 @@ import { useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { Music, MicVocal, Calculator, Sparkles, ArrowRight, Rocket, Ticket } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { CATEGORIES } from "@/constants";
 import { CATEGORY_IMAGES } from "@/constants/media";
-import { Icon } from "./icon";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-const META: Record<string, { icon: string; tint: string; chip: string; ring: string }> = {
-  dance:          { icon: "music_note",   tint: "bg-crayon-coral/12", chip: "bg-crayon-coral",  ring: "border-crayon-coral/30" },
-  song:           { icon: "mic",          tint: "bg-crayon-grape/12", chip: "bg-crayon-grape",  ring: "border-crayon-grape/30" },
-  "mental-math":  { icon: "calculate",    tint: "bg-crayon-sky/12",   chip: "bg-crayon-sky",    ring: "border-crayon-sky/30" },
-  "other-talent": { icon: "auto_awesome", tint: "bg-crayon-mint/12",  chip: "bg-crayon-mint",   ring: "border-crayon-mint/30" },
+const META: Record<string, { Icon: LucideIcon; accent: string }> = {
+  dance:          { Icon: Music,      accent: "var(--clay)" },
+  song:           { Icon: MicVocal,   accent: "var(--c-bubblegum)" },
+  "mental-math":  { Icon: Calculator, accent: "var(--c-sky)" },
+  "other-talent": { Icon: Sparkles,   accent: "var(--c-mint)" },
 };
 
 /**
@@ -63,16 +64,17 @@ export function HorizontalCategories() {
       <div className="container mx-auto flex h-full flex-col justify-center px-6">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-card px-4 py-1.5 shadow-pop-sm">
-              <span className="material-symbols-rounded text-crayon-coral" style={{ fontSize: 18, fontVariationSettings: "'FILL' 0" }}>category</span>
-              <span className="font-fun text-base font-semibold text-crayon-grape">Pick your stage</span>
+            <div className="flex items-center gap-4">
+              <span className="h-px w-10 bg-gold" />
+              <span className="eyebrow text-gold-deep">No. 02 — The Stages</span>
             </div>
-            <h2 className="mt-4 max-w-2xl text-3xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
-              What will <span className="text-gradient">you</span> show us?
+            <h2 className="mt-5 max-w-2xl font-display text-4xl font-semibold leading-[1.02] tracking-[-0.02em] sm:text-6xl">
+              What will <span className="italic text-gold-deep">you</span> show us?
             </h2>
           </div>
-          <p className="hidden font-fun text-sm font-semibold text-muted-foreground md:block">
-            Scroll to explore →
+          <p className="hidden items-center gap-2 text-sm text-muted-foreground md:flex">
+            Scroll to explore
+            <ArrowRight className="size-4" strokeWidth={1.75} />
           </p>
         </div>
 
@@ -88,38 +90,42 @@ export function HorizontalCategories() {
               <Link
                 key={c.slug}
                 href="/categories"
-                className={`group lift relative flex w-full flex-col overflow-hidden rounded-3xl border-2 ${m.ring} bg-card p-4 shadow-pop md:h-[480px] md:w-[380px]`}
+                className="group lift relative flex w-full flex-col overflow-hidden rounded-2xl border border-ink/10 bg-card shadow-pop-sm md:h-[480px] md:w-[370px]"
               >
                 {/* image window */}
-                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl">
+                <div className="relative aspect-[16/11] w-full overflow-hidden">
                   {bg && (
                     <Image
                       src={bg}
                       alt={c.name}
                       fill
-                      sizes="(max-width: 768px) 100vw, 380px"
-                      className="object-cover transition-transform duration-700 group-hover:scale-110"
+                      sizes="(max-width: 768px) 100vw, 370px"
+                      className="object-cover transition-transform duration-[1.1s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
                     />
                   )}
-                  <span className={`absolute left-3 top-3 inline-flex size-12 items-center justify-center rounded-2xl ${m.chip} text-white shadow-pop-sm`}>
-                    <span className="material-symbols-rounded" style={{ fontSize: 26, fontVariationSettings: "'FILL' 0" }}>{m.icon}</span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink/45 to-transparent" />
+                  <span className="absolute right-4 top-4 font-display text-sm italic text-white/85">
+                    {String(i + 1).padStart(2, "0")}
                   </span>
-                  <span className="absolute right-3 top-3 rounded-full bg-background/90 px-3 py-1 text-xs font-extrabold text-foreground shadow-pop-sm backdrop-blur">
-                    0{i + 1}
+                  <span
+                    className="absolute bottom-4 left-4 inline-flex size-11 items-center justify-center rounded-full bg-card text-ink shadow-pop-sm"
+                    style={{ color: m.accent }}
+                  >
+                    <m.Icon className="size-5" strokeWidth={1.75} />
                   </span>
                 </div>
 
-                <div className={`mt-4 flex flex-1 flex-col rounded-2xl ${m.tint} p-5`}>
-                  <h3 className="text-2xl font-extrabold tracking-tight sm:text-3xl">{c.name}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground md:text-base">{c.blurb}</p>
-                  <div className="mt-auto flex items-center justify-between pt-5">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1.5 text-sm font-bold text-foreground shadow-pop-sm">
-                      <span className="material-symbols-rounded text-crayon-mint" style={{ fontSize: 18, fontVariationSettings: "'FILL' 0" }}>confirmation_number</span>
+                <div className="flex flex-1 flex-col p-6">
+                  <h3 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">{c.name}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{c.blurb}</p>
+                  <div className="mt-auto flex items-center justify-between border-t border-border pt-5">
+                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                      <Ticket className="size-4 text-gold-deep" strokeWidth={1.75} />
                       ₹{c.fee}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-sm font-bold text-crayon-grape">
+                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-gold-deep">
                       Pick this
-                      <Icon name="arrow_forward" size={16} className="transition-transform group-hover:translate-x-1" />
+                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" strokeWidth={1.75} />
                     </span>
                   </div>
                 </div>
@@ -127,18 +133,19 @@ export function HorizontalCategories() {
             );
           })}
 
-          {/* Tail card */}
-          <article className="flex w-full flex-col items-start justify-center rounded-3xl bg-brand-gradient p-8 text-white shadow-pop md:h-[480px] md:w-[360px] md:p-10">
-            <span className="material-symbols-rounded animate-wiggle" style={{ fontSize: 48, fontVariationSettings: "'FILL' 0" }}>rocket_launch</span>
-            <h3 className="mt-6 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
-              Ready to<br />shine?
+          {/* Tail card — ink finale */}
+          <article className="on-ink relative flex w-full flex-col items-start justify-center overflow-hidden rounded-2xl bg-ink p-8 text-[#f3ead9] shadow-pop md:h-[480px] md:w-[360px] md:p-10" style={{ ["--ink" as string]: "#1b1510" }}>
+            <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 size-44 rounded-full bg-[radial-gradient(circle,rgba(199,146,51,0.25),transparent_70%)]" />
+            <Rocket className="size-11 text-gold-soft" strokeWidth={1.5} />
+            <h3 className="mt-6 font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+              Ready to<br /><span className="italic text-gold-soft">shine?</span>
             </h3>
-            <p className="mt-3 text-white/85">Join through your nearest Mind Mantra centre and grab your chest card!</p>
+            <p className="mt-3 text-[#f3ead9]/70">Join through your nearest Mind Mantra centre and grab your chest card.</p>
             <Link
               href="/contact"
-              className="mt-7 inline-flex items-center gap-2 rounded-full bg-card px-5 py-3 text-sm font-bold text-crayon-grape transition-transform hover:-translate-y-0.5"
+              className="mt-7 inline-flex items-center gap-2 rounded-full bg-gold px-5 py-3 text-sm font-semibold text-ink transition-transform hover:-translate-y-0.5"
             >
-              Find a centre <Icon name="arrow_forward" size={16} />
+              Find a centre <ArrowRight className="size-4" strokeWidth={2} />
             </Link>
           </article>
         </div>
