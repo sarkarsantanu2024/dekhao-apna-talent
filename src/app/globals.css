@@ -3,55 +3,81 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Neon dance-studio: deep violet-black canvas, white ink, violet→pink accent */
+/* ════════════════════════════════════════════════════════════════════════
+   BRIGHT & PLAYFUL KIDS THEME  (public site — ages 6–14)
+   Warm cream canvas, ink-grape text, rainbow accents (coral · sunshine ·
+   mint · sky · grape). Dashboards opt out via `.theme-grey` further below.
+   ════════════════════════════════════════════════════════════════════════ */
 :root {
-  --background: oklch(0.09 0.012 285);
-  --foreground: oklch(0.97 0.005 285);
-  --card: oklch(0.13 0.018 285);
-  --card-foreground: oklch(0.97 0.005 285);
-  --popover: oklch(0.13 0.018 285);
-  --popover-foreground: oklch(0.97 0.005 285);
-  --primary: oklch(0.64 0.25 303);         /* #A855F7 vivid violet */
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.18 0.02 285);
-  --secondary-foreground: oklch(0.97 0.005 285);
-  --muted: oklch(0.16 0.018 285);
-  --muted-foreground: oklch(0.70 0.02 285);
-  --accent: oklch(0.66 0.25 0);            /* #EC4899 hot pink highlight */
-  --accent-foreground: oklch(0.99 0 0);
-  --destructive: oklch(0.62 0.24 28);
-  --border: oklch(0.24 0.02 285);
-  --input: oklch(0.20 0.02 285);
-  --ring: oklch(0.64 0.25 303);
-  --radius: 0.55rem;
+  --background: #fffdfa;                /* clean soft-white page */
+  --foreground: #241d3d;               /* deep grape-ink text */
+  --card: #ffffff;
+  --card-foreground: #241d3d;
+  --popover: #ffffff;
+  --popover-foreground: #241d3d;
+  --primary: #9b5de5;                  /* grape — primary actions */
+  --primary-foreground: #ffffff;
+  --secondary: #fff6e8;                /* soft butter surface */
+  --secondary-foreground: #241d3d;
+  --muted: #f4f1ea;
+  --muted-foreground: #574f6e;         /* darker = readable body text */
+  --accent: #ff6b6b;                   /* coral highlight */
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --border: #ece3d4;                   /* soft warm border */
+  --input: #ece3d4;
+  --ring: #9b5de5;
+  --radius: 1.1rem;                    /* rounder = friendlier */
+
+  /* Rainbow crayon box — referenced by utilities + components */
+  --c-coral: #ff6b6b;
+  --c-sun: #ffc83d;
+  --c-mint: #2ec4b6;
+  --c-sky: #4da8ff;
+  --c-grape: #9b5de5;
+  --c-bubblegum: #ff8fd0;
+
+  /* Soft section tints — light & clean so body text stays crisp */
+  --s-cream: #fffaf3;
+  --s-sky: #eff6ff;
+  --s-butter: #fff7e6;
+  --s-mint: #edf9f4;
+  --s-pink: #fff2f7;
+  --s-grape: #f6f1ff;
+  --s-white: #ffffff;
 
   /* Brand gradient stops — reused by .text-gradient / .bg-brand-gradient */
-  --brand: #a855f7;
-  --brand-2: #ec4899;
-  --brand-3: #8b5cf6;
-  --font-display: "Poppins";
-  --font-script: "Great Vibes";
+  --brand: #9b5de5;
+  --brand-2: #ff6b6b;
+  --brand-3: #4da8ff;
+
+  /* Type families (loaded in app/layout.tsx) */
+  --font-display: "Baloo 2";           /* chunky rounded headings */
+  --font-fun: "Fredoka";               /* friendly UI / eyebrow accent */
+  --font-body: "Nunito";               /* highly legible body */
+  --font-script: "Fredoka";            /* legacy alias used by some pages */
 }
 
+/* Dark variant kept identical to root for now (site is light-first) */
 .dark {
-  --background: oklch(0.09 0.012 285);
-  --foreground: oklch(0.97 0.005 285);
-  --card: oklch(0.13 0.018 285);
-  --card-foreground: oklch(0.97 0.005 285);
-  --popover: oklch(0.13 0.018 285);
-  --popover-foreground: oklch(0.97 0.005 285);
-  --primary: oklch(0.64 0.25 303);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.18 0.02 285);
-  --secondary-foreground: oklch(0.97 0.005 285);
-  --muted: oklch(0.16 0.018 285);
-  --muted-foreground: oklch(0.70 0.02 285);
-  --accent: oklch(0.66 0.25 0);
-  --accent-foreground: oklch(0.99 0 0);
-  --destructive: oklch(0.62 0.24 28);
-  --border: oklch(0.24 0.02 285);
-  --input: oklch(0.20 0.02 285);
-  --ring: oklch(0.64 0.25 303);
+  --background: #fffdfa;
+  --foreground: #241d3d;
+  --card: #ffffff;
+  --card-foreground: #241d3d;
+  --popover: #ffffff;
+  --popover-foreground: #241d3d;
+  --primary: #9b5de5;
+  --primary-foreground: #ffffff;
+  --secondary: #fff6e8;
+  --secondary-foreground: #241d3d;
+  --muted: #f4f1ea;
+  --muted-foreground: #574f6e;
+  --accent: #ff6b6b;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --border: #ece3d4;
+  --input: #ece3d4;
+  --ring: #9b5de5;
 }
 
 @theme inline {
@@ -73,11 +99,29 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+
+  /* Rainbow palette exposed as Tailwind colors: bg-crayon-coral, text-crayon-sky… */
+  --color-crayon-coral: var(--c-coral);
+  --color-crayon-sun: var(--c-sun);
+  --color-crayon-mint: var(--c-mint);
+  --color-crayon-sky: var(--c-sky);
+  --color-crayon-grape: var(--c-grape);
+  --color-crayon-bubblegum: var(--c-bubblegum);
+
+  /* Section band tints exposed as Tailwind colors: bg-band-sky, bg-band-mint… */
+  --color-band-cream: var(--s-cream);
+  --color-band-sky: var(--s-sky);
+  --color-band-butter: var(--s-butter);
+  --color-band-mint: var(--s-mint);
+  --color-band-pink: var(--s-pink);
+  --color-band-grape: var(--s-grape);
+  --color-band-white: var(--s-white);
+
+  --radius-sm: calc(var(--radius) - 8px);
+  --radius-md: calc(var(--radius) - 4px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: var(--font-geist-sans);
+  --radius-xl: calc(var(--radius) + 6px);
+  --font-sans: var(--font-body);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -86,95 +130,134 @@
   body {
     background: var(--background);
     color: var(--foreground);
-    font-family: var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-body), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Headings use the geometric display face (Poppins) */
+  /* Headings use the chunky rounded display face (Baloo 2) */
   h1, h2, h3, h4, h5 {
-    font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-display), var(--font-body), system-ui, sans-serif;
+    letter-spacing: -0.01em;
   }
 
   ::selection {
-    background: var(--brand-2);
-    color: #fff;
+    background: var(--c-sun);
+    color: var(--foreground);
   }
 }
 
-/* ── Brand utilities ─────────────────────────────────────────────────── */
-/* Gradient ink for highlighted words / headings */
-.text-gradient {
-  background-image: linear-gradient(100deg, var(--brand-3), var(--brand), var(--brand-2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-/* Violet→pink fill for buttons, chips, number badges */
-.bg-brand-gradient {
-  background-image: linear-gradient(100deg, var(--brand-3), var(--brand), var(--brand-2));
-}
-/* Soft neon glow */
-.glow-brand { box-shadow: 0 0 45px -8px rgba(168, 85, 247, 0.55); }
-.glow-pink  { box-shadow: 0 0 45px -8px rgba(236, 72, 153, 0.55); }
-/* Cursive accent for eyebrow labels */
-.font-script {
-  font-family: var(--font-script), cursive;
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: 0;
-}
+/* ── Solid accent utilities (flat, no gradients) ─────────────────────────── */
+/* Highlighted heading words — solid warm accent */
+.text-gradient { color: var(--c-coral); }
+/* Solid brand fill for buttons, badges, bands */
+.bg-brand-gradient { background: var(--c-grape); }
+.bg-candy-gradient { background: var(--c-coral); }
 
-/* Ambient motion for hero/auth decorative elements */
+/* Friendly rounded face (Fredoka) — eyebrows, buttons, chips.
+   Family only, so Tailwind font-weight utilities still apply. */
+.font-script,
+.font-fun {
+  font-family: var(--font-fun), system-ui, sans-serif;
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+/* Chunky display face (Baloo 2) on demand */
+.font-display { font-family: var(--font-display), system-ui, sans-serif; }
+
+/* Flat look — no box shadows anywhere (kept as no-ops so existing
+   class usages stay valid without churn). */
+.shadow-pop,
+.shadow-pop-sm,
+.glow-grape,
+.glow-coral,
+.glow-sun { box-shadow: none; }
+
+/* ── Playful motion ──────────────────────────────────────────────────────── */
 @keyframes dat-float {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-22px); }
 }
 .animate-float { animation: dat-float 7s ease-in-out infinite; }
-@keyframes dat-spin-slow { to { transform: rotate(360deg); } }
-.animate-spin-slow { animation: dat-spin-slow 38s linear infinite; }
-@keyframes dat-pulse-glow {
-  0%, 100% { opacity: 0.55; }
-  50%      { opacity: 1; }
+
+@keyframes dat-bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-12px) rotate(2deg); }
 }
-.animate-pulse-glow { animation: dat-pulse-glow 4s ease-in-out infinite; }
+.animate-bob { animation: dat-bob 5s ease-in-out infinite; }
+
+@keyframes dat-wiggle {
+  0%, 100% { transform: rotate(-4deg); }
+  50%      { transform: rotate(4deg); }
+}
+.animate-wiggle { animation: dat-wiggle 2.6s ease-in-out infinite; }
+
+@keyframes dat-spin-slow { to { transform: rotate(360deg); } }
+.animate-spin-slow { animation: dat-spin-slow 26s linear infinite; }
+
+@keyframes dat-twinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50%      { opacity: 1; transform: scale(1.1); }
+}
+.animate-twinkle { animation: dat-twinkle 3s ease-in-out infinite; }
+.animate-pulse-glow { animation: dat-twinkle 3s ease-in-out infinite; }
+
+@keyframes dat-pop-in {
+  0%   { opacity: 0; transform: scale(0.7) translateY(10px); }
+  60%  { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-pop-in { animation: dat-pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 
 /* Marquee — used across home page tickers */
 @keyframes dat-marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
-.marquee-track {
-  animation: dat-marquee 28s linear infinite;
+.marquee-track { animation: dat-marquee 30s linear infinite; }
+
+/* Hover lift for fun cards */
+.lift { transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease; }
+.lift:hover { transform: translateY(-6px) rotate(-0.5deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float, .animate-bob, .animate-wiggle, .animate-spin-slow,
+  .animate-twinkle, .animate-pulse-glow, .marquee-track { animation: none !important; }
 }
 
-/* Backend theme — light dashboard palette inspired by DashboardKit/Paces.
- * Scoped via `.theme-grey` on dashboard layouts only; the public site keeps
- * its dark cinematic look. */
+/* ════════════════════════════════════════════════════════════════════════
+   BACKEND THEME — light dashboard palette (DashboardKit/Paces inspired).
+   Scoped via `.theme-grey` on dashboard layouts only; stays professional
+   (Poppins headings, neutral greys) and untouched by the kids restyle.
+   ════════════════════════════════════════════════════════════════════════ */
 .theme-grey {
-  --background: oklch(0.975 0.004 270);         /* #F3F4F8 page bg */
-  --foreground: oklch(0.20 0.04 270);           /* near-navy ink */
-  --card: oklch(1 0 0);                         /* pure white surfaces */
+  --background: oklch(0.975 0.004 270);
+  --foreground: oklch(0.20 0.04 270);
+  --card: oklch(1 0 0);
   --card-foreground: oklch(0.20 0.04 270);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.20 0.04 270);
-  --primary: oklch(0.64 0.25 303);              /* brand violet */
+  --primary: oklch(0.64 0.25 303);
   --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.965 0.004 270);
   --secondary-foreground: oklch(0.25 0.04 270);
   --muted: oklch(0.96 0.004 270);
   --muted-foreground: oklch(0.50 0.02 270);
-  --accent: oklch(0.96 0.02 38);                /* warm tint behind active nav */
+  --accent: oklch(0.96 0.02 38);
   --accent-foreground: oklch(0.20 0.04 270);
   --destructive: oklch(0.58 0.22 28);
   --border: oklch(0.91 0.005 270);
   --input: oklch(0.93 0.005 270);
   --ring: oklch(0.70 0.21 38);
+  --radius: 0.55rem;
+  /* keep dashboards on the professional faces */
+  --font-display: "Poppins";
+  --font-body: var(--font-geist-sans);
 }
 
 /* Material Symbols — used everywhere icons live */
 .material-symbols-outlined,
 .material-symbols-rounded {
-  font-family: var(--icon-family, "Material Symbols Outlined");
+  font-family: var(--icon-family, "Material Symbols Rounded");
   font-weight: normal;
   font-style: normal;
   display: inline-block;
@@ -189,6 +272,5 @@
   user-select: none;
   vertical-align: middle;
 }
-.material-symbols-rounded {
-  --icon-family: "Material Symbols Rounded";
-}
+.material-symbols-rounded { --icon-family: "Material Symbols Rounded"; }
+.material-symbols-outlined { --icon-family: "Material Symbols Outlined"; }

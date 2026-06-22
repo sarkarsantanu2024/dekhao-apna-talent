@@ -1,7 +1,8 @@
 /**
- * Ambient neon decoration — floating gradient blobs, a slow-rotating spiral
- * ring, and a pulsing dot-grid. Pure CSS animation (no JS), pointer-events
- * disabled. Drop inside any `relative overflow-hidden` section.
+ * Playful ambient decoration for the kids' theme — soft floating colour blobs,
+ * a slow-spinning sunburst ring, and a cluster of twinkling stars. Pure CSS
+ * animation (no JS), pointer-events disabled. Drop inside any
+ * `relative overflow-hidden` section.
  */
 export function Decor({
   blobs = true,
@@ -21,27 +22,40 @@ export function Decor({
     >
       {blobs && (
         <>
-          <div className="absolute -left-32 -top-24 size-80 rounded-full bg-[#8b5cf6]/20 blur-[110px] animate-float" />
+          <div className="absolute -left-28 -top-20 size-80 rounded-full bg-crayon-grape/25 blur-[100px] animate-float" />
           <div
-            className="absolute -bottom-32 -right-24 size-96 rounded-full bg-[#ec4899]/15 blur-[120px] animate-float"
-            style={{ animationDelay: "1.8s" }}
+            className="absolute -bottom-28 -right-20 size-96 rounded-full bg-crayon-coral/20 blur-[110px] animate-float"
+            style={{ animationDelay: "1.6s" }}
+          />
+          <div
+            className="absolute right-1/3 top-10 size-64 rounded-full bg-crayon-sky/20 blur-[90px] animate-float"
+            style={{ animationDelay: "0.8s" }}
           />
         </>
       )}
 
       {spiral && (
-        <div className="absolute -right-24 top-1/4 size-[26rem] rounded-full opacity-20 animate-spin-slow [background:conic-gradient(from_0deg,transparent,rgba(168,85,247,0.65),transparent_45%,rgba(236,72,153,0.65),transparent_75%)] [mask:radial-gradient(circle,transparent_60%,#000_62%)]" />
+        <div className="absolute -right-24 top-1/4 size-[24rem] rounded-full opacity-30 animate-spin-slow [background:conic-gradient(from_0deg,transparent,rgba(255,200,61,0.7),transparent_35%,rgba(46,196,182,0.6),transparent_60%,rgba(155,93,229,0.6),transparent_85%)] [mask:radial-gradient(circle,transparent_58%,#000_60%)]" />
       )}
 
       {dots && (
-        <div className="absolute left-8 top-24 grid grid-cols-3 gap-2.5">
-          {Array.from({ length: 9 }).map((_, i) => (
-            <span
-              key={i}
-              className="size-1 rounded-full bg-white/50 animate-pulse-glow"
-              style={{ animationDelay: `${i * 0.22}s` }}
-            />
-          ))}
+        <div className="absolute left-8 top-24 grid grid-cols-3 gap-3">
+          {["#ff6b6b", "#ffc83d", "#2ec4b6", "#4da8ff", "#9b5de5", "#ff8fd0", "#ffc83d", "#2ec4b6", "#ff6b6b"].map(
+            (c, i) => (
+              <span
+                key={i}
+                className="material-symbols-rounded animate-twinkle"
+                style={{
+                  color: c,
+                  fontSize: 14,
+                  animationDelay: `${i * 0.22}s`,
+                  fontVariationSettings: "'FILL' 1",
+                }}
+              >
+                star
+              </span>
+            ),
+          )}
         </div>
       )}
     </div>

@@ -50,7 +50,7 @@ export function ContactForm() {
         <Label htmlFor="c-message">Message</Label>
         <Textarea id="c-message" name="message" required rows={5} placeholder="How can we help?" />
       </div>
-      <Button type="submit" disabled={sending} className="w-full font-bold uppercase tracking-wider">
+      <Button type="submit" variant="fun" size="lg" disabled={sending} className="w-full">
         {sending ? "Sending…" : "Send enquiry"}
       </Button>
     </form>
