@@ -8,8 +8,8 @@ export default function GalleryPage() {
     <>
       <PageHero
         eyebrow="Gallery"
-        title={<>Moments from <span className="text-gradient">past editions.</span></>}
-        subtitle="Photos, full-length videos and short reels from district auditions and national-stage finales."
+        title={<>Moments full of <span className="text-gradient">smiles & sparkle!</span></>}
+        subtitle="Browse photos, videos and reels by year — from district auditions to the big national-stage finale."
       />
       <GalleryView />
     </>

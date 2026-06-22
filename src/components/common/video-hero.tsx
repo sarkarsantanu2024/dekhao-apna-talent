@@ -10,137 +10,136 @@ import { HERO_VIDEO } from "@/constants/media";
 import { EVENT_YEAR } from "@/constants";
 import { Magnetic } from "./magnetic";
 import { Icon } from "./icon";
-import { Decor } from "./decor";
+import { Doodles } from "./playful";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
+
+const CHIPS = [
+  { icon: "cake", label: "Ages 6–14", color: "text-crayon-coral" },
+  { icon: "redeem", label: "₹5,000 top prize", color: "text-crayon-grape" },
+  { icon: "storefront", label: "200+ centres", color: "text-crayon-sky" },
+];
 
 export function VideoHero() {
   const root = useRef<HTMLElement>(null);
 
   useGSAP(
     () => {
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" }, delay: 0.5 });
-      tl.from("[data-hero-meta]", { y: 18, opacity: 0, duration: 0.6 })
-        .from("[data-hero-char]", { yPercent: 110, duration: 0.9, stagger: 0.025, ease: "power3.out" }, "-=0.2")
-        .from("[data-hero-ghost]", { yPercent: 30, opacity: 0, duration: 1.2, ease: "power3.out" }, "<")
-        .from("[data-hero-sub]",  { y: 18, opacity: 0, duration: 0.6 }, "-=0.55")
-        .from("[data-hero-cta]",  { y: 18, opacity: 0, duration: 0.55, stagger: 0.08 }, "-=0.35")
-        .from("[data-hero-foot]", { opacity: 0, duration: 0.6 }, "-=0.3");
-
-      gsap.to("[data-hero-video]", {
-        yPercent: 18,
-        ease: "none",
-        scrollTrigger: {
-          trigger: root.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-      });
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" }, delay: 0.4 });
+      tl.from("[data-hero-eyebrow]", { y: 18, opacity: 0, duration: 0.5 })
+        .from("[data-hero-char]", { yPercent: 110, duration: 0.8, stagger: 0.025 }, "-=0.1")
+        .from("[data-hero-sub]", { y: 18, opacity: 0, duration: 0.55 }, "-=0.4")
+        .from("[data-hero-chip]", { y: 14, opacity: 0, duration: 0.4, stagger: 0.08 }, "-=0.3")
+        .from("[data-hero-cta]", { y: 16, opacity: 0, duration: 0.45, stagger: 0.08 }, "-=0.25")
+        .from("[data-hero-tv]", { scale: 0.85, opacity: 0, duration: 0.7, ease: "back.out(1.6)" }, "-=0.8");
     },
     { scope: root },
   );
 
   const line1 = "Dekhao Apna";
-  const line2 = "Talent.";
+  const line2 = "Talent!";
 
   return (
     <section
       ref={root}
-      className="relative isolate h-[100svh] min-h-[640px] w-full overflow-hidden bg-black text-white"
+      className="relative isolate overflow-hidden bg-band-butter pt-28 pb-16 sm:pt-32 sm:pb-20 lg:pt-40 lg:pb-28"
     >
-      <video
-        data-hero-video
-        className="absolute inset-x-0 -inset-y-[10%] -z-20 h-[120%] w-full object-cover opacity-55"
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="metadata"
-        poster={HERO_VIDEO.poster}
-      >
-        <source src={HERO_VIDEO.src} type="video/mp4" />
-      </video>
-
-      <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-black/55 via-black/35 to-black" />
-      <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_82%_18%,rgba(168,85,247,0.30),transparent_55%),radial-gradient(circle_at_12%_88%,rgba(236,72,153,0.18),transparent_55%)]" />
-      <Decor blobs={false} className="-z-10" />
-
       <div
-        data-hero-ghost
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-[8%] -z-10 select-none text-center text-[26vw] font-black uppercase leading-none tracking-tighter text-white/[0.045] sm:bottom-[6%]"
-      >
-        Talent
-      </div>
+        className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_88%_12%,rgba(255,200,61,0.3),transparent_45%),radial-gradient(circle_at_8%_85%,rgba(77,168,255,0.22),transparent_50%)]"
+      />
+      <Doodles className="-z-10" />
 
-      <div data-hero-meta className="absolute inset-x-0 top-24 z-10 hidden md:block">
-        <div className="container mx-auto flex items-center justify-between px-6 text-[11px] uppercase tracking-[0.22em] text-white/60">
-          <span>Eastern India · National Stage</span>
-          <span className="inline-flex items-center gap-2">
-            <span className="size-1.5 rounded-full bg-[#A855F7]" />
-            Edition {EVENT_YEAR}
-          </span>
-        </div>
-      </div>
+      <div className="container relative mx-auto grid items-center gap-12 px-6 lg:grid-cols-2">
+        {/* Left — copy */}
+        <div className="pt-12 lg:pt-0">
+          <div
+            data-hero-eyebrow
+            className="inline-flex items-center gap-2 rounded-full bg-card px-4 py-2 shadow-pop-sm"
+          >
+            <span className="material-symbols-rounded text-crayon-sun animate-wiggle" style={{ fontSize: 20, fontVariationSettings: "'FILL' 0" }}>
+              auto_awesome
+            </span>
+            <span className="font-fun text-sm font-semibold text-crayon-grape">
+              Eastern India · Edition {EVENT_YEAR}
+            </span>
+          </div>
 
-      <div className="relative z-10 flex h-full flex-col justify-center px-6 sm:px-10">
-        <div className="container mx-auto">
-          <h1 className="font-black uppercase leading-[0.92] tracking-tight">
-            <SplitLine
-              text={line1}
-              className="block text-[15vw] sm:text-[12vw] md:text-[10vw] lg:text-[8.5vw]"
-            />
-            <SplitLine
-              text={line2}
-              accent
-              className="block text-[15vw] sm:text-[12vw] md:text-[10vw] lg:text-[8.5vw]"
-            />
+          <h1 className="mt-6 font-extrabold leading-[0.95] tracking-tight">
+            <SplitLine text={line1} className="block text-5xl sm:text-6xl md:text-7xl" />
+            <SplitLine text={line2} accent className="block text-6xl sm:text-7xl md:text-8xl" />
           </h1>
 
-          <p data-hero-sub className="mt-6 max-w-xl text-base text-white/75 sm:text-lg">
-            A national-stage talent contest for ages 6–14. Dance, song, mental math &amp; more — judged by stars of Bengali television.
+          <p data-hero-sub className="mt-6 max-w-md text-lg text-muted-foreground sm:text-xl">
+            A super-fun talent stage for kids 6–14! Dance, sing, do mind-math or show your own special skill — and shine in front of star judges. 🌟
           </p>
 
-          <div className="mt-10 flex flex-wrap items-center gap-3">
-            <Magnetic data-hero-cta>
-              <Button
-                asChild
-                size="lg"
-                className="group h-12 px-7 font-bold uppercase tracking-wider"
+          <div className="mt-7 flex flex-wrap gap-2.5">
+            {CHIPS.map((c) => (
+              <span
+                key={c.label}
+                data-hero-chip
+                className="inline-flex items-center gap-2 rounded-full border-2 border-border bg-card px-4 py-2 text-sm font-bold text-foreground shadow-pop-sm"
               >
-                <Link href="/register" className="inline-flex items-center gap-2">
-                  Register your centre
-                  <Icon name="south_east" size={18} className="transition-transform group-hover:translate-x-0.5 group-hover:translate-y-0.5" />
+                <span className={`material-symbols-rounded ${c.color}`} style={{ fontSize: 20, fontVariationSettings: "'FILL' 0" }}>
+                  {c.icon}
+                </span>
+                {c.label}
+              </span>
+            ))}
+          </div>
+
+          <div className="mt-9 flex flex-wrap items-center gap-3">
+            <Magnetic data-hero-cta>
+              <Button asChild variant="fun" size="xl" className="group">
+                <Link href="/gallery" className="inline-flex items-center gap-2">
+                  <Icon name="play_circle" size={22} filled />
+                  Watch the fun
                 </Link>
               </Button>
             </Magnetic>
             <Magnetic data-hero-cta>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="h-12 border-white/25 bg-transparent px-6 font-bold uppercase tracking-wider text-white hover:bg-white/5 hover:text-white"
-              >
-                <Link href="/gallery" className="inline-flex items-center gap-2">
-                  <Icon name="play_arrow" size={20} filled />
-                  Watch the reel
+              <Button asChild variant="outline" size="xl" className="font-display font-bold">
+                <Link href="/categories" className="inline-flex items-center gap-2">
+                  Explore categories
+                  <Icon name="arrow_forward" size={20} />
                 </Link>
               </Button>
             </Magnetic>
           </div>
         </div>
-      </div>
 
-      <div
-        data-hero-foot
-        className="absolute inset-x-0 bottom-0 z-10 border-t border-white/10 bg-black/30 backdrop-blur"
-      >
-        <div className="container mx-auto flex items-center justify-between gap-6 px-6 py-4 text-[11px] uppercase tracking-[0.22em] text-white/55 sm:text-xs">
-          <span className="hidden sm:inline">Scroll to explore</span>
-          <span>Top prize <span className="text-white">₹5,000</span></span>
-          <span className="hidden md:inline">Finale · Kolkata</span>
-          <span>Ages <span className="text-white">6 – 14</span></span>
+        {/* Right — video in a chunky sticker frame */}
+        <div data-hero-tv className="relative mx-auto w-full max-w-xl lg:max-w-none">
+          {/* floating sticker accents */}
+          <span aria-hidden className="absolute -left-4 -top-5 z-10 inline-flex size-14 items-center justify-center rounded-2xl bg-crayon-sun text-foreground shadow-pop animate-bob">
+            <span className="material-symbols-rounded" style={{ fontSize: 28, fontVariationSettings: "'FILL' 0" }}>music_note</span>
+          </span>
+          <span aria-hidden className="absolute -right-3 top-1/3 z-10 inline-flex size-12 items-center justify-center rounded-full bg-crayon-coral text-white shadow-pop animate-bob" style={{ animationDelay: "0.8s" }}>
+            <span className="material-symbols-rounded" style={{ fontSize: 24, fontVariationSettings: "'FILL' 0" }}>favorite</span>
+          </span>
+          <span aria-hidden className="absolute -bottom-4 left-10 z-10 inline-flex size-12 items-center justify-center rounded-2xl bg-crayon-sky text-white shadow-pop animate-bob" style={{ animationDelay: "1.4s" }}>
+            <span className="material-symbols-rounded" style={{ fontSize: 24, fontVariationSettings: "'FILL' 0" }}>star</span>
+          </span>
+
+          <div className="relative overflow-hidden rounded-[2rem] border-4 border-card bg-foreground">
+            <video
+              className="aspect-[4/5] w-full object-cover sm:aspect-video lg:aspect-[5/4]"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              poster={HERO_VIDEO.poster}
+            >
+              <source src={HERO_VIDEO.src} type="video/mp4" />
+            </video>
+            <div aria-hidden className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/20" />
+            <span className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full bg-background/90 px-3 py-1.5 text-xs font-bold text-foreground shadow-pop-sm backdrop-blur">
+              <span className="size-2 animate-twinkle rounded-full bg-crayon-coral" />
+              Finale highlights
+            </span>
+          </div>
         </div>
       </div>
     </section>
@@ -154,7 +153,7 @@ function SplitLine({ text, accent = false, className }: { text: string; accent?:
   if (accent) {
     return (
       <span className={className ?? ""}>
-        <span className="inline-block overflow-hidden align-bottom">
+        <span className="inline-block overflow-hidden align-bottom pb-2">
           <span data-hero-char className="inline-block text-gradient will-change-transform">
             {text}
           </span>
