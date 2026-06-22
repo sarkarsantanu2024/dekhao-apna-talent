@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Star, Menu, X, ArrowUpRight, LockKeyhole } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Icon } from "./icon";
 
 function useIsActive() {
   const pathname = usePathname();
@@ -21,6 +21,24 @@ const NAV = [
   { href: "/gallery", label: "Gallery" },
   { href: "/contact", label: "Contact" },
 ];
+
+function Wordmark({ onClick }: { onClick?: () => void }) {
+  return (
+    <Link href="/" onClick={onClick} className="group flex items-center gap-3">
+      <span className="relative inline-flex size-9 items-center justify-center rounded-full bg-ink text-gold-soft transition-transform duration-500 group-hover:rotate-[18deg]">
+        <Star className="size-4" strokeWidth={2} fill="currentColor" />
+      </span>
+      <span className="flex flex-col leading-none">
+        <span className="font-display text-[1.05rem] font-semibold tracking-tight text-foreground">
+          Dekhao Apna <span className="italic text-gold-deep">Talent</span>
+        </span>
+        <span className="eyebrow mt-1 text-[0.58rem] text-muted-foreground">
+          Mind Mantra Abacus
+        </span>
+      </span>
+    </Link>
+  );
+}
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -56,27 +74,17 @@ export function SiteHeader() {
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-50 border-b-2 bg-card/95 backdrop-blur-md transition-all duration-300 ${
-          scrolled ? "border-border" : "border-transparent"
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
+          scrolled
+            ? "border-b border-border bg-background/85 backdrop-blur-xl"
+            : "border-b border-transparent bg-transparent"
         }`}
       >
         <div className="container mx-auto flex h-20 items-center justify-between gap-6 px-4 sm:px-6">
-          <Link href="/" className="group flex items-center gap-3">
-            <span className="inline-flex size-10 items-center justify-center rounded-full bg-brand-gradient text-white shadow-pop-sm transition-transform group-hover:-rotate-12 group-hover:scale-110">
-              <span
-                className="material-symbols-rounded"
-                style={{ fontSize: 22, fontVariationSettings: "'FILL' 0" }}
-              >
-                star
-              </span>
-            </span>
-            <span className="font-display text-base font-extrabold tracking-tight text-foreground sm:text-lg">
-              Dekhao Apna Talent
-            </span>
-          </Link>
+          <Wordmark />
 
           <nav className="hidden xl:block">
-            <ul className="flex items-center gap-2">
+            <ul className="flex items-center gap-1">
               {NAV.map((n) => {
                 const active = isActive(n.href);
                 return (
@@ -84,13 +92,16 @@ export function SiteHeader() {
                     <Link
                       href={n.href}
                       aria-current={active ? "page" : undefined}
-                      className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-                        active
-                          ? "bg-crayon-grape/12 text-crayon-grape"
-                          : "text-foreground/70 hover:bg-muted hover:text-foreground"
+                      className={`group relative inline-flex items-center px-3.5 py-2 text-[0.82rem] font-medium tracking-tight transition-colors ${
+                        active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       {n.label}
+                      <span
+                        className={`absolute inset-x-3.5 -bottom-0.5 h-px origin-left bg-gold transition-transform duration-300 ${
+                          active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                        }`}
+                      />
                     </Link>
                   </li>
                 );
@@ -98,15 +109,10 @@ export function SiteHeader() {
             </ul>
           </nav>
 
-          <div className="flex items-center gap-2">
-            <Button
-              asChild
-              variant="fun"
-              size="sm"
-              className="hidden h-10 px-5 sm:inline-flex"
-            >
+          <div className="flex items-center gap-2.5">
+            <Button asChild variant="fun" size="sm" className="hidden h-10 px-5 sm:inline-flex">
               <Link href="/login" className="inline-flex items-center gap-1.5">
-                <Icon name="lock_open" size={16} />
+                <LockKeyhole className="size-3.5" strokeWidth={2} />
                 Login
               </Link>
             </Button>
@@ -116,9 +122,9 @@ export function SiteHeader() {
               aria-expanded={open}
               aria-controls="site-drawer"
               onClick={() => setOpen(true)}
-              className="inline-flex size-11 items-center justify-center rounded-full border-2 border-border bg-card text-foreground shadow-pop-sm hover:border-crayon-grape hover:text-crayon-grape xl:hidden"
+              className="inline-flex size-11 items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors hover:border-ink hover:bg-ink hover:text-primary-foreground xl:hidden"
             >
-              <Icon name="menu" size={22} />
+              <Menu className="size-5" strokeWidth={1.75} />
             </button>
           </div>
         </div>
@@ -128,10 +134,8 @@ export function SiteHeader() {
       <div
         onClick={() => setOpen(false)}
         aria-hidden
-        className={`fixed inset-0 z-[60] bg-foreground/40 backdrop-blur-sm transition-opacity duration-500 xl:hidden ${
-          open
-            ? "pointer-events-auto opacity-100"
-            : "pointer-events-none opacity-0"
+        className={`fixed inset-0 z-[60] bg-ink/45 backdrop-blur-sm transition-opacity duration-500 xl:hidden ${
+          open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}
       />
 
@@ -141,53 +145,53 @@ export function SiteHeader() {
         role="dialog"
         aria-modal="true"
         aria-label="Site navigation"
-        className={`fixed inset-y-0 right-0 z-[70] flex w-full flex-col border-l-4 border-border bg-background text-foreground transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] xl:hidden sm:w-[420px] ${
+        className={`fixed inset-y-0 right-0 z-[70] flex w-full flex-col bg-background text-foreground transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] xl:hidden sm:w-[420px] ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* Drawer header */}
-        <div className="flex items-center justify-between border-b-2 border-border px-6 py-5">
-          <span className="font-fun text-base font-semibold text-crayon-grape">
-            Menu
-          </span>
+        <div className="flex items-center justify-between border-b border-border px-6 py-5">
+          <span className="eyebrow text-muted-foreground">Menu</span>
           <button
             type="button"
             aria-label="Close menu"
             onClick={() => setOpen(false)}
-            className="group inline-flex size-11 items-center justify-center rounded-full border-2 border-border bg-card text-foreground shadow-pop-sm transition-colors hover:border-crayon-coral hover:bg-crayon-coral/10 hover:text-crayon-coral"
+            className="inline-flex size-11 items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors hover:border-clay hover:bg-clay hover:text-white"
           >
-            <Icon name="close" size={22} />
+            <X className="size-5" strokeWidth={1.75} />
           </button>
         </div>
 
-        {/* Nav links — each slides in with stagger via CSS delay */}
-        <nav className="flex-1 overflow-y-auto px-6 py-6">
-          <ul className="flex flex-col gap-1">
+        <nav className="flex-1 overflow-y-auto px-6 py-8">
+          <ul className="flex flex-col">
             {NAV.map((n, i) => (
               <li
                 key={n.href}
-                className={`transition-all duration-500 ${
+                className={`border-b border-border/60 transition-all duration-500 ${
                   open ? "translate-x-0 opacity-100" : "translate-x-6 opacity-0"
                 }`}
-                style={{ transitionDelay: open ? `${120 + i * 60}ms` : "0ms" }}
+                style={{ transitionDelay: open ? `${120 + i * 55}ms` : "0ms" }}
               >
                 <Link
                   href={n.href}
                   onClick={() => setOpen(false)}
                   aria-current={isActive(n.href) ? "page" : undefined}
-                  className={`group flex items-center justify-between rounded-2xl px-4 py-4 ${
-                    isActive(n.href)
-                      ? "bg-crayon-grape/12 text-crayon-grape"
-                      : "text-foreground/85 hover:bg-muted"
-                  }`}
+                  className="group flex items-baseline justify-between gap-4 py-4"
                 >
-                  <span className="text-2xl font-extrabold tracking-tight">
-                    {n.label}
+                  <span className="flex items-baseline gap-3">
+                    <span className="eyebrow text-[0.6rem] text-gold-deep">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span
+                      className={`font-display text-2xl tracking-tight transition-colors ${
+                        isActive(n.href) ? "italic text-gold-deep" : "text-foreground group-hover:text-gold-deep"
+                      }`}
+                    >
+                      {n.label}
+                    </span>
                   </span>
-                  <Icon
-                    name="arrow_forward"
-                    size={20}
-                    className="opacity-40 transition-all group-hover:translate-x-1 group-hover:text-crayon-coral group-hover:opacity-100"
+                  <ArrowUpRight
+                    className="size-5 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0 group-hover:text-gold-deep group-hover:opacity-100"
+                    strokeWidth={1.75}
                   />
                 </Link>
               </li>
@@ -195,28 +199,19 @@ export function SiteHeader() {
           </ul>
         </nav>
 
-        {/* Drawer footer CTA */}
         <div
-          className={`border-t-2 border-border px-6 py-6 transition-all duration-500 ${
+          className={`border-t border-border px-6 py-6 transition-all duration-500 ${
             open ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
           }`}
-          style={{
-            transitionDelay: open ? `${120 + NAV.length * 60}ms` : "0ms",
-          }}
+          style={{ transitionDelay: open ? `${120 + NAV.length * 55}ms` : "0ms" }}
         >
           <Button asChild variant="fun" className="h-12 w-full">
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="inline-flex items-center justify-center gap-2"
-            >
-              <Icon name="lock_open" size={18} />
-              Login
+            <Link href="/login" onClick={() => setOpen(false)} className="inline-flex items-center justify-center gap-2">
+              <LockKeyhole className="size-4" strokeWidth={2} />
+              Centre Login
             </Link>
           </Button>
-          <p className="mt-4 font-fun text-sm text-muted-foreground">
-            Kolkata · Eastern India
-          </p>
+          <p className="eyebrow mt-5 text-muted-foreground">Kolkata · Eastern India</p>
         </div>
       </aside>
     </>

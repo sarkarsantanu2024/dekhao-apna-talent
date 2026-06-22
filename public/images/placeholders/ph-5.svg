@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1500" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1d1610"/>
+      <stop offset="1" stop-color="#2c2118"/>
+    </linearGradient>
+    <radialGradient id="gl" cx="0.5" cy="0.42" r="0.62">
+      <stop offset="0" stop-color="#c98a92" stop-opacity="0.40"/>
+      <stop offset="1" stop-color="#c98a92" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="1500" fill="url(#bg)"/>
+  <rect width="1200" height="1500" fill="url(#gl)"/>
+  <path d="M600.0 435.0 L640.0 545.0 L756.9 549.0 L664.7 621.0 L697.0 733.5 L600.0 668.0 L503.0 733.5 L535.3 621.0 L443.1 549.0 L560.0 545.0 Z" fill="#c98a92" opacity="0.92"/>
+  <circle cx="600" cy="600" r="245" fill="none" stroke="#c98a92" stroke-width="2" opacity="0.30"/>
+  <text x="600" y="930" text-anchor="middle" font-family="Georgia, serif" font-size="62" font-style="italic" fill="#f5ecda">Dekhao Apna Talent</text>
+  <text x="600" y="1000" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" letter-spacing="6" fill="#c98a92" opacity="0.85">PHOTO COMING SOON</text>
+</svg>

@@ -4,7 +4,7 @@ import { useRef, type ReactNode } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { MaskReveal } from "./mask-reveal";
-import { Doodles, Wave, type BandColor } from "./playful";
+import type { BandColor } from "./playful";
 
 gsap.registerPlugin(useGSAP);
 
@@ -12,18 +12,23 @@ type Props = {
   eyebrow?: string;
   title: ReactNode;
   subtitle?: ReactNode;
-  /** colour of the section that follows — controls the wave divider */
+  /** kept for call-site compatibility; section dividers are flat now */
   nextBg?: BandColor;
 };
 
-export function PageHero({ eyebrow, title, subtitle, nextBg = "cream" }: Props) {
+/**
+ * Editorial inner-page masthead: warm paper, a faint oversized serif watermark
+ * of the section name, a gold rule + small-caps eyebrow, and a Fraunces title.
+ */
+export function PageHero({ eyebrow, title, subtitle }: Props) {
   const root = useRef<HTMLElement>(null);
 
   useGSAP(
     () => {
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" }, delay: 0.25 });
-      tl.from("[data-hero-eyebrow]", { y: 16, opacity: 0, duration: 0.55 })
-        .from("[data-hero-sub]",     { y: 18, opacity: 0, duration: 0.6 }, "+=0.6");
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" }, delay: 0.2 });
+      tl.from("[data-hero-eyebrow]", { y: 16, autoAlpha: 0, duration: 0.55 })
+        .from("[data-hero-sub]", { y: 18, autoAlpha: 0, duration: 0.6 }, "+=0.5");
     },
     { scope: root },
   );
@@ -31,47 +36,44 @@ export function PageHero({ eyebrow, title, subtitle, nextBg = "cream" }: Props) 
   return (
     <section
       ref={root}
-      className="relative isolate overflow-hidden bg-band-butter pt-32 pb-24 sm:pt-40 sm:pb-32"
+      className="relative isolate overflow-hidden bg-band-butter pt-36 pb-20 sm:pt-44 sm:pb-28"
     >
       <div
         aria-hidden
-        className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(155,93,229,0.14),transparent_50%),radial-gradient(circle_at_10%_85%,rgba(255,107,107,0.12),transparent_50%)]"
+        className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_85%_12%,rgba(199,146,51,0.16),transparent_48%),radial-gradient(circle_at_8%_92%,rgba(192,106,63,0.10),transparent_52%)]"
       />
-      <Doodles />
+      <div aria-hidden className="paper-grain pointer-events-none absolute inset-0 -z-10 opacity-50" />
+
+      {/* faint oversized serif watermark of the section name */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 -bottom-2 select-none text-center text-[24vw] font-extrabold uppercase leading-none tracking-tighter text-foreground/4 sm:-bottom-6"
+        className="pointer-events-none absolute inset-x-0 -bottom-[6vw] select-none text-center font-display text-[26vw] font-semibold italic leading-none tracking-[-0.04em] text-ink/[0.045]"
       >
         {eyebrow ?? "Stage"}
       </div>
+
       <div className="container relative mx-auto px-6">
         {eyebrow && (
-          <div
-            data-hero-eyebrow
-            className="inline-flex items-center gap-2 rounded-full bg-card px-4 py-1.5 shadow-pop-sm"
-          >
-            <span className="material-symbols-rounded text-crayon-sun" style={{ fontSize: 18, fontVariationSettings: "'FILL' 0" }}>
-              star
-            </span>
-            <span className="font-fun text-base font-semibold text-crayon-grape">{eyebrow}</span>
+          <div data-hero-eyebrow className="flex items-center gap-4">
+            <span className="h-px w-12 bg-gold" />
+            <span className="eyebrow text-gold-deep">{eyebrow}</span>
           </div>
         )}
         <MaskReveal
           as="h1"
           immediate
-          delay={0.45}
-          stagger={0.06}
-          className="mt-6 block max-w-4xl text-balance text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl"
+          delay={0.4}
+          stagger={0.08}
+          className="mt-7 block max-w-4xl text-balance font-display text-5xl font-semibold leading-[1.0] tracking-[-0.03em] sm:text-7xl md:text-8xl"
         >
           {title}
         </MaskReveal>
         {subtitle && (
-          <p data-hero-sub className="mt-7 max-w-2xl text-lg text-muted-foreground sm:text-xl">
+          <p data-hero-sub className="mt-7 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
             {subtitle}
           </p>
         )}
       </div>
-      <Wave to={nextBg} />
     </section>
   );
 }

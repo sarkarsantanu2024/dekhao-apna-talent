@@ -4,80 +4,102 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ════════════════════════════════════════════════════════════════════════
-   BRIGHT & PLAYFUL KIDS THEME  (public site — ages 6–14)
-   Warm cream canvas, ink-grape text, rainbow accents (coral · sunshine ·
-   mint · sky · grape). Dashboards opt out via `.theme-grey` further below.
+   DEKHAO APNA TALENT — public site design system
+   "Editorial Playful": warm paper canvas, espresso ink, a single signature
+   gold, and a quiet clay second voice. Rainbow is retired to tiny category
+   accents only. Typography is the hero — Fraunces (display serif) over
+   Plus Jakarta Sans (UI/body). Dashboards opt out via `.theme-grey`.
    ════════════════════════════════════════════════════════════════════════ */
 :root {
-  --background: #fffdfa;                /* clean soft-white page */
-  --foreground: #241d3d;               /* deep grape-ink text */
+  /* ── Foundation: warm paper + espresso ink ─────────────────────────────── */
+  --background: #faf6ee;                /* warm cream paper */
+  --foreground: #211b16;               /* espresso ink */
   --card: #ffffff;
-  --card-foreground: #241d3d;
+  --card-foreground: #211b16;
   --popover: #ffffff;
-  --popover-foreground: #241d3d;
-  --primary: #9b5de5;                  /* grape — primary actions */
-  --primary-foreground: #ffffff;
-  --secondary: #fff6e8;                /* soft butter surface */
-  --secondary-foreground: #241d3d;
-  --muted: #f4f1ea;
-  --muted-foreground: #574f6e;         /* darker = readable body text */
-  --accent: #ff6b6b;                   /* coral highlight */
+  --popover-foreground: #211b16;
+
+  /* Primary = ink (editorial dark actions); accent = signature gold */
+  --primary: #211b16;
+  --primary-foreground: #fbf8f2;
+  --secondary: #f3ead9;                /* warm sand surface */
+  --secondary-foreground: #2b231c;
+  --muted: #f1ebe0;
+  --muted-foreground: #6f6457;         /* warm stone — readable body grey */
+  --accent: #c06a3f;                   /* clay second voice */
   --accent-foreground: #ffffff;
-  --destructive: #ef4444;
-  --border: #ece3d4;                   /* soft warm border */
-  --input: #ece3d4;
-  --ring: #9b5de5;
-  --radius: 1.1rem;                    /* rounder = friendlier */
+  --destructive: #c0392b;
+  --border: #e7dcca;                   /* soft warm rule */
+  --input: #e7dcca;
+  --ring: #c79233;
+  --radius: 0.75rem;                   /* editorial: crisper than before */
 
-  /* Rainbow crayon box — referenced by utilities + components */
-  --c-coral: #ff6b6b;
-  --c-sun: #ffc83d;
-  --c-mint: #2ec4b6;
-  --c-sky: #4da8ff;
-  --c-grape: #9b5de5;
-  --c-bubblegum: #ff8fd0;
+  /* ── Signature palette ─────────────────────────────────────────────────── */
+  --gold: #c79233;                     /* marigold — the one signature accent */
+  --gold-soft: #e6b94e;                /* lighter gold for fills on dark */
+  --gold-deep: #9c6f1f;                /* readable gold for text on paper */
+  --clay: #c06a3f;                     /* warm terracotta — rare second voice */
+  --ink: #211b16;                      /* espresso */
+  --ink-soft: #4a4036;                 /* softened ink for secondary text */
 
-  /* Soft section tints — light & clean so body text stays crisp */
-  --s-cream: #fffaf3;
-  --s-sky: #eff6ff;
-  --s-butter: #fff7e6;
-  --s-mint: #edf9f4;
-  --s-pink: #fff2f7;
-  --s-grape: #f6f1ff;
+  /* Legacy "crayon" names, re-skinned to the curated set. Kept so pages not
+     yet rebuilt inherit the new palette instead of breaking. Category dots
+     (mint/sky/bubblegum) are muted — used only as small category accents. */
+  --c-coral: #c06a3f;                  /* clay */
+  --c-sun: #c79233;                    /* gold */
+  --c-mint: #4f8a76;                   /* muted sage */
+  --c-sky: #4f6f8a;                    /* muted slate-blue */
+  --c-grape: #211b16;                  /* ink (was purple) */
+  --c-bubblegum: #b3727a;              /* dusty rose */
+
+  /* ── Section bands — desaturated paper tints (no candy colors) ─────────── */
+  --s-cream: #faf6ee;
+  --s-sky: #eef2f3;                    /* cool paper */
+  --s-butter: #f7efdd;                 /* warm sand */
+  --s-mint: #eef3ef;                   /* sage paper */
+  --s-pink: #f8efe7;                   /* clay paper */
+  --s-grape: #f3eee6;                  /* soft taupe paper */
   --s-white: #ffffff;
 
-  /* Brand gradient stops — reused by .text-gradient / .bg-brand-gradient */
-  --brand: #9b5de5;
-  --brand-2: #ff6b6b;
-  --brand-3: #4da8ff;
+  /* Brand fill stops (used by .bg-brand-gradient etc.) → deep ink */
+  --brand: #211b16;
+  --brand-2: #2c241d;
+  --brand-3: #c79233;
 
-  /* Type families (loaded in app/layout.tsx) */
-  --font-display: "Baloo 2";           /* chunky rounded headings */
-  --font-fun: "Fredoka";               /* friendly UI / eyebrow accent */
-  --font-body: "Nunito";               /* highly legible body */
-  --font-script: "Fredoka";            /* legacy alias used by some pages */
+  /* ── Type families (loaded in app/layout.tsx) ──────────────────────────── */
+  --font-display: "Fraunces";          /* warm editorial serif — headings */
+  --font-fun: "Plus Jakarta Sans";     /* labels / eyebrows / UI */
+  --font-body: "Plus Jakarta Sans";    /* highly legible body */
+  --font-script: "Fraunces";           /* legacy alias used by some pages */
+
+  /* ── Real, warm-tinted elevation (replaces flat no-op shadows) ─────────── */
+  --shadow-xs: 0 1px 2px rgba(33, 27, 22, 0.05);
+  --shadow-sm: 0 1px 2px rgba(33, 27, 22, 0.06), 0 2px 6px rgba(33, 27, 22, 0.05);
+  --shadow-md: 0 4px 10px rgba(33, 27, 22, 0.06), 0 12px 28px rgba(33, 27, 22, 0.07);
+  --shadow-lg: 0 8px 20px rgba(33, 27, 22, 0.08), 0 30px 60px rgba(33, 27, 22, 0.10);
+  --shadow-gold: 0 10px 30px rgba(199, 146, 51, 0.22);
 }
 
-/* Dark variant kept identical to root for now (site is light-first) */
+/* Site is light-first; dark mirrors root for now. */
 .dark {
-  --background: #fffdfa;
-  --foreground: #241d3d;
+  --background: #faf6ee;
+  --foreground: #211b16;
   --card: #ffffff;
-  --card-foreground: #241d3d;
+  --card-foreground: #211b16;
   --popover: #ffffff;
-  --popover-foreground: #241d3d;
-  --primary: #9b5de5;
-  --primary-foreground: #ffffff;
-  --secondary: #fff6e8;
-  --secondary-foreground: #241d3d;
-  --muted: #f4f1ea;
-  --muted-foreground: #574f6e;
-  --accent: #ff6b6b;
+  --popover-foreground: #211b16;
+  --primary: #211b16;
+  --primary-foreground: #fbf8f2;
+  --secondary: #f3ead9;
+  --secondary-foreground: #2b231c;
+  --muted: #f1ebe0;
+  --muted-foreground: #6f6457;
+  --accent: #c06a3f;
   --accent-foreground: #ffffff;
-  --destructive: #ef4444;
-  --border: #ece3d4;
-  --input: #ece3d4;
-  --ring: #9b5de5;
+  --destructive: #c0392b;
+  --border: #e7dcca;
+  --input: #e7dcca;
+  --ring: #c79233;
 }
 
 @theme inline {
@@ -100,7 +122,15 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Rainbow palette exposed as Tailwind colors: bg-crayon-coral, text-crayon-sky… */
+  /* Signature tokens exposed as Tailwind colors */
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-gold-deep: var(--gold-deep);
+  --color-clay: var(--clay);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+
+  /* Legacy crayon names mapped to the curated palette */
   --color-crayon-coral: var(--c-coral);
   --color-crayon-sun: var(--c-sun);
   --color-crayon-mint: var(--c-mint);
@@ -108,7 +138,7 @@
   --color-crayon-grape: var(--c-grape);
   --color-crayon-bubblegum: var(--c-bubblegum);
 
-  /* Section band tints exposed as Tailwind colors: bg-band-sky, bg-band-mint… */
+  /* Section band tints */
   --color-band-cream: var(--s-cream);
   --color-band-sky: var(--s-sky);
   --color-band-butter: var(--s-butter);
@@ -117,12 +147,18 @@
   --color-band-grape: var(--s-grape);
   --color-band-white: var(--s-white);
 
-  --radius-sm: calc(var(--radius) - 8px);
-  --radius-md: calc(var(--radius) - 4px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 6px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 12px);
   --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
   --font-mono: var(--font-geist-mono);
+
+  /* Elevation exposed as Tailwind shadow utilities */
+  --shadow-soft: var(--shadow-sm);
+  --shadow-card: var(--shadow-md);
+  --shadow-float: var(--shadow-lg);
 }
 
 @layer base {
@@ -132,102 +168,237 @@
     color: var(--foreground);
     font-family: var(--font-body), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
-  /* Headings use the chunky rounded display face (Baloo 2) */
+  /* Headings use the editorial serif (Fraunces) with optical settings for
+     warmth. Tight tracking + balanced wrap reads as crafted, not default. */
   h1, h2, h3, h4, h5 {
-    font-family: var(--font-display), var(--font-body), system-ui, sans-serif;
-    letter-spacing: -0.01em;
+    font-family: var(--font-display), Georgia, serif;
+    font-optical-sizing: auto;
+    letter-spacing: -0.02em;
+    font-weight: 600;
   }
 
   ::selection {
-    background: var(--c-sun);
-    color: var(--foreground);
+    background: var(--gold);
+    color: #fff;
+  }
+
+  /* Refined focus ring */
+  :focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
   }
 }
 
-/* ── Solid accent utilities (flat, no gradients) ─────────────────────────── */
-/* Highlighted heading words — solid warm accent */
-.text-gradient { color: var(--c-coral); }
-/* Solid brand fill for buttons, badges, bands */
-.bg-brand-gradient { background: var(--c-grape); }
-.bg-candy-gradient { background: var(--c-coral); }
+/* ── Editorial type helpers ──────────────────────────────────────────────── */
+/* Small-caps section label — "01 / The Promise" style eyebrows */
+.eyebrow {
+  font-family: var(--font-fun), system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 600;
+  font-size: 0.72rem;
+}
 
-/* Friendly rounded face (Fredoka) — eyebrows, buttons, chips.
-   Family only, so Tailwind font-weight utilities still apply. */
-.font-script,
+/* Display serif on demand */
+.font-display { font-family: var(--font-display), Georgia, serif; }
+.font-script { font-family: var(--font-display), Georgia, serif; }
+/* Friendly UI face (kept for backward compat with .font-fun call-sites) */
 .font-fun {
   font-family: var(--font-fun), system-ui, sans-serif;
-  text-transform: none;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
-/* Chunky display face (Baloo 2) on demand */
-.font-display { font-family: var(--font-display), system-ui, sans-serif; }
 
-/* Flat look — no box shadows anywhere (kept as no-ops so existing
-   class usages stay valid without churn). */
-.shadow-pop,
-.shadow-pop-sm,
-.glow-grape,
-.glow-coral,
-.glow-sun { box-shadow: none; }
+/* Highlighted heading word — signature gold, slightly italic Fraunces reads
+   as an editorial flourish. Used by existing .text-gradient call-sites. */
+.text-gradient {
+  color: var(--gold-deep);
+  font-style: italic;
+}
+/* On dark bands the gold needs to be lighter to stay luminous */
+.on-ink .text-gradient { color: var(--gold-soft); }
 
-/* ── Playful motion ──────────────────────────────────────────────────────── */
+/* Brand fill → deep ink (used by stat band / final CTA on un-rebuilt pages) */
+.bg-brand-gradient { background: var(--ink); color: #fbf8f2; }
+.bg-candy-gradient { background: var(--clay); color: #fff; }
+
+/* ── Elevation utilities (real shadows now) ──────────────────────────────── */
+.shadow-pop { box-shadow: var(--shadow-md); }
+.shadow-pop-sm { box-shadow: var(--shadow-sm); }
+.shadow-float { box-shadow: var(--shadow-lg); }
+.shadow-gold { box-shadow: var(--shadow-gold); }
+/* Legacy glow names → soft real shadow (no neon) */
+.glow-grape, .glow-coral, .glow-sun { box-shadow: var(--shadow-sm); }
+
+/* Thin gold hairline divider */
+.rule-gold {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+}
+
+/* Fine paper grain / vignette helpers for premium depth */
+.paper-grain {
+  background-image: radial-gradient(rgba(33, 27, 22, 0.025) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+/* ── Motion — restrained & eased, not bouncy ─────────────────────────────── */
+/* Gentle ambient float for a single hero accent (subtle, slow) */
 @keyframes dat-float {
   0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-22px); }
+  50%      { transform: translateY(-10px); }
 }
-.animate-float { animation: dat-float 7s ease-in-out infinite; }
+.animate-float { animation: dat-float 8s ease-in-out infinite; }
 
+/* "bob" kept as a name but tamed to a quiet float (used by ornaments) */
 @keyframes dat-bob {
-  0%, 100% { transform: translateY(0) rotate(-2deg); }
-  50%      { transform: translateY(-12px) rotate(2deg); }
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
 }
-.animate-bob { animation: dat-bob 5s ease-in-out infinite; }
+.animate-bob { animation: dat-bob 7s ease-in-out infinite; }
 
-@keyframes dat-wiggle {
-  0%, 100% { transform: rotate(-4deg); }
-  50%      { transform: rotate(4deg); }
+/* wiggle/twinkle retired to gentle equivalents (call-sites stay valid) */
+@keyframes dat-breathe {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
 }
-.animate-wiggle { animation: dat-wiggle 2.6s ease-in-out infinite; }
+.animate-wiggle { animation: dat-breathe 4s ease-in-out infinite; }
+.animate-twinkle { animation: dat-breathe 3.4s ease-in-out infinite; }
+.animate-pulse-glow { animation: dat-breathe 3.4s ease-in-out infinite; }
 
 @keyframes dat-spin-slow { to { transform: rotate(360deg); } }
-.animate-spin-slow { animation: dat-spin-slow 26s linear infinite; }
+.animate-spin-slow { animation: dat-spin-slow 40s linear infinite; }
 
-@keyframes dat-twinkle {
-  0%, 100% { opacity: 0.35; transform: scale(0.85); }
-  50%      { opacity: 1; transform: scale(1.1); }
+@keyframes dat-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-.animate-twinkle { animation: dat-twinkle 3s ease-in-out infinite; }
-.animate-pulse-glow { animation: dat-twinkle 3s ease-in-out infinite; }
+.animate-pop-in { animation: dat-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
-@keyframes dat-pop-in {
-  0%   { opacity: 0; transform: scale(0.7) translateY(10px); }
-  60%  { opacity: 1; transform: scale(1.06); }
-  100% { opacity: 1; transform: scale(1) translateY(0); }
-}
-.animate-pop-in { animation: dat-pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-
-/* Marquee — used across home page tickers */
+/* Marquee — used across home page tickers (slower, calmer) */
 @keyframes dat-marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
-.marquee-track { animation: dat-marquee 30s linear infinite; }
+.marquee-track { animation: dat-marquee 42s linear infinite; }
 
-/* Hover lift for fun cards */
-.lift { transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease; }
-.lift:hover { transform: translateY(-6px) rotate(-0.5deg); }
+/* Hover lift — clean vertical lift + shadow, no rotation */
+.lift {
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lift:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .animate-float, .animate-bob, .animate-wiggle, .animate-spin-slow,
   .animate-twinkle, .animate-pulse-glow, .marquee-track { animation: none !important; }
 }
 
+/* ── Hero media carousel (Swiper) ────────────────────────────────────────── */
+.hero-swiper .swiper { height: 100%; }
+.hero-swiper .swiper-slide { overflow: hidden; }
+.hero-swiper .swiper-pagination {
+  bottom: 1.15rem !important;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.hero-swiper .swiper-pagination-bullet {
+  width: 7px; height: 7px; margin: 0 !important;
+  background: #f3ead9; opacity: 0.4;
+  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s, background 0.35s;
+}
+.hero-swiper .swiper-pagination-bullet-active {
+  width: 22px; border-radius: 4px; opacity: 1;
+  background: var(--gold-soft);
+}
+
 /* ════════════════════════════════════════════════════════════════════════
-   BACKEND THEME — light dashboard palette (DashboardKit/Paces inspired).
-   Scoped via `.theme-grey` on dashboard layouts only; stays professional
-   (Poppins headings, neutral greys) and untouched by the kids restyle.
+   INTRO LOADER — theatrical "stage" with a spinning 3D gold award.
+   Dramatic, vibrant, eye-catching. All self-contained here.
+   ════════════════════════════════════════════════════════════════════════ */
+/* Swaying spotlight beams from above */
+@keyframes dat-beam-l {
+  0%, 100% { transform: rotate(-22deg) scaleY(1); opacity: 0.55; }
+  50%      { transform: rotate(-12deg) scaleY(1.08); opacity: 0.85; }
+}
+@keyframes dat-beam-r {
+  0%, 100% { transform: rotate(22deg) scaleY(1); opacity: 0.55; }
+  50%      { transform: rotate(12deg) scaleY(1.08); opacity: 0.85; }
+}
+.dat-beam {
+  position: absolute;
+  top: -18%;
+  width: 38vw;
+  height: 95vh;
+  transform-origin: top center;
+  filter: blur(14px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+.dat-beam-l { left: 14%; background: linear-gradient(to bottom, rgba(230,185,78,0.5), transparent 62%); animation: dat-beam-l 6s ease-in-out infinite; }
+.dat-beam-r { right: 14%; background: linear-gradient(to bottom, rgba(192,106,63,0.42), transparent 62%); animation: dat-beam-r 6s ease-in-out infinite; }
+
+/* Pulsing stage glow behind the award */
+@keyframes dat-glow-pulse {
+  0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.12); }
+}
+.dat-stage-glow {
+  position: absolute; left: 50%; top: 44%;
+  width: 60vmin; height: 60vmin;
+  background: radial-gradient(circle, rgba(230,185,78,0.42), rgba(199,146,51,0.12) 45%, transparent 70%);
+  animation: dat-glow-pulse 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* 3D spinning award medal */
+.medal-scene { perspective: 1100px; }
+@keyframes dat-medal-spin { to { transform: rotateY(360deg); } }
+.medal-coin {
+  position: relative;
+  transform-style: preserve-3d;
+  animation: dat-medal-spin 3.6s linear infinite;
+}
+.medal-face {
+  position: absolute; inset: 0; border-radius: 50%;
+  backface-visibility: hidden;
+  display: grid; place-items: center;
+  background:
+    radial-gradient(circle at 32% 28%, #fff3cf 0%, #f0c75a 26%, #d39a2c 58%, #a06a16 100%);
+  box-shadow:
+    inset 0 0 0 6px rgba(255,255,255,0.28),
+    inset 0 0 0 10px rgba(160,106,22,0.55),
+    0 24px 60px rgba(0,0,0,0.45);
+  color: #6b430b;
+}
+.medal-back { transform: rotateY(180deg); }
+/* Moving metallic sheen across the coin */
+@keyframes dat-sheen { 0% { transform: translateX(-130%) skewX(-18deg); } 60%, 100% { transform: translateX(160%) skewX(-18deg); } }
+.medal-sheen {
+  position: absolute; inset: 0; border-radius: 50%; overflow: hidden; pointer-events: none;
+}
+.medal-sheen::after {
+  content: ""; position: absolute; top: -10%; left: 0; width: 45%; height: 120%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.75), transparent);
+  animation: dat-sheen 2.6s ease-in-out infinite;
+}
+/* Ribbon tails under the medal */
+.medal-ribbon { width: 0; height: 0; border-left: 22px solid transparent; border-right: 22px solid transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dat-beam-l, .dat-beam-r, .dat-stage-glow, .medal-coin, .medal-sheen::after { animation: none !important; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   BACKEND THEME — light dashboard palette. Scoped via `.theme-grey` on
+   dashboard layouts only; stays neutral and untouched by the public restyle.
    ════════════════════════════════════════════════════════════════════════ */
 .theme-grey {
   --background: oklch(0.975 0.004 270);
@@ -254,7 +425,7 @@
   --font-body: var(--font-geist-sans);
 }
 
-/* Material Symbols — used everywhere icons live */
+/* Material Symbols — still used by dashboards and not-yet-rebuilt pages */
 .material-symbols-outlined,
 .material-symbols-rounded {
   font-family: var(--icon-family, "Material Symbols Rounded");
