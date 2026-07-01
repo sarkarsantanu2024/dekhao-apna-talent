@@ -31,13 +31,14 @@ export async function POST(req: Request) {
       "api-subscription-key": SARVAM.key,
     },
     body: JSON.stringify({
-      // bulbul:v2 caps at 1500 chars; trim defensively so long answers still speak.
-      text: text.slice(0, 1500),
+      // bulbul:v3 caps at 2500 chars; trim defensively so long answers still speak.
+      text: text.slice(0, 2500),
       target_language_code: targetLanguageCode,
       speaker,
       model: SARVAM.ttsModel,
       output_audio_codec: "wav",
-      speech_sample_rate: 22050,
+      // bulbul:v3 renders natively at 24kHz; higher rate = clearer speech.
+      speech_sample_rate: 24000,
       // Normalizes numbers, currency, and English words mixed into Indic text
       // so they are spoken correctly instead of letter-by-letter / garbled.
       enable_preprocessing: true,
