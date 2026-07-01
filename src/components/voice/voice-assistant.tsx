@@ -19,15 +19,12 @@ export function VoiceAssistant() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
-  const [text, setText] = useState("");
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   // Bumped whenever playback should be abandoned (new question, close, etc.)
   // so any in-flight chunked-speech loop knows to stop.
   const playTokenRef = useRef(0);
-
-  const busy = status !== "idle";
 
   // Auto-scroll the transcript as it grows.
   useEffect(() => {
@@ -162,13 +159,6 @@ export function VoiceAssistant() {
     [lang, messages, speakText, stopAudio]
   );
 
-  function onSubmitText(e: React.FormEvent) {
-    e.preventDefault();
-    const t = text;
-    setText("");
-    ask(t);
-  }
-
   function closePanel() {
     stopAudio();
     setOpen(false);
@@ -258,29 +248,12 @@ export function VoiceAssistant() {
                 <p className="px-4 pb-1 text-xs text-[#A855F7]">{error}</p>
               )}
 
-              {/* Controls */}
-              <div className="border-t border-white/10 px-3 py-3">
-                <form onSubmit={onSubmitText} className="flex items-center gap-2">
-                  <input
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    disabled={busy}
-                    placeholder={inputPlaceholder(lang)}
-                    className="h-10 flex-1 rounded-full border border-white/15 bg-white/5 px-4 text-sm text-white placeholder:text-white/40 focus:border-[#A855F7]/60 focus:outline-none disabled:opacity-50"
-                  />
-                  <button
-                    type="submit"
-                    disabled={busy || !text.trim()}
-                    aria-label="Send"
-                    className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#A855F7] text-white transition-opacity hover:opacity-90 disabled:opacity-40"
-                  >
-                    <Icon name="send" size={18} aria-label="Send" />
-                  </button>
-                </form>
-
-                {/* Human fallback */}
-                <div className="mt-2 flex items-center justify-center gap-4 text-[11px] text-white/40">
-                  {WHATSAPP && (
+              {/* Human fallback. Free-text input removed to cap cost: visitors
+                  ask via the cacheable suggested questions above, so we never
+                  pay to synthesize unbounded one-off queries. */}
+              {WHATSAPP && (
+                <div className="border-t border-white/10 px-3 py-3">
+                  <div className="flex items-center justify-center gap-4 text-[11px] text-white/40">
                     <a
                       href={`https://wa.me/${WHATSAPP}`}
                       target="_blank"
@@ -289,15 +262,9 @@ export function VoiceAssistant() {
                     >
                       <Icon name="chat" size={14} /> Talk to a human
                     </a>
-                  )}
-                  <a
-                    href="mailto:info@dekhaoapnatalent.com"
-                    className="inline-flex items-center gap-1 hover:text-white/80"
-                  >
-                    <Icon name="mail" size={14} /> Email us
-                  </a>
+                  </div>
                 </div>
-              </div>
+              )}
             </>
           )}
         </div>
@@ -388,10 +355,6 @@ function statusLabel(status: Status, lang: VoiceLang | null): string {
     speaking: { en: "Speaking…", hi: "Bol raha hoon…", bn: "বলছি…" },
   };
   return map[status][l];
-}
-
-function inputPlaceholder(lang: VoiceLang): string {
-  return { en: "Type your question…", hi: "Apna sawaal likhein…", bn: "আপনার প্রশ্ন লিখুন…" }[lang];
 }
 
 function errorMessage(lang: VoiceLang | null): string {
