@@ -19,7 +19,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { store, STORE_CHANGED } from "./index";
 import type { DashboardStats } from "./store";
-import type { ActivityEvent, Category, Center, Payment, PaymentStatus, Student, StudentStatus } from "@/types";
+import type { ActivityEvent, Category, Center, Enquiry, EnquiryStatus, Payment, PaymentStatus, Student, StudentStatus } from "@/types";
 
 type Result<T> = { data: T; loading: boolean; error: Error | null; reload: () => void };
 
@@ -91,4 +91,9 @@ export function useCategories() {
 
 export function useEvents() {
   return useAsync<ActivityEvent[]>([], useCallback(() => store.listEvents(), []));
+}
+
+export function useEnquiries(opts?: { status?: EnquiryStatus }) {
+  const key = JSON.stringify(opts ?? {});
+  return useAsync<Enquiry[]>([], useCallback(() => store.listEnquiries(opts), [key])); // eslint-disable-line react-hooks/exhaustive-deps
 }

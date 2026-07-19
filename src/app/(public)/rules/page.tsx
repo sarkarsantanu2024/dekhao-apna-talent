@@ -71,7 +71,7 @@ export default function RulesPage() {
         subtitle="Have a quick read with your grown-ups before registering for each category."
       />
       <Band bg="cream" innerClassName="relative py-24 sm:py-28">
-        <div className="container relative mx-auto max-w-5xl px-6">
+        <div className="container relative mx-auto max-w-7xl px-6">
           <ScrollReveal stagger className="grid gap-6 md:grid-cols-2">
             {RULES.map((r) => (
               <div key={r.title} data-reveal-item className="flex flex-col rounded-2xl border border-ink/10 bg-card p-8 shadow-pop-sm">

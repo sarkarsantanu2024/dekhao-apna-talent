@@ -14,6 +14,8 @@ import type {
   ActivityEvent,
   Category,
   Center,
+  Enquiry,
+  EnquiryStatus,
   Payment,
   PaymentStatus,
   Student,
@@ -39,6 +41,10 @@ export type NewPayment = Omit<
   | "status"
   | "event_year"
 > & { status?: PaymentStatus };
+
+export type NewEnquiry = Pick<Enquiry, "name" | "email" | "message"> & {
+  phone?: string | null;
+};
 
 export interface DashboardStats {
   students: number;
@@ -112,6 +118,13 @@ export interface DataStore {
 
   listCategories(): Promise<Category[]>;
   updateCategory(id: string, patch: Partial<Category>): Promise<Category>;
+
+  /** Public enquiries ("Send a message" form). Most recent first. */
+  listEnquiries(opts?: { status?: EnquiryStatus }): Promise<Enquiry[]>;
+  /** Called from the public /api/enquiries route (no session) — never scope this to a centre. */
+  createEnquiry(input: NewEnquiry): Promise<Enquiry>;
+  updateEnquiry(id: string, patch: { status: EnquiryStatus }): Promise<Enquiry>;
+  deleteEnquiry(id: string): Promise<void>;
 }
 
 /** Custom DOM event fired after any mutation so React hooks can re-read. */
