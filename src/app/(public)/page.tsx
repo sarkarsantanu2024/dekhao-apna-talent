@@ -293,7 +293,7 @@ export default function HomePage() {
       <section className="relative isolate overflow-hidden bg-band-butter py-24 sm:py-32">
         <div className="container relative mx-auto px-6">
           <div
-            className="on-ink relative mx-auto max-w-5xl overflow-hidden rounded-[2rem] bg-ink px-8 py-16 text-center text-[#f3ead9] shadow-float sm:px-16 sm:py-20"
+            className="on-ink relative mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-ink px-8 py-16 text-center text-[#f3ead9] shadow-float sm:px-16 sm:py-20"
             style={{ ["--ink" as string]: "#1b1510" }}
           >
             <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(230,185,78,0.22),transparent_55%)]" />

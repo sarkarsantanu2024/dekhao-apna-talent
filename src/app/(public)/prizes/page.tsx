@@ -19,7 +19,7 @@ export default function PrizesPage() {
         subtitle="Cash prizes for finalists — plus a medal, award and certificate for everyone who steps on stage."
       />
       <Band bg="cream" innerClassName="relative py-24 sm:py-28">
-        <div className="container relative mx-auto max-w-5xl px-6">
+        <div className="container relative mx-auto max-w-7xl px-6">
           <ScrollReveal stagger className="grid gap-6 md:grid-cols-2">
             <div data-reveal-item>
               <PrizeCard title="Dance & Song" Icon={Trophy} rows={PRIZES.danceSong} />

@@ -53,7 +53,7 @@ export default function AboutPage() {
 
       {/* Two-stage journey */}
       <Band bg="cream" innerClassName="relative py-24 sm:py-28">
-        <div className="container relative mx-auto max-w-5xl px-6">
+        <div className="container relative mx-auto max-w-7xl px-6">
           <div className="flex items-center gap-4">
             <span className="h-px w-12 bg-gold" />
             <span className="eyebrow text-gold-deep">The Path</span>
@@ -80,7 +80,7 @@ export default function AboutPage() {
 
       {/* Judges */}
       <Band bg="white" innerClassName="relative py-24 sm:py-28">
-        <div className="container relative mx-auto max-w-5xl px-6">
+        <div className="container relative mx-auto max-w-7xl px-6">
           <div className="text-center">
             <div className="mx-auto flex w-fit items-center gap-4">
               <span className="h-px w-10 bg-gold" />
@@ -117,7 +117,7 @@ export default function AboutPage() {
 
       {/* Every participant + records */}
       <Band bg="cream" innerClassName="relative py-24 sm:py-28">
-        <div className="container relative mx-auto max-w-5xl px-6">
+        <div className="container relative mx-auto max-w-7xl px-6">
           <div className="grid gap-6 md:grid-cols-2">
             <div className="rounded-2xl border border-ink/10 bg-card p-9 shadow-pop-sm">
               <span className="eyebrow text-gold-deep">For everyone</span>

@@ -26,6 +26,8 @@ const ALL_METHODS = new Set([
   "listPayments", "createPayment", "approvePayment", "rejectPayment", "revertPayment",
   "updatePayment", "deletePayment", "resubmitPayment",
   "listEvents", "logEvent", "listCategories", "updateCategory",
+  // Enquiries are admin-only here; public submissions use /api/enquiries.
+  "listEnquiries", "updateEnquiry", "deleteEnquiry",
 ]);
 
 /** Never callable through the API. */
