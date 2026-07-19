@@ -1,6 +1,7 @@
 export type UserRole = "admin" | "center_owner";
 export type PaymentStatus = "pending" | "approved" | "rejected";
 export type StudentStatus = "pending" | "approved" | "rejected" | "active";
+export type EnquiryStatus = "new" | "read" | "archived";
 
 export interface User {
   id: string;
@@ -112,6 +113,18 @@ export interface ActivityEvent {
   message: string;
   center_id: string | null;
   center_name: string | null;
+  created_at: string;
+}
+
+/** A public "Send a message" / enquiry-form submission from the website. */
+export interface Enquiry {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string;
+  message: string;
+  status: EnquiryStatus;
+  event_year: number;
   created_at: string;
 }
 

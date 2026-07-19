@@ -24,6 +24,7 @@ import type {
   ActivityEvent,
   Category,
   Center,
+  Enquiry,
   Payment,
   Student,
 } from "@/types";
@@ -169,6 +170,19 @@ function toCategory(r: Row): Category {
     description: (r.description as string) ?? null,
     fee: Number(r.fee ?? 0),
     active: Boolean(r.active),
+  };
+}
+
+function toEnquiry(r: Row): Enquiry {
+  return {
+    id: String(r.id),
+    name: String(r.name ?? ""),
+    phone: (r.phone as string) ?? null,
+    email: String(r.email ?? ""),
+    message: String(r.message ?? ""),
+    status: (r.status as Enquiry["status"]) ?? "new",
+    event_year: Number(r.event_year ?? EVENT_YEAR),
+    created_at: String(r.created_at ?? nowIso()),
   };
 }
 
@@ -545,6 +559,35 @@ export function createSupabaseStore(getClient: () => SupabaseClient): DataStore 
     const row = must(await sb().from("categories").update(patch as Row).eq("id", id).select().single()) as Row;
     emitStoreChange();
     return toCategory(row);
+  },
+
+  /* ----- enquiries (public "Send a message" form) ----- */
+  async listEnquiries(opts) {
+    let q = sb().from("enquiries").select("*").order("created_at", { ascending: false });
+    if (opts?.status) q = q.eq("status", opts.status);
+    return ((must(await q) ?? []) as Row[]).map(toEnquiry);
+  },
+  async createEnquiry(input) {
+    const payload: Row = {
+      name: input.name,
+      phone: input.phone ?? null,
+      email: input.email,
+      message: input.message,
+      status: "new",
+      event_year: EVENT_YEAR,
+    };
+    const row = must(await sb().from("enquiries").insert(payload).select().single()) as Row;
+    emitStoreChange();
+    return toEnquiry(row);
+  },
+  async updateEnquiry(id, patch) {
+    const row = must(await sb().from("enquiries").update({ status: patch.status }).eq("id", id).select().single()) as Row;
+    emitStoreChange();
+    return toEnquiry(row);
+  },
+  async deleteEnquiry(id) {
+    must(await sb().from("enquiries").delete().eq("id", id).select());
+    emitStoreChange();
   },
   };
 }

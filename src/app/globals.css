@@ -496,6 +496,54 @@
   --font-body: var(--font-geist-sans);
 }
 
+/* ════════════════════════════════════════════════════════════════════════
+   SITE-WIDE FORM CONTROLS + MINIMUM TEXT SIZE.
+   Applied everywhere — public site, auth pages AND the dashboards: form fields
+   are taller (h-12), have a reduced corner radius, and drop their shadow; and
+   the common sub-14px text utilities are floored to 14px for readability.
+   (Decorative eyebrows via the `.eyebrow` class and sub-10px labels are left
+   as-is so the editorial hero typography keeps its proportions.) Unlayered so
+   these win over Tailwind's layered utilities.
+   ════════════════════════════════════════════════════════════════════════ */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+textarea,
+select,
+[role="combobox"] {
+  border-radius: 0.3rem;   /* reduced radius */
+  box-shadow: none;        /* flat — no field shadow */
+}
+
+/* h-12 on single-line controls (textareas keep their min-height) */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+select,
+[role="combobox"] {
+  height: 3rem;
+}
+
+/* Minimum 14px text — floor the common sub-14px utilities */
+.text-xs,
+.text-\[13px\],
+.text-\[12px\],
+.text-\[11px\],
+.text-\[10px\] {
+  font-size: 0.875rem;     /* 14px */
+  line-height: 1.25rem;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   WIDER SITE CONTAINER on large screens. Tailwind's `.container` caps at the
+   breakpoint width (96rem / 1536px at 2xl), which leaves big empty margins on
+   wide monitors. Widen it so the header, hero, footer and full-width sections
+   breathe more and elements read a little larger. These rules are unlayered,
+   so they win over Tailwind's layered container utility.
+   ════════════════════════════════════════════════════════════════════════ */
+@media (min-width: 1536px) {
+  .container { max-width: 100rem; } /* 1600px */
+}
+@media (min-width: 1800px) {
+  .container { max-width: 108rem; } /* 1728px on very wide monitors */
+}
+
 /* Material Symbols — still used by dashboards and not-yet-rebuilt pages */
 .material-symbols-outlined,
 .material-symbols-rounded {
