@@ -14,6 +14,7 @@ import { EVENT_YEAR } from "@/constants";
 import type {
   Category,
   Center,
+  Enquiry,
   Payment,
   Student,
   ActivityEvent,
@@ -58,6 +59,7 @@ interface Snapshot {
   students: Student[];
   payments: Payment[];
   events: ActivityEvent[];
+  enquiries: Enquiry[];
   rollCounters: Record<string, number>; // by category prefix
 }
 
@@ -67,6 +69,7 @@ const empty: Snapshot = {
   students: [],
   payments: [],
   events: [],
+  enquiries: [],
   rollCounters: {},
 };
 
@@ -566,5 +569,42 @@ export const localStore: DataStore = {
     s.categories[idx] = { ...s.categories[idx], ...patch };
     write(s);
     return s.categories[idx];
+  },
+
+  /* ----- enquiries (public "Send a message" form) ----- */
+  async listEnquiries(opts) {
+    const s = read();
+    let rows = (s.enquiries ?? []).slice().sort((a, b) => b.created_at.localeCompare(a.created_at));
+    if (opts?.status) rows = rows.filter((e) => e.status === opts.status);
+    return rows;
+  },
+  async createEnquiry(input) {
+    const s = read();
+    const row: Enquiry = {
+      id: uid("enq"),
+      name: input.name,
+      phone: input.phone ?? null,
+      email: input.email,
+      message: input.message,
+      status: "new",
+      event_year: EVENT_YEAR,
+      created_at: nowIso(),
+    };
+    s.enquiries = [row, ...(s.enquiries ?? [])];
+    write(s);
+    return row;
+  },
+  async updateEnquiry(id, patch) {
+    const s = read();
+    const idx = (s.enquiries ?? []).findIndex((e) => e.id === id);
+    if (idx < 0) throw new Error("Enquiry not found");
+    s.enquiries[idx] = { ...s.enquiries[idx], status: patch.status };
+    write(s);
+    return s.enquiries[idx];
+  },
+  async deleteEnquiry(id) {
+    const s = read();
+    s.enquiries = (s.enquiries ?? []).filter((e) => e.id !== id);
+    write(s);
   },
 };

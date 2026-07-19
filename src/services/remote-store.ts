@@ -13,6 +13,7 @@ import type {
   ActivityEvent,
   Category,
   Center,
+  Enquiry,
   Payment,
   Student,
 } from "@/types";
@@ -74,4 +75,11 @@ export const remoteStore: DataStore = {
 
   listCategories: () => call<Category[]>("listCategories", []),
   updateCategory: (id, patch) => mutate<Category>("updateCategory", [id, patch]),
+
+  listEnquiries: (opts) => call<Enquiry[]>("listEnquiries", [opts]),
+  // Public submissions go through the dedicated /api/enquiries route (no session),
+  // never this session-gated path — but keep the method for interface parity.
+  createEnquiry: (input) => mutate<Enquiry>("createEnquiry", [input]),
+  updateEnquiry: (id, patch) => mutate<Enquiry>("updateEnquiry", [id, patch]),
+  deleteEnquiry: async (id) => { await mutate<void>("deleteEnquiry", [id]); },
 };

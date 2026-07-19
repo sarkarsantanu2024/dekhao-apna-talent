@@ -27,7 +27,7 @@ export default function CategoriesPage() {
         subtitle="Choose one — or enter more than one. Each category has its own audition track, all the way to the national finale."
       />
       <Band bg="cream" innerClassName="relative py-24 sm:py-28">
-        <div className="container relative mx-auto max-w-6xl px-6">
+        <div className="container relative mx-auto max-w-7xl px-6">
           <ScrollReveal stagger className="grid gap-6 sm:grid-cols-2">
             {CATEGORIES.map((c, i) => {
               const m = META[c.slug] ?? META.dance;

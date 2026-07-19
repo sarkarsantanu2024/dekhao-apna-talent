@@ -26,7 +26,7 @@ export default function ContactPage() {
 
       {/* Contact channels */}
       <Band bg="cream" innerClassName="relative py-16 sm:py-20">
-        <div className="container relative mx-auto max-w-6xl px-6">
+        <div className="container relative mx-auto max-w-7xl px-6">
           <ScrollReveal stagger className="grid gap-6 md:grid-cols-3">
             {CHANNELS.map((c) => (
               <div key={c.title} data-reveal-item className="lift rounded-2xl border border-ink/10 bg-card p-8 shadow-pop-sm">
@@ -43,7 +43,7 @@ export default function ContactPage() {
 
       {/* Enquiry form + map */}
       <Band bg="white" innerClassName="relative py-16 sm:py-24">
-        <div className="container relative mx-auto max-w-6xl px-6">
+        <div className="container relative mx-auto max-w-7xl px-6">
           <div className="grid items-stretch gap-8 lg:grid-cols-2">
             {/* Form */}
             <div className="rounded-2xl border border-ink/10 bg-card p-8 shadow-pop-sm sm:p-10">

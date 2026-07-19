@@ -31,6 +31,7 @@ export const ADMIN_NAV = [
   { href: "/admin/payments",  label: "Payments",   icon: "payments" },
   { href: "/admin/downloads", label: "Chest Cards", icon: "badge" },
   { href: "/admin/categories",label: "Categories", icon: "category" },
+  { href: "/admin/enquiries", label: "Enquiries",  icon: "mail" },
   { href: "/admin/reports",   label: "Reports",    icon: "bar_chart" },
 ];
 
