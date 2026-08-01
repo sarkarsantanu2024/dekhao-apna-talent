@@ -17,6 +17,10 @@ export default auth((req) => {
   const isCenter = path.startsWith("/center");
   const isAuth   = path === "/login" || path === "/register";
 
+  if (path === "/") {
+    return NextResponse.redirect(new URL("/login", nextUrl));
+  }
+
   if (!session && (isAdmin || isCenter)) {
     const url = new URL("/login", nextUrl);
     url.searchParams.set("from", path);
@@ -36,5 +40,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/admin/:path*", "/center/:path*", "/login", "/register"],
+  matcher: ["/", "/admin/:path*", "/center/:path*", "/login", "/register"],
 };
