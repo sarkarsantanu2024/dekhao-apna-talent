@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { StatusBadge } from "@/components/common/status-badge";
 import { formatDate } from "@/lib/utils";
-import { confirm } from "@/components/ui/confirm-dialog";
+import { confirm, prompt } from "@/components/ui/confirm-dialog";
 import { store, useStudents, useCenters, useCategories } from "@/services";
 import type { Student, StudentStatus } from "@/types";
 import { StudentDialog } from "@/components/admin/student-dialog";
@@ -98,29 +98,35 @@ export default function AdminStudentsPage() {
     toast.success(`Deleted ${ok} student${ok !== 1 ? "s" : ""}`);
   };
 
+  // Rejection always captures a reason — the centre is told to "edit &
+  // re-submit", which is useless without knowing what to fix.
   const onReject = async (s: Student) => {
-    if (!(await confirm({
+    const note = await prompt({
       title: "Reject student?",
-      description: `“${s.full_name}” will be marked as rejected. The centre can edit and re-submit.`,
+      description: `“${s.full_name}” will be marked as rejected. Tell the centre what is wrong — they'll see this and can edit & re-submit.`,
+      placeholder: "Reason (e.g. photo unclear — upload a passport-style portrait)",
       confirmText: "Reject",
       destructive: true,
-    }))) return;
-    await store.updateStudent(s.id, { status: "rejected" });
-    toast.success("Student rejected");
+    });
+    if (note === null) return; // cancelled
+    await store.updateStudent(s.id, { status: "rejected", review_note: note || null });
+    toast.success("Student rejected — centre notified");
   };
 
   const onBulkReject = async () => {
     const ids = [...selected];
     if (!ids.length) return;
-    if (!(await confirm({
+    const note = await prompt({
       title: `Reject ${ids.length} student${ids.length !== 1 ? "s" : ""}?`,
-      description: "The selected students will be marked as rejected.",
+      description: "The selected students will be marked as rejected. This reason is sent to every affected centre.",
+      placeholder: "Reason (e.g. photo unclear — upload a passport-style portrait)",
       confirmText: "Reject",
       destructive: true,
-    }))) return;
+    });
+    if (note === null) return; // cancelled
     let ok = 0;
     for (const id of ids) {
-      try { await store.updateStudent(id, { status: "rejected" }); ok++; } catch { /* skip failures */ }
+      try { await store.updateStudent(id, { status: "rejected", review_note: note || null }); ok++; } catch { /* skip failures */ }
     }
     setSelected(new Set());
     toast.success(`Rejected ${ok} student${ok !== 1 ? "s" : ""}`);
@@ -205,7 +211,14 @@ export default function AdminStudentsPage() {
                 <TableCell>{s.phone ?? "—"}</TableCell>
                 <TableCell>{s.category_name}</TableCell>
                 <TableCell>{s.center_name}</TableCell>
-                <TableCell><StatusBadge status={s.status} kind="student" /></TableCell>
+                <TableCell>
+                  <div className="flex flex-col gap-0.5">
+                    <StatusBadge status={s.status} kind="student" />
+                    {s.status === "rejected" && s.review_note && (
+                      <span className="max-w-56 text-[11px] text-muted-foreground">“{s.review_note}”</span>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="text-muted-foreground">{formatDate(s.created_at)}</TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-2">

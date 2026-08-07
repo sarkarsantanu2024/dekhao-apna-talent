@@ -66,6 +66,10 @@ export interface Student {
   photo_url: string | null;
   roll_number: string | null;
   status: StudentStatus;
+  /** Why an admin rejected this registration — shown to the centre so they know what to fix. */
+  review_note: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
   event_year: number;
   performance_topic: string | null;
   performance_details: string | null;

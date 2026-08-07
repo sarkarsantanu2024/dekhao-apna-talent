@@ -132,6 +132,9 @@ function toStudent(r: Row): Student {
     photo_url: (r.photo_url as string) ?? null,
     roll_number: (r.roll_number as string) ?? null,
     status: (r.status as Student["status"]) ?? "pending",
+    review_note: (r.review_note as string) ?? null,
+    reviewed_by: (r.reviewed_by as string) ?? null,
+    reviewed_at: (r.reviewed_at as string) ?? null,
     event_year: Number(r.event_year ?? EVENT_YEAR),
     performance_topic: (r.performance_topic as string) ?? null,
     performance_details: (r.performance_details as string) ?? null,
@@ -313,12 +316,17 @@ export function createSupabaseStore(getClient: () => SupabaseClient): DataStore 
   async updateStudent(id, patch) {
     const client = sb();
     const before = (await client.from("students").select("status,full_name,center_id,center_name").eq("id", id).maybeSingle()).data as Row | null;
-    const row = must(await client.from("students").update(patch as Row).eq("id", id).select().single()) as Row;
-    if (patch.status === "rejected" && before && before.status !== "rejected") {
+    const isNewRejection = patch.status === "rejected" && before && before.status !== "rejected";
+    // Stamp who reviewed it alongside the reason the caller passed in.
+    const update: Row = isNewRejection
+      ? { ...(patch as Row), reviewed_at: nowIso() }
+      : (patch as Row);
+    const row = must(await client.from("students").update(update).eq("id", id).select().single()) as Row;
+    if (isNewRejection) {
       await logEventRow({
         type: "student_rejected",
         audience: "center",
-        message: `Student ${row.full_name} was rejected by admin — edit & re-submit`,
+        message: `Student ${row.full_name} was rejected by admin${row.review_note ? `: ${row.review_note}` : ""} — edit & re-submit`,
         center_id: (row.center_id as string) ?? null,
         center_name: (row.center_name as string) ?? null,
       });
@@ -448,6 +456,11 @@ export function createSupabaseStore(getClient: () => SupabaseClient): DataStore 
     const row = must(await sb().from("payments").update({
       status: "rejected", reviewed_by: null, reviewed_at: nowIso(), review_note: note ?? null,
     }).eq("id", id).select().single()) as Row;
+    // A rejected payment must re-lock the chest card — otherwise a student
+    // activated by an earlier approval stays "paid" on a rejected screenshot.
+    if (row.student_id) {
+      await sb().from("students").update({ status: "approved" }).eq("id", row.student_id).eq("status", "active");
+    }
     await logEventRow({
       type: "payment_rejected",
       audience: "center",

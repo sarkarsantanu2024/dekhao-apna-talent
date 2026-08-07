@@ -144,7 +144,14 @@ export default function CenterStudentsPage() {
                 <TableCell className="font-medium">{s.full_name}</TableCell>
                 <TableCell>{s.phone ?? "—"}</TableCell>
                 <TableCell>{s.category_name}</TableCell>
-                <TableCell><StatusBadge status={s.status} kind="student" /></TableCell>
+                <TableCell>
+                  <div className="flex flex-col gap-0.5">
+                    <StatusBadge status={s.status} kind="student" />
+                    {s.status === "rejected" && s.review_note && (
+                      <span className="max-w-56 text-[11px] text-muted-foreground">“{s.review_note}”</span>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="text-muted-foreground">{formatDate(s.created_at)}</TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-1">

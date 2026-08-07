@@ -243,6 +243,9 @@ export const localStore: DataStore = {
       // Students are auto-approved on submission; admins can still reject bad
       // entries afterwards. Callers may override by passing an explicit status.
       status: input.status ?? "approved",
+      review_note: null,
+      reviewed_by: null,
+      reviewed_at: null,
       event_year: EVENT_YEAR,
       roll_number: nextRoll(s, prefix),
       created_at: nowIso(),
@@ -258,13 +261,19 @@ export const localStore: DataStore = {
     if (idx < 0) throw new Error("Student not found");
     const before = s.students[idx];
     s.students[idx] = { ...before, ...patch, updated_at: nowIso() };
-    // Admin rejecting a student → notify that centre.
+    // Admin rejecting a student → stamp the review and notify that centre with
+    // the reason, so they know what to fix before re-submitting.
     if (patch.status === "rejected" && before.status !== "rejected") {
+      s.students[idx] = {
+        ...s.students[idx],
+        reviewed_by: "admin",
+        reviewed_at: nowIso(),
+      };
       const st = s.students[idx];
       s.events = logEventInto(s, {
         type: "student_rejected",
         audience: "center",
-        message: `Student ${st.full_name} was rejected by admin — edit & re-submit`,
+        message: `Student ${st.full_name} was rejected by admin${st.review_note ? `: ${st.review_note}` : ""} — edit & re-submit`,
         center_id: st.center_id,
         center_name: st.center_name,
       });
@@ -422,6 +431,14 @@ export const localStore: DataStore = {
       review_note: note ?? null,
     };
     const rp = s.payments[idx];
+    // A rejected payment must re-lock the chest card — otherwise a student
+    // activated by an earlier approval stays "paid" on a rejected screenshot.
+    if (rp.student_id) {
+      const si = s.students.findIndex((st) => st.id === rp.student_id);
+      if (si >= 0 && s.students[si].status === "active") {
+        s.students[si] = { ...s.students[si], status: "approved", updated_at: nowIso() };
+      }
+    }
     s.events = logEventInto(s, {
       type: "payment_rejected",
       audience: "center",

@@ -28,7 +28,9 @@ type Props = {
   restrictToCenterId?: string;
 };
 
-const STATUSES: StudentStatus[] = ["pending", "approved", "rejected", "active"];
+// "rejected" is deliberately absent: rejection happens only through the Reject
+// action on the students table, which always records a reason for the centre.
+const STATUSES: StudentStatus[] = ["pending", "approved", "active"];
 
 const blank = {
   full_name: "",
@@ -143,7 +145,13 @@ export function StudentDialog({
 
     try {
       if (editing) {
-        await store.updateStudent(editing.id, base);
+        // Lifting a rejection clears the reason so a stale note never lingers
+        // under a student who is no longer rejected.
+        const clearReview =
+          editing.status === "rejected" && nextStatus !== "rejected"
+            ? { review_note: null, reviewed_by: null, reviewed_at: null }
+            : {};
+        await store.updateStudent(editing.id, { ...base, ...clearReview });
         toast.success("Student updated");
       } else {
         await store.createStudent({
@@ -265,8 +273,16 @@ export function StudentDialog({
                 value={form.status}
                 onChange={(e) => set("status", e.target.value as StudentStatus)}
               >
-                {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                {/* A rejected student keeps the option visible so the admin can
+                    see the current state and lift it by picking another. */}
+                {(editing?.status === "rejected" ? (["rejected", ...STATUSES] as StudentStatus[]) : STATUSES)
+                  .map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
+              {editing?.status === "rejected" && (
+                <p className="text-[11px] text-muted-foreground">
+                  Choosing another status lifts the rejection and clears the reason.
+                </p>
+              )}
             </Field>
           )}
 

@@ -22,7 +22,12 @@ import type {
   StudentStatus,
 } from "@/types";
 
-export type NewStudent = Omit<Student, "id" | "roll_number" | "created_at" | "updated_at" | "status" | "event_year"> & {
+export type NewStudent = Omit<
+  Student,
+  | "id" | "roll_number" | "created_at" | "updated_at" | "status" | "event_year"
+  // Review fields are written by the admin's reject action, never at creation.
+  | "review_note" | "reviewed_by" | "reviewed_at"
+> & {
   status?: StudentStatus;
 };
 

@@ -8,6 +8,8 @@ type Blocker = {
   icon: typeof Lock;
   /** tailwind classes for the chip */
   tone: string;
+  /** extra explanation — the admin's rejection note, shown under the chip */
+  hint?: string;
 };
 
 const AMBER = "bg-amber-100 text-amber-700";
@@ -39,7 +41,13 @@ export function chestCardBlockers(s: Student, payments: Payment[]): Blocker[] {
     } else if (p.status === "pending") {
       out.push({ key: "pay", label: "Awaiting payment approval", icon: Clock, tone: AMBER });
     } else if (p.status === "rejected") {
-      out.push({ key: "pay", label: "Payment rejected", icon: XCircle, tone: ROSE });
+      out.push({
+        key: "pay",
+        label: "Payment rejected",
+        icon: XCircle,
+        tone: ROSE,
+        hint: p.review_note ?? "Re-upload the screenshot from Payments → Resubmit",
+      });
     } else {
       // Payment is approved but the student was never activated — rare, but
       // don't claim the payment is missing.
@@ -56,13 +64,20 @@ export function chestCardBlockers(s: Student, payments: Payment[]): Blocker[] {
 
 export function ChestCardBlockers({ blockers }: { blockers: Blocker[] }) {
   return (
-    <span className="inline-flex flex-wrap items-center justify-end gap-1.5">
-      {blockers.map(({ key, label, icon: Icon, tone }) => (
-        <span
-          key={key}
-          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${tone}`}
-        >
-          <Icon className="size-3.5" /> {label}
+    <span className="inline-flex flex-col items-end gap-1">
+      <span className="inline-flex flex-wrap items-center justify-end gap-1.5">
+        {blockers.map(({ key, label, icon: Icon, tone }) => (
+          <span
+            key={key}
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${tone}`}
+          >
+            <Icon className="size-3.5" /> {label}
+          </span>
+        ))}
+      </span>
+      {blockers.filter((b) => b.hint).map((b) => (
+        <span key={`${b.key}-hint`} className="max-w-64 text-right text-[11px] text-muted-foreground">
+          “{b.hint}”
         </span>
       ))}
     </span>
