@@ -144,7 +144,7 @@ export default function CenterStudentsPage() {
                 <TableCell className="font-medium">{s.full_name}</TableCell>
                 <TableCell>{s.phone ?? "—"}</TableCell>
                 <TableCell>{s.category_name}</TableCell>
-                <TableCell><StatusBadge status={s.status} /></TableCell>
+                <TableCell><StatusBadge status={s.status} kind="student" /></TableCell>
                 <TableCell className="text-muted-foreground">{formatDate(s.created_at)}</TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-1">

@@ -6,7 +6,7 @@
  * Images are compressed client-side first (see ./image) so storage + bandwidth
  * stay small at scale. Works in both modes: with Supabase configured it returns
  * a real https URL; in local demo mode the mock storage returns a data URL.
- * Either way the value is safe to persist and render via <img> / ScreenshotLink.
+ * Either way the value is safe to persist and render via <img> / ScreenshotPreview.
  */
 import { toast } from "sonner";
 import { compressImage, type CompressOptions } from "./image";

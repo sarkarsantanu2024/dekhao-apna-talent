@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { StatusBadge } from "@/components/common/status-badge";
-import { ScreenshotLink } from "@/components/common/screenshot-link";
+import { ScreenshotPreview } from "@/components/common/screenshot-link";
 import { PaymentActions } from "@/components/admin/payment-actions";
 import { confirm, prompt } from "@/components/ui/confirm-dialog";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -155,7 +155,13 @@ export default function AdminPaymentsPage() {
                 <TableCell>{p.student_name ?? "—"}</TableCell>
                 <TableCell>{formatCurrency(p.amount)}</TableCell>
                 <TableCell className="font-mono text-xs">{p.transaction_ref ?? "—"}</TableCell>
-                <TableCell><ScreenshotLink url={p.screenshot_url} /></TableCell>
+                <TableCell>
+                  <ScreenshotPreview
+                    url={p.screenshot_url}
+                    label={`Payment screenshot — ${p.student_name ?? p.center_name}`}
+                    caption={`${p.center_name} · ${formatCurrency(p.amount)}${p.transaction_ref ? ` · Ref ${p.transaction_ref}` : ""} · ${formatDate(p.created_at)}`}
+                  />
+                </TableCell>
                 <TableCell><StatusBadge status={p.status} /></TableCell>
                 <TableCell className="text-muted-foreground">{formatDate(p.created_at)}</TableCell>
                 <TableCell>

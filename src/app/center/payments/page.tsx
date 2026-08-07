@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/common/status-badge";
-import { ScreenshotLink } from "@/components/common/screenshot-link";
+import { ScreenshotPreview } from "@/components/common/screenshot-link";
 import { PaymentUploadForm } from "@/components/forms/payment-upload-form";
 import { PaymentResubmitDialog } from "@/components/forms/payment-resubmit-dialog";
 import { PaymentEditDialog } from "@/components/forms/payment-edit-dialog";
@@ -124,7 +124,13 @@ function PaymentRow({
         <TableCell className="font-medium">{p.student_name ?? "—"}</TableCell>
         <TableCell>{formatCurrency(p.amount)}</TableCell>
         <TableCell className="font-mono text-xs">{p.transaction_ref ?? "—"}</TableCell>
-        <TableCell><ScreenshotLink url={p.screenshot_url} /></TableCell>
+        <TableCell>
+          <ScreenshotPreview
+            url={p.screenshot_url}
+            label={`Payment screenshot — ${p.student_name ?? p.center_name}`}
+            caption={`${formatCurrency(p.amount)}${p.transaction_ref ? ` · Ref ${p.transaction_ref}` : ""} · ${formatDate(p.created_at)}`}
+          />
+        </TableCell>
         <TableCell><StatusBadge status={p.status} /></TableCell>
         <TableCell className="text-muted-foreground">{formatDate(p.created_at)}</TableCell>
         <TableCell className="text-right">

@@ -205,7 +205,7 @@ export default function AdminStudentsPage() {
                 <TableCell>{s.phone ?? "—"}</TableCell>
                 <TableCell>{s.category_name}</TableCell>
                 <TableCell>{s.center_name}</TableCell>
-                <TableCell><StatusBadge status={s.status} /></TableCell>
+                <TableCell><StatusBadge status={s.status} kind="student" /></TableCell>
                 <TableCell className="text-muted-foreground">{formatDate(s.created_at)}</TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-2">

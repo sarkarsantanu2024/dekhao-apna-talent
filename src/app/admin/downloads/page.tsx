@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Download, Loader2, Files, Lock, ImageOff, MapPin } from "lucide-react";
+import { Download, Loader2, Files, MapPin } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -21,7 +21,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/common/status-badge";
-import { useStudents } from "@/services";
+import { ChestCardBlockers, chestCardBlockers } from "@/components/common/chest-card-blockers";
+import { usePayments, useStudents } from "@/services";
 import { groupByArea } from "@/lib/utils";
 import {
   downloadChestCard,
@@ -33,6 +34,7 @@ import type { Student } from "@/types";
 
 export default function AdminDownloadsPage() {
   const { data: rows, loading } = useStudents();
+  const { data: payments } = usePayments();
   const [query, setQuery] = useState("");
   const [singleBusy, setSingleBusy] = useState<string | null>(null);
   const [bulk, setBulk] = useState(false);
@@ -132,9 +134,8 @@ export default function AdminDownloadsPage() {
                     </TableHeader>
                     <TableBody>
                       {items.map((s) => {
-                        const active = isDownloadable(s);
-                        const photo = hasPhoto(s);
-                        const ok = active && photo;
+                        const blockers = chestCardBlockers(s, payments);
+                        const ok = blockers.length === 0;
                         const busy = singleBusy === s.id;
                         return (
                           <TableRow key={s.id}>
@@ -142,21 +143,15 @@ export default function AdminDownloadsPage() {
                             <TableCell className="font-medium">{s.full_name}</TableCell>
                             <TableCell>{s.center_name}</TableCell>
                             <TableCell>{s.category_name}</TableCell>
-                            <TableCell><StatusBadge status={s.status} /></TableCell>
+                            <TableCell><StatusBadge status={s.status} kind="student" /></TableCell>
                             <TableCell className="text-right">
                               {ok ? (
                                 <Button size="sm" onClick={() => onSingle(s)} disabled={busy} className="gap-1.5">
                                   {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
                                   {busy ? "Generating…" : "Download PDF"}
                                 </Button>
-                              ) : !active ? (
-                                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">
-                                  <Lock className="size-3.5" /> Payment not approved
-                                </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700">
-                                  <ImageOff className="size-3.5" /> Photo required
-                                </span>
+                                <ChestCardBlockers blockers={blockers} />
                               )}
                             </TableCell>
                           </TableRow>
