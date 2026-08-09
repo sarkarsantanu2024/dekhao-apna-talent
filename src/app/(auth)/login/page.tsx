@@ -25,7 +25,7 @@ export default function LoginPage() {
         <p className="mt-2 text-sm text-white/60">
           Sign in to manage {EVENT_NAME}
         </p>
-        <p className="mt-3 text-[11px] uppercase tracking-[0.16em] text-amber-300/70">
+        <p className="gold-lumen mt-3 text-[11px] font-semibold uppercase tracking-[0.16em]">
           Organized by {PRESENTED_BY}
         </p>
       </div>

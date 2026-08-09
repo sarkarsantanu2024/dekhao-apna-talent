@@ -38,6 +38,7 @@
   --gold: #c79233;                     /* marigold — the one signature accent */
   --gold-soft: #e6b94e;                /* lighter gold for fills on dark */
   --gold-deep: #9c6f1f;                /* readable gold for text on paper */
+  --gold-lumen: #ffd67d;               /* bright gold for text on dark grounds */
   --clay: #c06a3f;                     /* warm terracotta — rare second voice */
   --ink: #211b16;                      /* espresso */
   --ink-soft: #4a4036;                 /* softened ink for secondary text */
@@ -219,6 +220,18 @@
 }
 /* On dark bands the gold needs to be lighter to stay luminous */
 .on-ink .text-gradient { color: var(--gold-soft); }
+
+/* Luminous gold for the deep-violet sign-in panel. `--gold-deep` is tuned for
+   cream paper and turns muddy on a dark ground, so this lifts it to a bright
+   marigold (~11:1 against the panel) and adds a soft halo so it reads as stage
+   light rather than flat text. Declared after `.text-gradient` so it wins when
+   both classes sit on the same element. */
+.gold-lumen {
+  color: var(--gold-lumen);
+  text-shadow:
+    0 0 16px rgba(255, 197, 89, 0.42),
+    0 0 40px rgba(255, 159, 67, 0.20);
+}
 
 /* Brand fill → deep ink (used by stat band / final CTA on un-rebuilt pages) */
 .bg-brand-gradient { background: var(--ink); color: #fbf8f2; }

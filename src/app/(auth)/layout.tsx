@@ -52,12 +52,12 @@ export default function AuthLayout({
 
           {/* Content */}
           <div className="relative z-10 flex h-full flex-col justify-end p-12 xl:p-16">
-            <span className="font-script text-4xl leading-none text-gradient">
+            <span className="font-script text-4xl leading-none text-gradient gold-lumen">
               Become who you are
             </span>
             <h2 className="mt-4 max-w-md text-balance text-5xl font-black uppercase leading-[0.95] tracking-tight xl:text-6xl">
-              Step onto the <span className="text-gradient">national</span>{" "}
-              stage.
+              Step onto the{" "}
+              <span className="text-gradient gold-lumen">national</span> stage.
             </h2>
             <p className="mt-5 max-w-sm text-white/70">
               Manage centres, students and payments for {EVENT_NAME} — all in
@@ -69,8 +69,10 @@ export default function AuthLayout({
                   key={s.label}
                   className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur"
                 >
-                  <p className="text-2xl font-black text-gradient">{s.value}</p>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/50">
+                  <p className="text-2xl font-black text-gradient gold-lumen">
+                    {s.value}
+                  </p>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/60">
                     {s.label}
                   </p>
                 </div>
