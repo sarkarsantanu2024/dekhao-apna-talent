@@ -8,7 +8,7 @@ export const metadata = { title: "Sign in" };
 
 export default function LoginPage() {
   return (
-    <div className="w-full max-w-md rounded-3xl border border-white/15 bg-[#16111f]/90 p-8 shadow-2xl shadow-black/50 ring-1 ring-inset ring-white/5 backdrop-blur-2xl sm:p-10">
+    <div className="w-full max-w-lg rounded-3xl border border-white/15 bg-[#16111f]/90 p-8 shadow-2xl shadow-black/50 ring-1 ring-inset ring-white/5 backdrop-blur-2xl sm:p-11">
       {/* Brand + heading */}
       <div className="mb-8 flex flex-col items-center text-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -24,7 +24,7 @@ export default function LoginPage() {
           Sign in to manage {EVENT_NAME}
         </p>
         <p className="mt-3 text-[11px] uppercase tracking-[0.16em] text-amber-300/70">
-          Powered by {PRESENTED_BY}
+          Organized by {PRESENTED_BY}
         </p>
       </div>
 

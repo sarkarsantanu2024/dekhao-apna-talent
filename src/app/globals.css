@@ -468,6 +468,51 @@
 }
 
 /* ════════════════════════════════════════════════════════════════════════
+   CELEBRATION BURST — the looping firework on the sign-in brand panel.
+   Same radial vocabulary as the loader's confetti, but it repeats forever
+   and the pieces stay airborne (no gravity drop) so it reads as a burst of
+   light rather than falling paper.
+   ════════════════════════════════════════════════════════════════════════ */
+.celebrate-piece {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  animation: dat-celebrate var(--dur, 3.4s) cubic-bezier(0.18, 0.72, 0.3, 1) infinite;
+  will-change: transform, opacity;
+}
+@keyframes dat-celebrate {
+  0%   { transform: translate(-50%, -50%) scale(0.2) rotate(0deg); opacity: 0; }
+  10%  { opacity: 1; }
+  70%  { opacity: 0.85; }
+  100% {
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+/* Expanding shockwave rings behind the confetti. */
+.celebrate-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 9999px;
+  border: 1px solid currentColor;
+  opacity: 0;
+  animation: dat-celebrate-ring 3.4s cubic-bezier(0.16, 0.8, 0.3, 1) infinite;
+}
+@keyframes dat-celebrate-ring {
+  0%   { width: 0; height: 0; transform: translate(-50%, -50%); opacity: 0; }
+  15%  { opacity: 0.5; }
+  100% { width: 34rem; height: 34rem; transform: translate(-50%, -50%); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celebrate-piece, .celebrate-ring { animation: none !important; opacity: 0.35 !important; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
    BACKEND THEME — light dashboard palette. Scoped via `.theme-grey` on
    dashboard layouts only; stays neutral and untouched by the public restyle.
    ════════════════════════════════════════════════════════════════════════ */

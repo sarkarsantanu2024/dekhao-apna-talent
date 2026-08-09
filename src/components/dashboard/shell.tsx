@@ -194,7 +194,7 @@ function SidebarBrand({ title, collapsed }: { title: string; collapsed: boolean 
         <span className="flex min-w-0 flex-col leading-tight">
           <span className="truncate text-sm text-white">{title}</span>
           <span className="truncate text-[10px] font-normal text-white/45">
-            Powered by {PRESENTED_BY}
+            Organized by {PRESENTED_BY}
           </span>
         </span>
       )}

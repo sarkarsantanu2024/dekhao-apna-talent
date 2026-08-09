@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth/auth";
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/shell";
-import { ADMIN_NAV } from "@/constants";
+import { ADMIN_NAV, EVENT_NAME } from "@/constants";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -9,7 +9,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (session.user.role !== "admin") redirect("/center/dashboard");
 
   return (
-    <DashboardShell nav={ADMIN_NAV} title="MindMantra Abacus" user={session.user}>
+    <DashboardShell nav={ADMIN_NAV} title={EVENT_NAME} user={session.user}>
       {children}
     </DashboardShell>
   );

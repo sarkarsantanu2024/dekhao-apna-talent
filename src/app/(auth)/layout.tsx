@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CelebrationBurst } from "@/components/common/celebration-burst";
 import { BRAND_LOGO, EVENT_NAME, PRESENTED_BY } from "@/constants";
 
 const STATS = [
@@ -40,21 +41,8 @@ export default function AuthLayout({
         <aside className="relative hidden overflow-hidden lg:block">
           <div className="absolute inset-0 bg-linear-to-tr from-[#0a0710] via-[#150d22] to-[#241033]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(168,85,247,0.35),transparent_55%),radial-gradient(circle_at_80%_80%,rgba(236,72,153,0.3),transparent_55%)]" />
-          {/* subtle stage-light streaks */}
-          <div
-            aria-hidden
-            className="absolute inset-0 opacity-[0.07] [background-image:repeating-linear-gradient(115deg,#fff_0_1px,transparent_1px_44px)]"
-          />
-
-          {/* Rotating neon ring */}
-          <div className="absolute left-1/2 top-1/2 size-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 animate-spin-slow [background:conic-gradient(from_0deg,transparent,rgba(168,85,247,0.7),transparent_40%,rgba(236,72,153,0.7),transparent_70%)] [mask:radial-gradient(circle,transparent_57%,#000_59%)]" />
-
-          {/* Dot grid accent */}
-          <div className="absolute right-12 top-28 grid grid-cols-4 gap-2.5 opacity-40">
-            {Array.from({ length: 16 }).map((_, i) => (
-              <span key={i} className="size-1.5 rounded-full bg-white/50" />
-            ))}
-          </div>
+          {/* Celebration firework — replaces the old rotating ring */}
+          <CelebrationBurst className="absolute left-1/2 top-[42%] size-0 -translate-x-1/2" />
 
           {/* Content */}
           <div className="relative z-10 flex h-full flex-col justify-end p-12 xl:p-16">
@@ -85,7 +73,7 @@ export default function AuthLayout({
 
             <p className="mt-10 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-white/45">
               <span className="h-px w-8 bg-white/25" />
-              Powered by {PRESENTED_BY}
+              Organized by {PRESENTED_BY}
             </p>
           </div>
         </aside>
@@ -94,7 +82,7 @@ export default function AuthLayout({
         <main className="relative flex items-center justify-center px-6 py-28">
           {/* glow behind the card */}
           <div className="pointer-events-none absolute left-1/2 top-1/2 -z-0 size-[26rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#a855f7]/15 blur-[90px]" />
-          <div className="relative z-10 w-full max-w-md">{children}</div>
+          <div className="relative z-10 w-full max-w-lg">{children}</div>
         </main>
       </div>
     </div>
