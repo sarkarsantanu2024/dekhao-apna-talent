@@ -20,6 +20,14 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image" },
   robots: { index: true, follow: true },
+  // Served from /public — see BRAND_ICON in src/constants for the other artwork.
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/images/dat-icon.png", type: "image/png" },
+    ],
+    apple: "/images/dat-icon.png",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

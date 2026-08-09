@@ -34,7 +34,7 @@ export function LoginForm() {
         toast.error("Login failed");
         return;
       }
-      toast.success("Welcome back!");
+      toast.success("Signed in successfully");
       router.push(targetFor(values.userId, search.get("from")));
       router.refresh();
     });
@@ -65,7 +65,15 @@ export function LoginForm() {
           {form.formState.errors.password && <p className="text-xs text-rose-300">{form.formState.errors.password.message}</p>}
         </div>
         {err && <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{err}</p>}
-        <Button type="submit" className="w-full" disabled={pending}>{pending ? "Signing in…" : "Sign in"}</Button>
+        <Button
+          type="submit"
+          variant="fun"
+          size="lg"
+          className="mt-2 w-full text-base shadow-lg shadow-amber-500/25 hover:shadow-xl hover:shadow-amber-500/35"
+          disabled={pending}
+        >
+          {pending ? "Signing in…" : "Sign in"}
+        </Button>
       </form>
     </div>
   );

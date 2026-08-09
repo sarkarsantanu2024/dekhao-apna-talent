@@ -6,8 +6,7 @@ import { Upload, FileSpreadsheet, Download } from "lucide-react";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { store } from "@/services";
-import { EVENT_YEAR } from "@/constants";
-import type { Category, Center } from "@/types";
+import type { Center } from "@/types";
 
 type Props = {
   onDone?: () => void;
@@ -52,144 +51,6 @@ const TEMPLATE_COLUMNS = [
   "Pincode",
   "Start Date",
 ];
-
-/** A few realistic rows so admins can test the import end-to-end. */
-const SAMPLE_ROWS: string[][] = [
-  [
-    "Mind Mantra · Barasat",
-    "Sourav Ghosh",
-    "+91 98301 55501",
-    "+91 98301 55501",
-    "Station Road",
-    "Barasat",
-    "West Bengal",
-    "700124",
-    "2026-03-01",
-  ],
-  [
-    "Mind Mantra · Asansol",
-    "Nibedita Pal",
-    "+91 98301 55502",
-    "+91 98301 55502",
-    "GT Road",
-    "Asansol",
-    "West Bengal",
-    "713301",
-    "2026-03-04",
-  ],
-  [
-    "Mind Mantra · Siliguri",
-    "Rajat Roy",
-    "+91 98301 55503",
-    "+91 98301 55503",
-    "Hill Cart Road",
-    "Siliguri",
-    "West Bengal",
-    "734001",
-    "2026-03-08",
-  ],
-  [
-    "Mind Mantra · Behala",
-    "Moumita Dutta",
-    "+91 98301 55504",
-    "+91 98301 55504",
-    "Diamond Harbour Rd",
-    "Kolkata",
-    "West Bengal",
-    "700034",
-    "2026-03-12",
-  ],
-  [
-    "Mind Mantra · Kharagpur",
-    "Anil Mahato",
-    "+91 98301 55505",
-    "+91 98301 55505",
-    "Malancha Road",
-    "Kharagpur",
-    "West Bengal",
-    "721301",
-    "2026-03-15",
-  ],
-];
-
-/* ============================================================================
- * ⚠️ DEMO-ONLY LOGIC — REMOVE FOR REAL DATA ⚠️
- * ----------------------------------------------------------------------------
- * The block below auto-generates fake students for every centre imported from
- * the CSV, purely so the client demo shows populated Students / Dashboard /
- * Reports pages. It is NOT part of the real flow.
- *
- * When real data is confirmed: delete `seedStudentsForCenter` (and the name
- * pools + STUDENTS_PER_CENTER) and remove the call to it inside `handleFile`.
- * Then only the real centres are imported and real students sync in normally.
- * ========================================================================== */
-
-const STUDENTS_PER_CENTER = 5;
-
-const FIRST_NAMES = [
-  "Aarav", "Anika", "Ishaan", "Diya", "Vihaan", "Saanvi", "Reyansh", "Anaya",
-  "Aditya", "Myra", "Kabir", "Aarohi", "Aryan", "Pari", "Vivaan", "Tara",
-  "Rohan", "Sara", "Dev", "Ira",
-];
-const LAST_NAMES = [
-  "Sharma", "Banerjee", "Roy", "Sen", "Bose", "Ghosh", "Mukherjee", "Dutta",
-  "Pal", "Chakraborty", "Chatterjee", "Mitra", "Das", "Mondal", "Saha",
-];
-
-/**
- * Create a batch of demo students for a freshly-imported centre, so every
- * real centre lands with a populated Students list (and feeds the dashboard /
- * reports) instead of being empty. Each student gets a real roll number from
- * the store's counter via `createStudent`.
- */
-async function seedStudentsForCenter(
-  center: Center,
-  categories: Category[],
-  startIndex: number,
-): Promise<number> {
-  if (!categories.length) return 0;
-  let made = 0;
-  for (let i = 0; i < STUDENTS_PER_CENTER; i++) {
-    const g = startIndex + i; // global index → keeps names varied across centres
-    const first = FIRST_NAMES[g % FIRST_NAMES.length];
-    const last = LAST_NAMES[(g * 3 + 1) % LAST_NAMES.length];
-    const cat = categories[i % categories.length];
-    const age = 7 + (g % 7);
-    const phoneTail = String(10000 + (g % 90000)).padStart(5, "0");
-    try {
-      await store.createStudent({
-        full_name: `${first} ${last}`,
-        guardian_name: `${last} (Parent)`,
-        dob: `${EVENT_YEAR - age}-${String((g % 12) + 1).padStart(2, "0")}-15`,
-        age,
-        class: `Class ${Math.max(1, age - 5)}`,
-        school_name: `${center.city ?? "City"} Public School`,
-        category_id: cat.id,
-        category_name: cat.name,
-        center_id: center.id,
-        center_name: center.center_name,
-        phone: `+91 90000 ${phoneTail}`,
-        whatsapp: `+91 90000 ${phoneTail}`,
-        address: center.address ?? "—",
-        city: center.city,
-        state: center.state,
-        pincode: center.pincode,
-        // No placeholder photo on purpose: the chest card only unlocks once the
-        // centre owner uploads a real student image (plus payment approval).
-        photo_url: null,
-        performance_topic: null,
-        performance_details: null,
-        created_by: null,
-        // All demo students start as "pending" for the client demo.
-        status: "pending",
-      });
-      made++;
-    } catch {
-      /* skip individual failures, keep going */
-    }
-  }
-  return made;
-}
 
 export function CenterBulkUpload({ onDone }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -267,26 +128,8 @@ export function CenterBulkUpload({ onDone }: Props) {
 
       const added = createdCenters.length;
 
-      // Populate each freshly-imported centre with demo students so the
-      // Students/Dashboard/Reports views show real per-centre data.
-      let studentsMade = 0;
       if (added) {
-        const categories = await store.listCategories();
-        for (let i = 0; i < createdCenters.length; i++) {
-          studentsMade += await seedStudentsForCenter(
-            createdCenters[i],
-            categories,
-            i * STUDENTS_PER_CENTER,
-          );
-        }
-      }
-
-      if (added) {
-        toast.success(
-          `Imported ${added} centre${added > 1 ? "s" : ""}` +
-            (studentsMade ? ` with ${studentsMade} students` : "") +
-            ".",
-        );
+        toast.success(`Imported ${added} centre${added > 1 ? "s" : ""}.`);
       }
       if (skipped) {
         toast.message(
@@ -312,15 +155,6 @@ export function CenterBulkUpload({ onDone }: Props) {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Centres");
     XLSX.writeFile(wb, "centre-upload-template.xlsx");
-  }
-
-  /** Download a ready-to-import sample file (.xlsx) pre-filled with example centres. */
-  function downloadSample() {
-    const ws = XLSX.utils.aoa_to_sheet([TEMPLATE_COLUMNS, ...SAMPLE_ROWS]);
-    ws["!cols"] = TEMPLATE_COLUMNS.map(() => ({ wch: 18 }));
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Centres");
-    XLSX.writeFile(wb, "centre-list-sample.xlsx");
   }
 
   return (

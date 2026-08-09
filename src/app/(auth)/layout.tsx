@@ -1,10 +1,5 @@
 import Link from "next/link";
-import { Star } from "lucide-react";
-import { EVENT_NAME } from "@/constants";
-
-// Free dance image (Pexels) used as the brand-panel backdrop.
-const BRAND_IMG =
-  "https://images.pexels.com/photos/2102568/pexels-photo-2102568.jpeg?auto=compress&cs=tinysrgb&w=1200";
+import { BRAND_LOGO, EVENT_NAME, PRESENTED_BY } from "@/constants";
 
 const STATS = [
   { value: "200+", label: "Centres" },
@@ -12,7 +7,11 @@ const STATS = [
   { value: "₹5,000", label: "Top prize" },
 ];
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#0a0710] text-white">
       {/* Ambient floating blobs */}
@@ -24,12 +23,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
       {/* Logo — left-aligned to match the brand panel content padding */}
       <header className="absolute inset-x-0 top-0 z-30">
-        <div className="flex h-20 items-center px-6 lg:px-12 xl:px-16">
-          <Link href="/" className="group flex items-center gap-2 text-sm font-black uppercase tracking-[0.14em]">
-            <span className="inline-flex size-9 items-center justify-center rounded-full bg-brand-gradient transition-transform group-hover:rotate-90">
-              <Star className="size-4 text-white" fill="currentColor" />
-            </span>
-            {EVENT_NAME}
+        <div className="flex h-20 items-center p-6 lg:p-12 xl:p-16">
+          <Link href="/login" className="group flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={BRAND_LOGO}
+              alt={EVENT_NAME}
+              className="h-28 w-auto max-w-[200vw] object-contain sm:h-16 lg:h-20"
+            />
           </Link>
         </div>
       </header>
@@ -37,15 +38,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="relative z-10 grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
         {/* ── Left brand panel ── */}
         <aside className="relative hidden overflow-hidden lg:block">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={BRAND_IMG}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 h-full w-full object-cover opacity-35"
-          />
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#0a0710] via-[#0a0710]/70 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-tr from-[#0a0710] via-[#150d22] to-[#241033]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(168,85,247,0.35),transparent_55%),radial-gradient(circle_at_80%_80%,rgba(236,72,153,0.3),transparent_55%)]" />
+          {/* subtle stage-light streaks */}
+          <div
+            aria-hidden
+            className="absolute inset-0 opacity-[0.07] [background-image:repeating-linear-gradient(115deg,#fff_0_1px,transparent_1px_44px)]"
+          />
 
           {/* Rotating neon ring */}
           <div className="absolute left-1/2 top-1/2 size-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 animate-spin-slow [background:conic-gradient(from_0deg,transparent,rgba(168,85,247,0.7),transparent_40%,rgba(236,72,153,0.7),transparent_70%)] [mask:radial-gradient(circle,transparent_57%,#000_59%)]" />
@@ -59,12 +58,16 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
           {/* Content */}
           <div className="relative z-10 flex h-full flex-col justify-end p-12 xl:p-16">
-            <span className="font-script text-4xl leading-none text-gradient">Become who you are</span>
+            <span className="font-script text-4xl leading-none text-gradient">
+              Become who you are
+            </span>
             <h2 className="mt-4 max-w-md text-balance text-5xl font-black uppercase leading-[0.95] tracking-tight xl:text-6xl">
-              Step onto the <span className="text-gradient">national</span> stage.
+              Step onto the <span className="text-gradient">national</span>{" "}
+              stage.
             </h2>
             <p className="mt-5 max-w-sm text-white/70">
-              Manage centres, students and payments for {EVENT_NAME} — all in one portal.
+              Manage centres, students and payments for {EVENT_NAME} — all in
+              one portal.
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
               {STATS.map((s) => (
@@ -73,10 +76,17 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                   className="rounded-2xl border border-white/10 bg-white/5 px-5 py-3 backdrop-blur"
                 >
                   <p className="text-2xl font-black text-gradient">{s.value}</p>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/50">{s.label}</p>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-white/50">
+                    {s.label}
+                  </p>
                 </div>
               ))}
             </div>
+
+            <p className="mt-10 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-white/45">
+              <span className="h-px w-8 bg-white/25" />
+              Powered by {PRESENTED_BY}
+            </p>
           </div>
         </aside>
 

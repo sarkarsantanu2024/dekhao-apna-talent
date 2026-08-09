@@ -2,6 +2,35 @@ export const EVENT_NAME = process.env.NEXT_PUBLIC_EVENT_NAME ?? "Dekhao Apna Tal
 export const EVENT_YEAR = Number(process.env.NEXT_PUBLIC_EVENT_YEAR ?? new Date().getFullYear());
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
+/**
+ * Brand artwork. Drop the files at these exact paths:
+ *   public/images/dat-icon.png  — square app icon (the star mark)
+ *   public/images/dat-logo.png  — wide horizontal lockup (icon + wordmark)
+ *   public/favicon.ico          — browser tab icon
+ */
+export const BRAND_ICON = "/images/dat-icon.png";
+export const BRAND_LOGO = "/images/dat-logo.png";
+
+/** Presented-by line — shown on the sign-in screen and dashboard sidebar. */
+export const PRESENTED_BY = "Mind Mantra Abacus";
+
+/**
+ * Developer / support credit shown in the dashboard sidebar and on the sign-in
+ * screen. Single source of truth — update here, it changes everywhere.
+ */
+export const DEVELOPER = {
+  name: "Nexvora Technologies",
+  website: "https://www.nexvoratechnologies.co.in/",
+  facebook: "https://www.facebook.com/nexvoratechnologies",
+  /** Display form. */
+  phone: "9804243159",
+  /** tel: link (E.164). */
+  tel: "+919804243159",
+  /** wa.me link — digits only, with country code. */
+  whatsapp: "919804243159",
+  whatsappMessage: "Hello Nexvora, I need support with the Dekhao Apna Talent admin panel.",
+} as const;
+
 export const CATEGORIES = [
   { slug: "dance",        name: "Dance",                prefix: "DANCE", fee: 400, blurb: "Any dance form — classical, folk, hip-hop, contemporary." },
   { slug: "song",         name: "Song",                 prefix: "SONG",  fee: 400, blurb: "Audition round is a cappella (no music)." },

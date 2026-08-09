@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Globe, Phone, LifeBuoy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BRAND_ICON, DEVELOPER, EVENT_NAME, PRESENTED_BY } from "@/constants";
 import { Icon } from "@/components/common/icon";
+import { FacebookIcon, WhatsappIcon } from "@/components/common/social-icons";
 import { NotificationBell } from "./notifications";
 import { ProfileMenu } from "./profile-menu";
 
@@ -112,6 +114,7 @@ export function DashboardShell({ nav, title, user, children }: Props) {
         <SidebarBrand title={title} collapsed={collapsed} />
         <SidebarSectionLabel collapsed={collapsed}>Navigation</SidebarSectionLabel>
         <SidebarNav nav={nav} pathname={pathname} collapsed={collapsed} />
+        <SidebarSupport collapsed={collapsed} />
       </aside>
 
       {/* ---- Mobile drawer (same dark sidebar) ---- */}
@@ -146,6 +149,7 @@ export function DashboardShell({ nav, title, user, children }: Props) {
         </div>
         <SidebarSectionLabel collapsed={false}>Navigation</SidebarSectionLabel>
         <SidebarNav nav={nav} pathname={pathname} collapsed={false} />
+        <SidebarSupport collapsed={false} />
       </aside>
 
       {/* ---- Main column ---- */}
@@ -184,12 +188,15 @@ export function DashboardShell({ nav, title, user, children }: Props) {
 function SidebarBrand({ title, collapsed }: { title: string; collapsed: boolean }) {
   return (
     <div className={cn("flex h-16 items-center gap-2.5 border-b px-4 font-bold", SIDEBAR_BORDER)}>
-      <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-md bg-white/10 p-1">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/mma-logo-white.png" alt="MindMantra Abacus" className="size-full object-contain" />
-      </span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={BRAND_ICON} alt={EVENT_NAME} className="size-9 shrink-0 rounded-md object-contain" />
       {!collapsed && (
-        <span className="truncate text-sm leading-tight text-white">{title}</span>
+        <span className="flex min-w-0 flex-col leading-tight">
+          <span className="truncate text-sm text-white">{title}</span>
+          <span className="truncate text-[10px] font-normal text-white/45">
+            Powered by {PRESENTED_BY}
+          </span>
+        </span>
       )}
     </div>
   );
@@ -249,6 +256,86 @@ function SidebarNav({
         );
       })}
     </nav>
+  );
+}
+
+/**
+ * Support / developer credit pinned to the bottom of the sidebar. Collapses to
+ * a single icon when the sidebar is narrow so it never crowds the nav.
+ */
+function SidebarSupport({ collapsed }: { collapsed: boolean }) {
+  const waHref = `https://wa.me/${DEVELOPER.whatsapp}?text=${encodeURIComponent(DEVELOPER.whatsappMessage)}`;
+
+  const links = [
+    { href: DEVELOPER.website, label: `${DEVELOPER.name} website`, Icon: Globe },
+    { href: waHref, label: `WhatsApp ${DEVELOPER.phone}`, Icon: WhatsappIcon },
+    { href: `tel:${DEVELOPER.tel}`, label: `Call ${DEVELOPER.phone}`, Icon: Phone },
+    { href: DEVELOPER.facebook, label: `${DEVELOPER.name} on Facebook`, Icon: FacebookIcon },
+  ];
+
+  if (collapsed) {
+    return (
+      <div className={cn("mt-auto border-t p-3", SIDEBAR_BORDER)}>
+        <a
+          href={DEVELOPER.website}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={`Support — ${DEVELOPER.name}`}
+          aria-label={`Support — ${DEVELOPER.name}`}
+          className={cn(
+            "flex items-center justify-center rounded-md py-2 transition-colors",
+            SIDEBAR_TEXT_DIM, SIDEBAR_HOVER,
+          )}
+        >
+          <LifeBuoy className="size-5" />
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("mt-auto border-t p-3", SIDEBAR_BORDER)}>
+      <div className="rounded-lg bg-white/5 p-3">
+        <p className={cn("flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.16em]", SIDEBAR_TEXT_DIM)}>
+          <LifeBuoy className="size-3.5" /> Support
+        </p>
+        <a
+          href={DEVELOPER.website}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1.5 block truncate text-sm font-semibold text-white hover:underline"
+        >
+          {DEVELOPER.name}
+        </a>
+        <a
+          href={`tel:${DEVELOPER.tel}`}
+          className={cn("mt-0.5 block text-xs tabular-nums hover:text-white", SIDEBAR_TEXT_DIM)}
+        >
+          {DEVELOPER.phone}
+        </a>
+        <div className="mt-2.5 flex items-center gap-1.5">
+          {links.map(({ href, label, Icon: LinkIcon }) => (
+            <a
+              key={label}
+              href={href}
+              target={href.startsWith("tel:") ? undefined : "_blank"}
+              rel="noopener noreferrer"
+              title={label}
+              aria-label={label}
+              className={cn(
+                "inline-flex size-8 items-center justify-center rounded-md border border-white/10 transition-colors",
+                SIDEBAR_TEXT_DIM, SIDEBAR_HOVER,
+              )}
+            >
+              <LinkIcon className="size-3.5" />
+            </a>
+          ))}
+        </div>
+      </div>
+      <p className={cn("mt-2 px-1 text-[10px] leading-relaxed", SIDEBAR_TEXT_DIM)}>
+        Designed &amp; developed by {DEVELOPER.name}
+      </p>
+    </div>
   );
 }
 

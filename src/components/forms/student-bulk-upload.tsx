@@ -78,95 +78,6 @@ const TEMPLATE_COLUMNS = [
   "Performance Details",
 ];
 
-/** A few realistic rows so centres can test the import end-to-end. */
-const SAMPLE_ROWS: string[][] = [
-  [
-    "Ananya Das",
-    "Subir Das",
-    "2014-04-12",
-    "11",
-    "Class 5",
-    "St. Xavier's School",
-    "Dance",
-    "+91 98311 20001",
-    "+91 98311 20001",
-    "Kolkata",
-    "West Bengal",
-    "700028",
-    "12 Park Street",
-    "Kathak",
-    "Solo classical performance",
-  ],
-  [
-    "Rohan Mehta",
-    "Vikram Mehta",
-    "2013-09-08",
-    "12",
-    "Class 6",
-    "Delhi Public School",
-    "Song",
-    "+91 98311 20002",
-    "+91 98311 20002",
-    "Kolkata",
-    "West Bengal",
-    "700028",
-    "5 Lake Road",
-    "Rabindra Sangeet",
-    "Tagore song rendition",
-  ],
-  [
-    "Ishita Roy",
-    "Amit Roy",
-    "2015-01-25",
-    "10",
-    "Class 4",
-    "Sushila Birla School",
-    "Mental Math Olympiad",
-    "+91 98311 20003",
-    "+91 98311 20003",
-    "Kolkata",
-    "West Bengal",
-    "700028",
-    "9 Gariahat Road",
-    "Abacus",
-    "Level 3 mental arithmetic",
-  ],
-  [
-    "Aarav Sen",
-    "Pradip Sen",
-    "2012-11-30",
-    "13",
-    "Class 7",
-    "La Martiniere",
-    "Other Talent",
-    "+91 98311 20004",
-    "+91 98311 20004",
-    "Kolkata",
-    "West Bengal",
-    "700028",
-    "33 Salt Lake",
-    "Magic",
-    "Stage illusion act",
-  ],
-  [
-    "Priya Ghosh",
-    "Tapan Ghosh",
-    "2014-06-18",
-    "11",
-    "Class 5",
-    "Modern High School",
-    "Dance",
-    "+91 98311 20005",
-    "+91 98311 20005",
-    "Kolkata",
-    "West Bengal",
-    "700028",
-    "18 Behala Main Road",
-    "Bharatnatyam",
-    "Group dance lead",
-  ],
-];
-
 export function StudentBulkUpload({
   categories,
   centerName,
@@ -354,15 +265,6 @@ export function StudentBulkUpload({
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Students");
     XLSX.writeFile(wb, "student-upload-template.xlsx");
-  }
-
-  /** Download a ready-to-import sample file (.xlsx) pre-filled with example students. */
-  function downloadSample() {
-    const ws = XLSX.utils.aoa_to_sheet([TEMPLATE_COLUMNS, ...SAMPLE_ROWS]);
-    ws["!cols"] = TEMPLATE_COLUMNS.map(() => ({ wch: 18 }));
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Students");
-    XLSX.writeFile(wb, "student-list-sample.xlsx");
   }
 
   return (
