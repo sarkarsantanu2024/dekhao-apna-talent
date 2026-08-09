@@ -24,13 +24,19 @@ export default function AuthLayout({
 
       {/* Logo — left-aligned to match the brand panel content padding */}
       <header className="absolute inset-x-0 top-0 z-30">
-        <div className="flex h-20 items-center p-6 lg:p-12 xl:p-16">
-          <Link href="/login" className="group flex items-center gap-2">
+        {/* No fixed height: the row sizes to the logo, so it can never spill
+            out of its container the way a taller image would. */}
+        <div className="flex min-w-0 items-center px-5 py-5 sm:px-6 lg:px-12 lg:py-7 xl:px-16">
+          <Link href="/login" className="group flex min-w-0 items-center">
+            {/* The lockup is 3.59:1, so height drives width — these caps keep it
+                inside a ~360px phone (h-9 → ~129px) and scale up from there. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={BRAND_LOGO}
               alt={EVENT_NAME}
-              className="h-28 w-auto max-w-[200vw] object-contain sm:h-16 lg:h-20"
+              width={1440}
+              height={401}
+              className="h-9 w-auto max-w-full object-contain transition-transform group-hover:scale-[1.02] sm:h-11 lg:h-14"
             />
           </Link>
         </div>

@@ -189,7 +189,13 @@ function SidebarBrand({ title, collapsed }: { title: string; collapsed: boolean 
   return (
     <div className={cn("flex h-16 items-center gap-2.5 border-b px-4 font-bold", SIDEBAR_BORDER)}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={BRAND_ICON} alt={EVENT_NAME} className="size-9 shrink-0 rounded-md object-contain" />
+      <img
+        src={BRAND_ICON}
+        alt={EVENT_NAME}
+        width={301}
+        height={301}
+        className="size-9 shrink-0 rounded-md object-contain"
+      />
       {!collapsed && (
         <span className="flex min-w-0 flex-col leading-tight">
           <span className="truncate text-sm text-white">{title}</span>

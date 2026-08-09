@@ -15,7 +15,9 @@ export default function LoginPage() {
         <img
           src={BRAND_ICON}
           alt={EVENT_NAME}
-          className="size-20 rounded-2xl object-contain drop-shadow-[0_6px_20px_rgba(168,85,247,0.35)]"
+          width={301}
+          height={301}
+          className="size-16 rounded-2xl object-contain drop-shadow-[0_6px_20px_rgba(168,85,247,0.35)] sm:size-20"
         />
         <h1 className="mt-5 text-[1.65rem] font-bold leading-tight tracking-tight text-white">
           Welcome to the Admin Panel
