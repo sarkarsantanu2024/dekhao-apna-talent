@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CelebrationBurst } from "@/components/common/celebration-burst";
+import { Fireworks } from "@/components/common/fireworks";
 import { BRAND_LOGO, EVENT_NAME, PRESENTED_BY } from "@/constants";
 
 const STATS = [
@@ -42,7 +42,7 @@ export default function AuthLayout({
           <div className="absolute inset-0 bg-linear-to-tr from-[#0a0710] via-[#150d22] to-[#241033]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(168,85,247,0.35),transparent_55%),radial-gradient(circle_at_80%_80%,rgba(236,72,153,0.3),transparent_55%)]" />
           {/* Celebration firework — replaces the old rotating ring */}
-          <CelebrationBurst className="absolute inset-0" />
+          <Fireworks className="absolute inset-0 h-full w-full" />
 
           {/* Content */}
           <div className="relative z-10 flex h-full flex-col justify-end p-12 xl:p-16">
