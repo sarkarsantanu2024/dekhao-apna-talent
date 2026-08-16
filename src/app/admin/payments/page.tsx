@@ -132,7 +132,7 @@ export default function AdminPaymentsPage() {
                 />
               </TableHead>
               <TableHead>Centre</TableHead><TableHead>Student</TableHead><TableHead>Amount</TableHead><TableHead>Ref</TableHead>
-              <TableHead>Screenshot</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead><TableHead>Actions</TableHead>
+              <TableHead>Screenshot</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead><TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -166,9 +166,11 @@ export default function AdminPaymentsPage() {
                 <TableCell className="text-muted-foreground">{formatDate(p.created_at)}</TableCell>
                 <TableCell>
                   {p.status === "pending" ? (
-                    <PaymentActions id={p.id} />
+                    <div className="flex justify-end">
+                      <PaymentActions id={p.id} />
+                    </div>
                   ) : (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-end gap-2">
                       {p.status === "approved" ? (
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
                           <Check className="size-3.5" /> Verified by {p.reviewed_by ?? "admin"}
@@ -178,13 +180,17 @@ export default function AdminPaymentsPage() {
                           <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700">
                             <X className="size-3.5" /> Rejected by {p.reviewed_by ?? "admin"}
                           </span>
-                          {p.review_note && <span className="text-[11px] text-muted-foreground">“{p.review_note}”</span>}
+                          {p.review_note && (
+                            <span className="block max-w-64 whitespace-normal wrap-break-word text-[11px] text-muted-foreground">
+                              “{p.review_note}”
+                            </span>
+                          )}
                         </div>
                       )}
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-7 gap-1 px-2 text-xs text-muted-foreground"
+                        className="h-7 shrink-0 gap-1 px-2 text-xs text-muted-foreground"
                         title="Undo this decision — sends the payment back to pending"
                         onClick={() => onRevert(p)}
                       >

@@ -158,7 +158,7 @@ function PaymentRow({
       {/* Inline admin note — shown for rejected and admin-reverted (pending) rows */}
       {p.review_note?.trim() && (p.status === "rejected" || p.status === "pending") && (
         <TableRow className="bg-amber-50 hover:bg-amber-50">
-          <TableCell colSpan={7} className="!py-2">
+          <TableCell colSpan={7} className="whitespace-normal !py-2">
             <div className="flex items-start gap-2 text-sm">
               <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-600" />
               <div>

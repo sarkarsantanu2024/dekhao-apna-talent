@@ -148,7 +148,7 @@ export default function CenterStudentsPage() {
                   <div className="flex flex-col gap-0.5">
                     <StatusBadge status={s.status} kind="student" />
                     {s.status === "rejected" && s.review_note && (
-                      <span className="max-w-56 text-[11px] text-muted-foreground">“{s.review_note}”</span>
+                      <span className="block max-w-56 whitespace-normal wrap-break-word text-[11px] text-muted-foreground">“{s.review_note}”</span>
                     )}
                   </div>
                 </TableCell>

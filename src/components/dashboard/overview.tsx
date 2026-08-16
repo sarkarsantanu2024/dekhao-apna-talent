@@ -28,6 +28,8 @@ type Props = {
   /** Where each status chip should link to when clicked. */
   studentsHref: string;
   paymentsHref: string;
+  /** Extra widgets rendered between "Payments" and "Students by category". */
+  beforeByCategory?: React.ReactNode;
 };
 
 const STATUS_STYLES: Record<string, { bar: string; text: string }> = {
@@ -43,6 +45,7 @@ export function DashboardOverview({
   showCentres = scope === "global",
   studentsHref,
   paymentsHref,
+  beforeByCategory,
 }: Props) {
   return (
     <div className="space-y-6">
@@ -84,6 +87,8 @@ export function DashboardOverview({
           <StatusChip href={`${paymentsHref}?filter=rejected`} label="Rejected" value={stats.rejectedPayments} variant="rejected" />
         </CardContent>
       </Card>
+
+      {beforeByCategory}
 
       {/* By-category breakdown — meaningful in both scopes */}
       <Card>

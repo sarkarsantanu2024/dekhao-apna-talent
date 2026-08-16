@@ -15,6 +15,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { StatusBadge } from "@/components/common/status-badge";
 import { formatDate } from "@/lib/utils";
 import { confirm, prompt } from "@/components/ui/confirm-dialog";
@@ -36,6 +43,9 @@ export default function AdminStudentsPage() {
   const { data: categories } = useCategories();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<StudentStatus | "all">("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [centerFilter, setCenterFilter] = useState("all");
+  const [sortBy, setSortBy] = useState<"newest" | "centre" | "category">("newest");
   const [editing, setEditing] = useState<Student | null>(null);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -48,14 +58,25 @@ export default function AdminStudentsPage() {
 
   const filtered = useMemo(() => {
     let rows = filter === "all" ? students : students.filter((s) => s.status === filter);
+    if (categoryFilter !== "all") rows = rows.filter((s) => s.category_name === categoryFilter);
+    if (centerFilter !== "all") rows = rows.filter((s) => s.center_name === centerFilter);
     const q = query.trim().toLowerCase();
     if (q) {
       rows = rows.filter((s) =>
         [s.full_name, s.roll_number, s.center_name, s.category_name].some((v) => v?.toLowerCase().includes(q)),
       );
     }
+    if (sortBy === "centre") {
+      rows = [...rows].sort(
+        (a, b) => a.center_name.localeCompare(b.center_name) || a.category_name.localeCompare(b.category_name),
+      );
+    } else if (sortBy === "category") {
+      rows = [...rows].sort(
+        (a, b) => a.category_name.localeCompare(b.category_name) || a.center_name.localeCompare(b.center_name),
+      );
+    }
     return rows;
-  }, [students, filter, query]);
+  }, [students, filter, categoryFilter, centerFilter, sortBy, query]);
 
   const allSelected = filtered.length > 0 && filtered.every((s) => selected.has(s.id));
 
@@ -151,12 +172,46 @@ export default function AdminStudentsPage() {
 
       <CardContent>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <Input
-            placeholder="Search name, roll, centre…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="h-9 w-full sm:w-72"
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              placeholder="Search name, roll, centre…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="h-9 w-full sm:w-64"
+            />
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="h-9 w-44">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All categories</SelectItem>
+                {categories.map((c) => (
+                  <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={centerFilter} onValueChange={setCenterFilter}>
+              <SelectTrigger className="h-9 w-44">
+                <SelectValue placeholder="Centre" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All centres</SelectItem>
+                {centers.map((c) => (
+                  <SelectItem key={c.id} value={c.center_name}>{c.center_name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+              <SelectTrigger className="h-9 w-40">
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest first</SelectItem>
+                <SelectItem value="centre">Centre (A–Z)</SelectItem>
+                <SelectItem value="category">Category (A–Z)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div className="inline-flex flex-wrap gap-1 rounded-md border bg-background p-1">
             {FILTERS.map((f) => (
               <Button
@@ -215,7 +270,7 @@ export default function AdminStudentsPage() {
                   <div className="flex flex-col gap-0.5">
                     <StatusBadge status={s.status} kind="student" />
                     {s.status === "rejected" && s.review_note && (
-                      <span className="max-w-56 text-[11px] text-muted-foreground">“{s.review_note}”</span>
+                      <span className="block max-w-56 whitespace-normal wrap-break-word text-[11px] text-muted-foreground">“{s.review_note}”</span>
                     )}
                   </div>
                 </TableCell>
