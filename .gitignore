@@ -67,3 +67,7 @@ docs/demo/
 # Sales / proposal PDFs — generated locally, not part of the app
 /proposals/
 Dekhao-Apna-Talent-*.pdf
+
+# Centre-owner training decks (slides, captures, build scripts) — generated
+# locally for client training, not part of the app
+/training-decks/
