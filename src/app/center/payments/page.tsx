@@ -15,6 +15,8 @@ import { PaymentEditDialog } from "@/components/forms/payment-edit-dialog";
 import { confirm } from "@/components/ui/confirm-dialog";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { store, useCenters, usePayments } from "@/services";
+import { TEST_PAYMENT_IDS } from "@/constants/test-data";
+import { useShowTestData } from "@/lib/use-show-test-data";
 import type { Payment } from "@/types";
 
 export default function CenterPaymentsPage() {
@@ -22,7 +24,9 @@ export default function CenterPaymentsPage() {
   const { data: centers } = useCenters();
   const sessionCenterId = session?.user?.centerId ?? null;
   const centerId = (centers.find((c) => c.id === sessionCenterId) ?? centers[0])?.id;
-  const { data: rows, loading } = usePayments({ centerId });
+  const { data: allRows, loading } = usePayments({ centerId });
+  const [showTestData] = useShowTestData();
+  const rows = showTestData ? allRows : allRows.filter((r) => !TEST_PAYMENT_IDS.has(r.id));
 
   const [resubmitTarget, setResubmitTarget] = useState<Payment | null>(null);
   const [editTarget, setEditTarget] = useState<Payment | null>(null);

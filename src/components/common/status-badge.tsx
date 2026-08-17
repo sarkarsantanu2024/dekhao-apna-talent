@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 const STUDENT_LABELS: Record<string, string> = {
   pending: "pending",
   approved: "registered",
-  active: "paid",
+  active: "Paid",
   rejected: "rejected",
 };
 
@@ -21,9 +21,14 @@ export function StatusBadge({
   kind?: "student" | "payment";
 }) {
   const v =
-    status === "active" ? "active" :
-    status === "approved" ? "success" :
-    status === "rejected" ? "destructive" : "warning";
-  const label = kind === "student" ? STUDENT_LABELS[status] ?? status : status;
+    status === "active"
+      ? "active"
+      : status === "approved"
+        ? "success"
+        : status === "rejected"
+          ? "destructive"
+          : "warning";
+  const label =
+    kind === "student" ? (STUDENT_LABELS[status] ?? status) : status;
   return <Badge variant={v}>{label}</Badge>;
 }

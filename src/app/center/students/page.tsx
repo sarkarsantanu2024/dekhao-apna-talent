@@ -12,6 +12,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { StatusBadge } from "@/components/common/status-badge";
 import { formatDate } from "@/lib/utils";
 import { store, useCategories, useCenters, useStudents } from "@/services";
+import { TEST_STUDENT_IDS } from "@/constants/test-data";
+import { useShowTestData } from "@/lib/use-show-test-data";
 import { StudentDialog } from "@/components/admin/student-dialog";
 import { confirm } from "@/components/ui/confirm-dialog";
 import type { Student } from "@/types";
@@ -25,7 +27,9 @@ export default function CenterStudentsPage() {
   const sessionCenterId = session?.user?.centerId ?? null;
   const myCenter = centers.find((c) => c.id === sessionCenterId) ?? centers[0] ?? null;
   const centerId = myCenter?.id;
-  const { data: rows, loading } = useStudents({ centerId });
+  const { data: allRows, loading } = useStudents({ centerId });
+  const [showTestData] = useShowTestData();
+  const rows = showTestData ? allRows : allRows.filter((r) => !TEST_STUDENT_IDS.has(r.id));
 
   const [editing, setEditing] = useState<Student | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);

@@ -13,6 +13,8 @@ import { formatDate } from "@/lib/utils";
 import { useCenters, usePayments, useStudents } from "@/services";
 import type { DashboardStats } from "@/services";
 import { DashboardOverview } from "@/components/dashboard/overview";
+import { TEST_PAYMENT_IDS, TEST_STUDENT_IDS } from "@/constants/test-data";
+import { useShowTestData } from "@/lib/use-show-test-data";
 
 export default function CenterDashboard() {
   const { data: session } = useSession();
@@ -21,8 +23,17 @@ export default function CenterDashboard() {
   const myCenter = centers.find((c) => c.id === sessionCenterId) ?? centers[0] ?? null;
   const centerId = myCenter?.id;
 
-  const { data: students } = useStudents({ centerId });
-  const { data: payments } = usePayments({ centerId });
+  const { data: allStudents } = useStudents({ centerId });
+  const { data: allPayments } = usePayments({ centerId });
+  const [showTestData] = useShowTestData();
+  const students = useMemo(
+    () => (showTestData ? allStudents : allStudents.filter((s) => !TEST_STUDENT_IDS.has(s.id))),
+    [allStudents, showTestData],
+  );
+  const payments = useMemo(
+    () => (showTestData ? allPayments : allPayments.filter((p) => !TEST_PAYMENT_IDS.has(p.id))),
+    [allPayments, showTestData],
+  );
   const [busy, setBusy] = useState(false);
 
   /**

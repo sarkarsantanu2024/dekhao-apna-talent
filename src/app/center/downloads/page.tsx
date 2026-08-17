@@ -23,6 +23,8 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/common/status-badge";
 import { ChestCardBlockers, chestCardBlockers } from "@/components/common/chest-card-blockers";
 import { useCenters, usePayments, useStudents } from "@/services";
+import { TEST_PAYMENT_IDS, TEST_STUDENT_IDS } from "@/constants/test-data";
+import { useShowTestData } from "@/lib/use-show-test-data";
 import {
   downloadChestCard,
   downloadAllChestCards,
@@ -37,8 +39,17 @@ export default function CenterDownloadsPage() {
   const sessionCenterId = session?.user?.centerId ?? null;
   const center   = centers.find((c) => c.id === sessionCenterId) ?? centers[0] ?? null;
   const centerId = center?.id;
-  const { data: rows, loading } = useStudents({ centerId });
-  const { data: payments } = usePayments({ centerId });
+  const { data: allRows, loading } = useStudents({ centerId });
+  const { data: allPayments } = usePayments({ centerId });
+  const [showTestData] = useShowTestData();
+  const rows = useMemo(
+    () => (showTestData ? allRows : allRows.filter((s) => !TEST_STUDENT_IDS.has(s.id))),
+    [allRows, showTestData],
+  );
+  const payments = useMemo(
+    () => (showTestData ? allPayments : allPayments.filter((p) => !TEST_PAYMENT_IDS.has(p.id))),
+    [allPayments, showTestData],
+  );
 
   // A student is downloadable only when active (payment approved) AND has a photo.
   const eligible = useMemo(() => rows.filter((s) => isDownloadable(s) && hasPhoto(s)), [rows]);
