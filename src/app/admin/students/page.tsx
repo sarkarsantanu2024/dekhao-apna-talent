@@ -171,16 +171,16 @@ export default function AdminStudentsPage() {
       </CardHeader>
 
       <CardContent>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
+        <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
             <Input
               placeholder="Search name, roll, centre…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="h-9 w-full sm:w-64"
+              className="col-span-2 h-9 w-full sm:w-64"
             />
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="h-9 w-44">
+              <SelectTrigger className="h-9 w-full sm:w-44">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -191,7 +191,7 @@ export default function AdminStudentsPage() {
               </SelectContent>
             </Select>
             <Select value={centerFilter} onValueChange={setCenterFilter}>
-              <SelectTrigger className="h-9 w-44">
+              <SelectTrigger className="h-9 w-full sm:w-44">
                 <SelectValue placeholder="Centre" />
               </SelectTrigger>
               <SelectContent>
@@ -202,7 +202,7 @@ export default function AdminStudentsPage() {
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-              <SelectTrigger className="h-9 w-40">
+              <SelectTrigger className="col-span-2 h-9 w-full sm:w-40">
                 <SelectValue placeholder="Sort" />
               </SelectTrigger>
               <SelectContent>
@@ -212,14 +212,14 @@ export default function AdminStudentsPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="inline-flex flex-wrap gap-1 rounded-md border bg-background p-1">
+          <div className="flex flex-wrap gap-1 rounded-md border bg-background p-1 sm:inline-flex sm:w-fit">
             {FILTERS.map((f) => (
               <Button
                 key={f.value}
                 size="sm"
                 variant={filter === f.value ? "default" : "ghost"}
                 onClick={() => setFilter(f.value)}
-                className="h-7 gap-1.5 px-3 text-xs"
+                className="h-7 flex-1 gap-1.5 px-3 text-xs sm:flex-none"
               >
                 {f.label}
                 <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${filter === f.value ? "bg-primary-foreground/20" : "bg-muted text-muted-foreground"}`}>

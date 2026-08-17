@@ -136,20 +136,24 @@ export function DashboardShell({ nav, title, user, children }: Props) {
           mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className={cn("flex items-center justify-between border-b px-4 py-4", SIDEBAR_BORDER)}>
-          <SidebarBrand title={title} collapsed={false} />
+        <div className={cn("flex items-center justify-between gap-3 border-b px-4 py-4", SIDEBAR_BORDER)}>
+          <SidebarBrand title={title} collapsed={false} bare />
           <button
             type="button"
             aria-label="Close menu"
             onClick={() => setMobileOpen(false)}
-            className="inline-flex size-9 items-center justify-center rounded-full border border-white/15 text-white hover:bg-white/10"
+            className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/15 text-white hover:bg-white/10"
           >
             <X className="size-4" />
           </button>
         </div>
         <SidebarSectionLabel collapsed={false}>Navigation</SidebarSectionLabel>
-        <SidebarNav nav={nav} pathname={pathname} collapsed={false} />
-        <SidebarSupport collapsed={false} />
+        {/* One shared scroll area: on short screens the support card scrolls
+            with the nav instead of squeezing it, so every item stays reachable. */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+          <SidebarNav nav={nav} pathname={pathname} collapsed={false} grow={false} />
+          <SidebarSupport collapsed={false} />
+        </div>
       </aside>
 
       {/* ---- Main column ---- */}
@@ -185,9 +189,23 @@ export function DashboardShell({ nav, title, user, children }: Props) {
 
 /* -------- helpers -------- */
 
-function SidebarBrand({ title, collapsed }: { title: string; collapsed: boolean }) {
+function SidebarBrand({
+  title,
+  collapsed,
+  bare = false,
+}: {
+  title: string;
+  collapsed: boolean;
+  /** true = no chrome (height/border/padding) — the parent header supplies it. */
+  bare?: boolean;
+}) {
   return (
-    <div className={cn("flex h-16 items-center gap-2.5 border-b px-4 font-bold", SIDEBAR_BORDER)}>
+    <div
+      className={cn(
+        "flex items-center gap-2.5 font-bold",
+        bare ? "min-w-0 flex-1" : cn("h-16 border-b px-4", SIDEBAR_BORDER),
+      )}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={BRAND_ICON}
@@ -227,13 +245,16 @@ function SidebarNav({
   nav,
   pathname,
   collapsed,
+  grow = true,
 }: {
   nav: NavItem[];
   pathname: string;
   collapsed: boolean;
+  /** false = plain block that scrolls inside a parent container (mobile drawer). */
+  grow?: boolean;
 }) {
   return (
-    <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+    <nav className={cn("space-y-1 p-3", grow && "min-h-0 flex-1 overflow-y-auto")}>
       {nav.map((n) => {
         const active = pathname === n.href || pathname.startsWith(n.href + "/");
         return (
