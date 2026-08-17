@@ -50,7 +50,7 @@ export function DashboardOverview({
   return (
     <div className="space-y-6">
       {/* Top-line numbers */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard label={scope === "global" ? "Total students" : "My students"} value={stats.students} icon={Users} />
         {showCentres
           ? <StatCard label="Total centres" value={stats.centers} icon={Building2} />
@@ -68,7 +68,7 @@ export function DashboardOverview({
         <CardHeader>
           <CardTitle>Student status</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <CardContent className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
           <StatusChip href={`${studentsHref}?filter=pending`}  label="Pending"  value={stats.pendingStudents}  variant="pending"  total={stats.students} />
           <StatusChip href={`${studentsHref}?filter=approved`} label="Approved" value={stats.approvedStudents} variant="approved" total={stats.students} />
           <StatusChip href={`${studentsHref}?filter=rejected`} label="Rejected" value={stats.rejectedStudents} variant="rejected" total={stats.students} />
@@ -81,10 +81,10 @@ export function DashboardOverview({
         <CardHeader>
           <CardTitle>Payments</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-3">
-          <StatusChip href={`${paymentsHref}?filter=pending`}  label="Pending"  value={stats.pendingPayments}  variant="pending"  />
-          <StatusChip href={`${paymentsHref}?filter=approved`} label="Approved" value={stats.approvedPayments} variant="approved" />
-          <StatusChip href={`${paymentsHref}?filter=rejected`} label="Rejected" value={stats.rejectedPayments} variant="rejected" />
+        <CardContent className="grid gap-2 sm:grid-cols-3 sm:gap-3">
+          <StatusChip href={`${paymentsHref}?filter=pending`}  label="Pending"  value={stats.pendingPayments}  variant="pending"  mobileRow />
+          <StatusChip href={`${paymentsHref}?filter=approved`} label="Approved" value={stats.approvedPayments} variant="approved" mobileRow />
+          <StatusChip href={`${paymentsHref}?filter=rejected`} label="Rejected" value={stats.rejectedPayments} variant="rejected" mobileRow />
         </CardContent>
       </Card>
 
@@ -120,28 +120,37 @@ function StatusChip({
   value,
   variant,
   total,
+  mobileRow = false,
 }: {
   href: string;
   label: string;
   value: number;
   variant: keyof typeof STATUS_STYLES;
   total?: number;
+  /** true = on phones, render as a slim one-line row (label left, value right). */
+  mobileRow?: boolean;
 }) {
   const s = STATUS_STYLES[variant];
   const pct = total && total > 0 ? Math.round((value / total) * 100) : null;
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-muted/40"
+      className="group flex items-center gap-2 rounded-lg border bg-card p-2.5 transition-colors hover:bg-muted/40 sm:gap-3 sm:p-3"
     >
       <span className={`block size-2.5 shrink-0 rounded-full ${s.bar}`} />
-      <div className="flex flex-1 items-baseline justify-between">
-        <div>
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
-          <p className={`text-2xl font-bold ${s.text}`}>{value}</p>
+      <div className="flex min-w-0 flex-1 items-baseline justify-between">
+        <div
+          className={
+            mobileRow
+              ? "flex min-w-0 flex-1 items-center justify-between gap-2 sm:block"
+              : "min-w-0"
+          }
+        >
+          <p className="truncate text-[10px] uppercase tracking-wider text-muted-foreground sm:text-[11px]">{label}</p>
+          <p className={`font-bold ${mobileRow ? "text-lg sm:text-2xl" : "text-xl sm:text-2xl"} ${s.text}`}>{value}</p>
         </div>
         {pct !== null && (
-          <span className="text-[11px] text-muted-foreground">{pct}%</span>
+          <span className="hidden text-[11px] text-muted-foreground sm:inline">{pct}%</span>
         )}
       </div>
     </Link>

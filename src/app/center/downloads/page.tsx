@@ -114,6 +114,45 @@ export default function CenterDownloadsPage() {
         </Button>
       </CardHeader>
       <CardContent>
+        {/* Mobile: app-style card list */}
+        <div className="space-y-3 md:hidden">
+          {loading && rows.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>
+          ) : rows.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">No students yet.</p>
+          ) : rows.map((s) => {
+            const blockers = chestCardBlockers(s, payments);
+            const ok = blockers.length === 0;
+            const busy = singleBusy === s.id;
+            return (
+              <div key={s.id} className="rounded-lg border bg-card p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{s.full_name}</p>
+                    <p className="font-mono text-[11px] text-muted-foreground">{s.roll_number ?? "—"}</p>
+                  </div>
+                  <StatusBadge status={s.status} kind="student" />
+                </div>
+                <div className="mt-2 text-xs text-muted-foreground">
+                  <p className="whitespace-normal wrap-break-word">{s.category_name}</p>
+                </div>
+                <div className="mt-3 flex items-center justify-end gap-2 border-t pt-2.5">
+                  {ok ? (
+                    <Button size="sm" onClick={() => onSingle(s)} disabled={busy} className="gap-1.5">
+                      {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
+                      {busy ? "Generating…" : "Download PDF"}
+                    </Button>
+                  ) : (
+                    <ChestCardBlockers blockers={blockers} />
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Desktop: full table */}
+        <div className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -158,6 +197,7 @@ export default function CenterDownloadsPage() {
             })}
           </TableBody>
         </Table>
+        </div>
       </CardContent>
     </Card>
   );

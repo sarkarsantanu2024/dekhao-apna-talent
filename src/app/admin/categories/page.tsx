@@ -39,6 +39,56 @@ export default function CategoriesAdminPage() {
         <CardTitle>Event categories ({rows.length})</CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Mobile: app-style card list */}
+        <div className="space-y-3 md:hidden">
+          {loading && rows.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>
+          ) : rows.map((c) => (
+            <div key={c.id} className="rounded-lg border bg-card p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{c.name}</p>
+                  <p className="font-mono text-[11px] text-muted-foreground">{c.prefix}</p>
+                </div>
+                <Badge variant={c.active ? "success" : "secondary"}>{c.active ? "Active" : "Disabled"}</Badge>
+              </div>
+              <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                {editId === c.id ? (
+                  <>
+                    <span>Fee:</span>
+                    <Input
+                      type="number"
+                      min={0}
+                      className="h-8 w-24"
+                      value={draftFee}
+                      onChange={(e) => setDraftFee(Number(e.target.value))}
+                    />
+                  </>
+                ) : (
+                  <span>Fee: ₹{c.fee}</span>
+                )}
+              </div>
+              <div className="mt-3 flex items-center justify-end gap-2 border-t pt-2.5">
+                {editId === c.id ? (
+                  <>
+                    <Button size="sm" onClick={() => saveFee(c)}>Save</Button>
+                    <Button size="sm" variant="outline" onClick={() => setEditId(null)}>Cancel</Button>
+                  </>
+                ) : (
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => startEdit(c)}>Edit fee</Button>
+                    <Button size="sm" variant={c.active ? "outline" : "default"} onClick={() => toggleActive(c)}>
+                      {c.active ? "Disable" : "Enable"}
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop: full table */}
+        <div className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -91,6 +141,7 @@ export default function CategoriesAdminPage() {
             ))}
           </TableBody>
         </Table>
+        </div>
       </CardContent>
     </Card>
   );

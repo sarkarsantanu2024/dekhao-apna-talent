@@ -10,13 +10,24 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { confirm } from "@/components/ui/confirm-dialog";
 import { formatDate, groupByArea } from "@/lib/utils";
 import { store, useCenters, useStudents } from "@/services";
+import { TEST_CENTER_IDS, TEST_STUDENT_IDS } from "@/constants/test-data";
+import { useShowTestData } from "@/lib/use-show-test-data";
 import type { Center } from "@/types";
 import { CenterDialog } from "@/components/admin/center-dialog";
 import { CenterBulkUpload } from "@/components/forms/center-bulk-upload";
 
 export default function CentersPage() {
-  const { data: rows, loading } = useCenters();
-  const { data: students } = useStudents();
+  const { data: allCenters, loading } = useCenters();
+  const { data: allStudents } = useStudents();
+  const [showTestData] = useShowTestData();
+  const rows = useMemo(
+    () => (showTestData ? allCenters : allCenters.filter((c) => !TEST_CENTER_IDS.has(c.id))),
+    [allCenters, showTestData],
+  );
+  const students = useMemo(
+    () => (showTestData ? allStudents : allStudents.filter((s) => !TEST_STUDENT_IDS.has(s.id))),
+    [allStudents, showTestData],
+  );
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Center | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -112,7 +123,57 @@ export default function CentersPage() {
                     {area}
                     <span className="text-xs font-normal text-muted-foreground">({items.length})</span>
                   </h3>
-                  <div className="overflow-hidden rounded-lg border">
+                  {/* Mobile: app-style card list */}
+                  <div className="space-y-3 md:hidden">
+                    {items.map((c) => (
+                      <div
+                        key={c.id}
+                        className={`rounded-lg border bg-card p-4 shadow-sm ${selected.has(c.id) ? "border-primary/50 bg-muted/30" : ""}`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex min-w-0 items-start gap-3">
+                            <Checkbox
+                              checked={selected.has(c.id)}
+                              onCheckedChange={() => toggle(c.id)}
+                              aria-label={`Select ${c.center_name}`}
+                              className="mt-1"
+                            />
+                            <div className="min-w-0">
+                              <p className="truncate font-medium">{c.center_name}</p>
+                              <p className="truncate text-xs text-muted-foreground">{c.owner_name ?? "—"}</p>
+                            </div>
+                          </div>
+                          {c.participating ? (
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                              <CheckCircle2 className="size-3.5" /> Participating
+                            </span>
+                          ) : (
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                              <MinusCircle className="size-3.5" /> Not participating
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-2 space-y-0.5 text-xs text-muted-foreground">
+                          <p>Phone {c.phone ?? "—"} · WhatsApp {c.whatsapp ?? "—"}</p>
+                          <p>
+                            {c.start_date ? `Started ${formatDate(c.start_date)}` : "No start date"} ·{" "}
+                            {activeByCenter.get(c.id) ?? 0} active student{(activeByCenter.get(c.id) ?? 0) !== 1 ? "s" : ""}
+                          </p>
+                        </div>
+                        <div className="mt-3 flex items-center justify-end gap-2 border-t pt-2.5">
+                          <Button size="icon" variant="ghost" aria-label="Edit" onClick={() => { setEditing(c); setOpen(true); }}>
+                            <Pencil className="size-4" />
+                          </Button>
+                          <Button size="icon" variant="ghost" aria-label="Delete" onClick={() => onDelete(c)}>
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Desktop: full table */}
+                  <div className="hidden overflow-hidden rounded-lg border md:block">
                     <Table>
                       <TableHeader>
                         <TableRow>

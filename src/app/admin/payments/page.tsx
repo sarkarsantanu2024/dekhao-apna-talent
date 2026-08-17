@@ -13,6 +13,8 @@ import { PaymentActions } from "@/components/admin/payment-actions";
 import { confirm, prompt } from "@/components/ui/confirm-dialog";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { store, usePayments } from "@/services";
+import { TEST_PAYMENT_IDS } from "@/constants/test-data";
+import { useShowTestData } from "@/lib/use-show-test-data";
 import type { Payment, PaymentStatus } from "@/types";
 
 const FILTERS: { value: PaymentStatus | "all"; label: string }[] = [
@@ -23,7 +25,12 @@ const FILTERS: { value: PaymentStatus | "all"; label: string }[] = [
 ];
 
 export default function AdminPaymentsPage() {
-  const { data: rows, loading } = usePayments();
+  const { data: allRows, loading } = usePayments();
+  const [showTestData] = useShowTestData();
+  const rows = useMemo(
+    () => (showTestData ? allRows : allRows.filter((p) => !TEST_PAYMENT_IDS.has(p.id))),
+    [allRows, showTestData],
+  );
   const [filter, setFilter] = useState<PaymentStatus | "all">("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -120,6 +127,78 @@ export default function AdminPaymentsPage() {
       </CardHeader>
 
       <CardContent>
+        {/* Mobile: app-style card list */}
+        <div className="space-y-3 md:hidden">
+          {loading && filtered.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>
+          ) : filtered.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">No payments match this filter.</p>
+          ) : filtered.map((p) => (
+            <div
+              key={p.id}
+              className={`rounded-lg border bg-card p-4 shadow-sm ${selected.has(p.id) ? "border-primary/50 bg-muted/30" : ""}`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-start gap-3">
+                  {p.status === "pending" && (
+                    <Checkbox
+                      checked={selected.has(p.id)}
+                      onCheckedChange={() => toggle(p.id)}
+                      aria-label={`Select payment from ${p.center_name}`}
+                      className="mt-1"
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{p.student_name ?? "—"}</p>
+                    <p className="truncate text-xs text-muted-foreground">{p.center_name}</p>
+                  </div>
+                </div>
+                <StatusBadge status={p.status} />
+              </div>
+              <div className="mt-3 flex items-center gap-3">
+                <ScreenshotPreview
+                  url={p.screenshot_url}
+                  label={`Payment screenshot — ${p.student_name ?? p.center_name}`}
+                  caption={`${p.center_name} · ${formatCurrency(p.amount)}${p.transaction_ref ? ` · Ref ${p.transaction_ref}` : ""} · ${formatDate(p.created_at)}`}
+                />
+                <div className="min-w-0 text-xs text-muted-foreground">
+                  <p className="text-base font-bold text-foreground">{formatCurrency(p.amount)}</p>
+                  <p className="truncate font-mono">{p.transaction_ref ?? "—"}</p>
+                  <p>{formatDate(p.created_at)}</p>
+                </div>
+              </div>
+              {p.status === "rejected" && p.review_note && (
+                <p className="mt-2 whitespace-normal wrap-break-word text-xs text-rose-600">“{p.review_note}”</p>
+              )}
+              <div className="mt-3 flex items-center justify-end gap-2 border-t pt-2.5">
+                {p.status === "pending" ? (
+                  <PaymentActions id={p.id} />
+                ) : (
+                  <>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                      p.status === "approved" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                    }`}>
+                      {p.status === "approved" ? <Check className="size-3.5" /> : <X className="size-3.5" />}
+                      {p.status === "approved" ? "Verified" : "Rejected"} by {p.reviewed_by ?? "admin"}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 shrink-0 gap-1 px-2 text-xs text-muted-foreground"
+                      title="Undo this decision — sends the payment back to pending"
+                      onClick={() => onRevert(p)}
+                    >
+                      <RotateCcw className="size-3.5" /> Undo
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop: full table */}
+        <div className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -203,6 +282,7 @@ export default function AdminPaymentsPage() {
             ))}
           </TableBody>
         </Table>
+        </div>
       </CardContent>
     </Card>
   );

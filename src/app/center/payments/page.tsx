@@ -60,6 +60,72 @@ export default function CenterPaymentsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Mobile: app-style card list */}
+          <div className="space-y-3 md:hidden">
+            {loading && rows.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>
+            ) : rows.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">No payments yet.</p>
+            ) : rows.map((p) => (
+              <div
+                key={p.id}
+                className={`rounded-lg border bg-card p-4 shadow-sm ${p.status === "rejected" ? "border-destructive/30 bg-destructive/5" : ""}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{p.student_name ?? "—"}</p>
+                    <p className="truncate text-xs text-muted-foreground">{formatDate(p.created_at)}</p>
+                  </div>
+                  <StatusBadge status={p.status} />
+                </div>
+                <div className="mt-3 flex items-center gap-3">
+                  <ScreenshotPreview
+                    url={p.screenshot_url}
+                    label={`Payment screenshot — ${p.student_name ?? p.center_name}`}
+                    caption={`${formatCurrency(p.amount)}${p.transaction_ref ? ` · Ref ${p.transaction_ref}` : ""} · ${formatDate(p.created_at)}`}
+                  />
+                  <div className="min-w-0 text-xs text-muted-foreground">
+                    <p className="text-base font-bold text-foreground">{formatCurrency(p.amount)}</p>
+                    <p className="truncate font-mono">{p.transaction_ref ?? "—"}</p>
+                  </div>
+                </div>
+                {p.review_note?.trim() && (p.status === "rejected" || p.status === "pending") && (
+                  <div className="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 p-2.5 text-sm">
+                    <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-600" />
+                    <div className="min-w-0 whitespace-normal wrap-break-word">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-amber-700">
+                        Admin&apos;s note ·
+                      </span>{" "}
+                      <span className="text-foreground/90">{p.review_note}</span>
+                    </div>
+                  </div>
+                )}
+                <div className="mt-3 flex items-center justify-end gap-2 border-t pt-2.5">
+                  {p.status === "approved" ? (
+                    <span className="text-xs text-muted-foreground">Verified — locked</span>
+                  ) : (
+                    <>
+                      {p.status === "rejected" ? (
+                        <Button size="sm" variant="outline" onClick={() => setResubmitTarget(p)} className="gap-1.5">
+                          <RotateCcw className="size-3.5" /> Resubmit
+                        </Button>
+                      ) : (
+                        <Button size="icon" variant="ghost" aria-label="Edit payment" onClick={() => setEditTarget(p)}>
+                          <Pencil className="size-4" />
+                        </Button>
+                      )}
+                      <Button size="icon" variant="ghost" aria-label="Delete payment" onClick={() => onDelete(p)}>
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop: full table */}
+          <div className="hidden md:block">
           <Table>
             <TableHeader>
               <TableRow>
@@ -88,6 +154,7 @@ export default function CenterPaymentsPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

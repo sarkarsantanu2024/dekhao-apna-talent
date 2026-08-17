@@ -23,6 +23,8 @@ import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/common/status-badge";
 import { ChestCardBlockers, chestCardBlockers } from "@/components/common/chest-card-blockers";
 import { usePayments, useStudents } from "@/services";
+import { TEST_PAYMENT_IDS, TEST_STUDENT_IDS } from "@/constants/test-data";
+import { useShowTestData } from "@/lib/use-show-test-data";
 import { groupByArea } from "@/lib/utils";
 import {
   downloadChestCard,
@@ -33,8 +35,17 @@ import {
 import type { Student } from "@/types";
 
 export default function AdminDownloadsPage() {
-  const { data: rows, loading } = useStudents();
-  const { data: payments } = usePayments();
+  const { data: allStudents, loading } = useStudents();
+  const { data: allPayments } = usePayments();
+  const [showTestData] = useShowTestData();
+  const rows = useMemo(
+    () => (showTestData ? allStudents : allStudents.filter((s) => !TEST_STUDENT_IDS.has(s.id))),
+    [allStudents, showTestData],
+  );
+  const payments = useMemo(
+    () => (showTestData ? allPayments : allPayments.filter((p) => !TEST_PAYMENT_IDS.has(p.id))),
+    [allPayments, showTestData],
+  );
   const [query, setQuery] = useState("");
   const [singleBusy, setSingleBusy] = useState<string | null>(null);
   const [bulk, setBulk] = useState(false);
@@ -120,7 +131,41 @@ export default function AdminDownloadsPage() {
                   {area}
                   <span className="text-xs font-normal text-muted-foreground">({items.length})</span>
                 </h3>
-                <div className="overflow-hidden rounded-lg border">
+                {/* Mobile: app-style card list */}
+                <div className="space-y-3 md:hidden">
+                  {items.map((s) => {
+                    const blockers = chestCardBlockers(s, payments);
+                    const ok = blockers.length === 0;
+                    const busy = singleBusy === s.id;
+                    return (
+                      <div key={s.id} className="rounded-lg border bg-card p-4 shadow-sm">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">{s.full_name}</p>
+                            <p className="font-mono text-[11px] text-muted-foreground">{s.roll_number ?? "—"}</p>
+                          </div>
+                          <StatusBadge status={s.status} kind="student" />
+                        </div>
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          <p className="whitespace-normal wrap-break-word">{s.category_name} · {s.center_name}</p>
+                        </div>
+                        <div className="mt-3 flex items-center justify-end gap-2 border-t pt-2.5">
+                          {ok ? (
+                            <Button size="sm" onClick={() => onSingle(s)} disabled={busy} className="gap-1.5">
+                              {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
+                              {busy ? "Generating…" : "Download PDF"}
+                            </Button>
+                          ) : (
+                            <ChestCardBlockers blockers={blockers} />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop: full table */}
+                <div className="hidden overflow-hidden rounded-lg border md:block">
                   <Table>
                     <TableHeader>
                       <TableRow>

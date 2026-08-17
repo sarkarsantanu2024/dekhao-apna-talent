@@ -105,6 +105,61 @@ export default function CenterStudentsPage() {
         </div>
       </CardHeader>
       <CardContent>
+        {/* Mobile: app-style card list */}
+        <div className="space-y-3 md:hidden">
+          {loading && rows.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>
+          ) : rows.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">No students yet — add your first.</p>
+          ) : rows.map((s) => (
+            <div
+              key={s.id}
+              className={`rounded-lg border bg-card p-4 shadow-sm ${selected.has(s.id) ? "border-primary/50 bg-muted/30" : ""}`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-start gap-3">
+                  <Checkbox
+                    checked={selected.has(s.id)}
+                    onCheckedChange={() => toggle(s.id)}
+                    disabled={s.status === "active"}
+                    aria-label={`Select ${s.full_name}`}
+                    className="mt-1"
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{s.full_name}</p>
+                    <p className="font-mono text-[11px] text-muted-foreground">{s.roll_number}</p>
+                  </div>
+                </div>
+                <StatusBadge status={s.status} kind="student" />
+              </div>
+              <div className="mt-2 space-y-0.5 text-xs text-muted-foreground">
+                <p className="truncate">{s.category_name}</p>
+                <p>{s.phone ?? "—"} · Added {formatDate(s.created_at)}</p>
+                {s.status === "rejected" && s.review_note && (
+                  <p className="whitespace-normal wrap-break-word text-rose-600">“{s.review_note}”</p>
+                )}
+              </div>
+              <div className="mt-3 flex items-center justify-end gap-2 border-t pt-2.5">
+                <Button size="icon" variant="ghost" aria-label="Edit" onClick={() => onEdit(s)}>
+                  <Pencil className="size-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  aria-label="Delete"
+                  onClick={() => onDelete(s)}
+                  title={s.status === "active" ? "Cannot delete — chest card issued" : "Delete student"}
+                  disabled={s.status === "active"}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop: full table */}
+        <div className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -174,6 +229,7 @@ export default function CenterStudentsPage() {
             ))}
           </TableBody>
         </Table>
+        </div>
       </CardContent>
 
       {/* Edit dialog — centre-scoped */}

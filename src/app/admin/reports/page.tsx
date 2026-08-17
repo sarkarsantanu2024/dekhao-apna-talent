@@ -8,15 +8,37 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/cards/stat-card";
 import { Trophy, Users, IndianRupee, FileCheck2, Download, RotateCcw } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { store, useStats, useStudents, useCenters } from "@/services";
+import { store, useStats, useStudents, useCenters, usePayments } from "@/services";
 import { confirm } from "@/components/ui/confirm-dialog";
 import { EVENT_YEAR } from "@/constants";
+import { TEST_CENTER_IDS, TEST_PAYMENT_IDS, TEST_STUDENT_IDS } from "@/constants/test-data";
+import { useShowTestData } from "@/lib/use-show-test-data";
+import { buildStats } from "@/lib/build-stats";
+import { useMemo } from "react";
 
 export default function ReportsPage() {
-  const { data: s, loading } = useStats();
-  const { data: students } = useStudents();
-  const { data: centers } = useCenters();
+  const { data: allStats, loading } = useStats();
+  const { data: allStudents } = useStudents();
+  const { data: allCenters } = useCenters();
+  const { data: allPayments } = usePayments();
+  const [showTestData] = useShowTestData();
   const [busy, setBusy] = useState(false);
+
+  const students = useMemo(
+    () => (showTestData ? allStudents : allStudents.filter((st) => !TEST_STUDENT_IDS.has(st.id))),
+    [allStudents, showTestData],
+  );
+  const centers = useMemo(
+    () => (showTestData ? allCenters : allCenters.filter((c) => !TEST_CENTER_IDS.has(c.id))),
+    [allCenters, showTestData],
+  );
+  const s = useMemo(
+    () =>
+      showTestData
+        ? allStats
+        : buildStats(students, allPayments.filter((p) => !TEST_PAYMENT_IDS.has(p.id)), centers),
+    [showTestData, allStats, students, allPayments, centers],
+  );
 
   async function onResetTestData() {
     if (!(await confirm({

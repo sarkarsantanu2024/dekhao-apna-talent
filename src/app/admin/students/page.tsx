@@ -26,6 +26,8 @@ import { StatusBadge } from "@/components/common/status-badge";
 import { formatDate } from "@/lib/utils";
 import { confirm, prompt } from "@/components/ui/confirm-dialog";
 import { store, useStudents, useCenters, useCategories } from "@/services";
+import { TEST_STUDENT_IDS } from "@/constants/test-data";
+import { useShowTestData } from "@/lib/use-show-test-data";
 import type { Student, StudentStatus } from "@/types";
 import { StudentDialog } from "@/components/admin/student-dialog";
 
@@ -38,7 +40,12 @@ const FILTERS: { value: StudentStatus | "all"; label: string }[] = [
 ];
 
 export default function AdminStudentsPage() {
-  const { data: students, loading } = useStudents();
+  const { data: allStudents, loading } = useStudents();
+  const [showTestData] = useShowTestData();
+  const students = useMemo(
+    () => (showTestData ? allStudents : allStudents.filter((s) => !TEST_STUDENT_IDS.has(s.id))),
+    [allStudents, showTestData],
+  );
   const { data: centers } = useCenters();
   const { data: categories } = useCategories();
   const [query, setQuery] = useState("");
@@ -229,6 +236,60 @@ export default function AdminStudentsPage() {
             ))}
           </div>
         </div>
+        {/* Mobile: app-style card list */}
+        <div className="space-y-3 md:hidden">
+          {loading && filtered.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>
+          ) : filtered.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              {query ? "No students match your search." : `No ${filter === "all" ? "" : filter + " "}students.`}
+            </p>
+          ) : filtered.map((s) => (
+            <div
+              key={s.id}
+              className={`rounded-lg border bg-card p-4 shadow-sm ${selected.has(s.id) ? "border-primary/50 bg-muted/30" : ""}`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-start gap-3">
+                  <Checkbox
+                    checked={selected.has(s.id)}
+                    onCheckedChange={() => toggle(s.id)}
+                    aria-label={`Select ${s.full_name}`}
+                    className="mt-1"
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{s.full_name}</p>
+                    <p className="font-mono text-[11px] text-muted-foreground">{s.roll_number}</p>
+                  </div>
+                </div>
+                <StatusBadge status={s.status} kind="student" />
+              </div>
+              <div className="mt-2 space-y-0.5 text-xs text-muted-foreground">
+                <p className="truncate">{s.category_name} · {s.center_name}</p>
+                <p>{s.phone ?? "—"} · Added {formatDate(s.created_at)}</p>
+                {s.status === "rejected" && s.review_note && (
+                  <p className="whitespace-normal wrap-break-word text-rose-600">“{s.review_note}”</p>
+                )}
+              </div>
+              <div className="mt-3 flex items-center justify-end gap-2 border-t pt-2.5">
+                {s.status !== "rejected" && (
+                  <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onReject(s)}>
+                    <X className="size-3.5" /> Reject
+                  </Button>
+                )}
+                <Button size="icon" variant="ghost" aria-label="Edit" onClick={() => { setEditing(s); setOpen(true); }}>
+                  <Pencil className="size-4" />
+                </Button>
+                <Button size="icon" variant="ghost" aria-label="Delete" onClick={() => onDelete(s)}>
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop: full table */}
+        <div className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -294,6 +355,7 @@ export default function AdminStudentsPage() {
             ))}
           </TableBody>
         </Table>
+        </div>
       </CardContent>
 
       <StudentDialog

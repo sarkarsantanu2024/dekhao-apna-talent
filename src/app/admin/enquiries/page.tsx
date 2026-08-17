@@ -160,7 +160,80 @@ export default function EnquiriesPage() {
         ) : rows.length === 0 ? (
           <p className="text-center text-sm text-muted-foreground">No enquiries match your filter.</p>
         ) : (
-          <div className="overflow-x-auto rounded-lg border">
+          <>
+          {/* Mobile: app-style card list */}
+          <div className="space-y-3 md:hidden">
+            {rows.map((e) => {
+              const phoneDigits = (e.phone ?? "").replace(/\D/g, "");
+              return (
+                <div key={e.id} className="rounded-lg border bg-card p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">{e.name}</p>
+                      <a href={`mailto:${e.email}`} className="flex items-center gap-1 truncate text-sm text-primary hover:underline">
+                        <Mail className="size-3.5 shrink-0" /> <span className="truncate">{e.email}</span>
+                      </a>
+                    </div>
+                    <span className={`inline-block shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${STATUS_STYLE[e.status]}`}>
+                      {e.status}
+                    </span>
+                  </div>
+                  <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                    {e.phone && (
+                      <a
+                        href={phoneDigits ? `https://wa.me/${phoneDigits}` : undefined}
+                        target="_blank"
+                        rel="noopener"
+                        className="flex items-center gap-1 hover:text-emerald-600"
+                      >
+                        <MessageCircle className="size-3.5" /> {e.phone}
+                      </a>
+                    )}
+                    <p>Received {fmtDate(e.created_at)}</p>
+                    <p className="whitespace-normal wrap-break-word text-sm text-foreground">{e.message}</p>
+                  </div>
+                  <div className="mt-3 flex items-center justify-end gap-2 border-t pt-2.5">
+                    {e.status !== "read" && (
+                      <Button
+                        size="icon" variant="ghost" disabled={busyId === e.id}
+                        aria-label="Mark read" title="Mark as read"
+                        onClick={() => setStatus(e, "read")}
+                      >
+                        <Check className="size-4 text-emerald-600" />
+                      </Button>
+                    )}
+                    {e.status !== "archived" ? (
+                      <Button
+                        size="icon" variant="ghost" disabled={busyId === e.id}
+                        aria-label="Archive" title="Archive"
+                        onClick={() => setStatus(e, "archived")}
+                      >
+                        <Archive className="size-4" />
+                      </Button>
+                    ) : (
+                      <Button
+                        size="icon" variant="ghost" disabled={busyId === e.id}
+                        aria-label="Restore" title="Restore to New"
+                        onClick={() => setStatus(e, "new")}
+                      >
+                        <RotateCcw className="size-4" />
+                      </Button>
+                    )}
+                    <Button
+                      size="icon" variant="ghost" disabled={busyId === e.id}
+                      aria-label="Delete" title="Delete"
+                      onClick={() => remove(e)}
+                    >
+                      <Trash2 className="size-4 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop: full table */}
+          <div className="hidden overflow-x-auto rounded-lg border md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -246,6 +319,7 @@ export default function EnquiriesPage() {
               </TableBody>
             </Table>
           </div>
+          </>
         )}
       </CardContent>
     </Card>

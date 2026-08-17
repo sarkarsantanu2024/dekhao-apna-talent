@@ -22,6 +22,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCenters } from "@/services";
+import { TEST_CENTER_IDS } from "@/constants/test-data";
+import { useShowTestData } from "@/lib/use-show-test-data";
 import {
   buildCenterCredentials,
   credentialMessage,
@@ -31,7 +33,12 @@ import {
 const UNGROUPED = "Other / Unspecified";
 
 export default function CredentialsPage() {
-  const { data: centers, loading } = useCenters();
+  const { data: allCenters, loading } = useCenters();
+  const [showTestData] = useShowTestData();
+  const centers = useMemo(
+    () => (showTestData ? allCenters : allCenters.filter((c) => !TEST_CENTER_IDS.has(c.id))),
+    [allCenters, showTestData],
+  );
   const [query, setQuery] = useState("");
 
   // Deterministic credentials for every uploaded centre.
@@ -176,7 +183,50 @@ export default function CredentialsPage() {
                 {area}
                 <span className="text-xs font-normal text-muted-foreground">({items.length})</span>
               </h3>
-              <div className="overflow-hidden rounded-lg border">
+              {/* Mobile: app-style card list */}
+              <div className="space-y-3 md:hidden">
+                {items.map((c) => (
+                  <div key={c.center.id} className="rounded-lg border bg-card p-4 shadow-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{c.center.center_name}</p>
+                        <p className="truncate text-xs text-muted-foreground">{c.center.owner_name ?? "—"}</p>
+                      </div>
+                    </div>
+                    <div className="mt-2 space-y-0.5 text-xs text-muted-foreground">
+                      <p className="whitespace-normal wrap-break-word">
+                        User ID <span className="font-mono text-foreground">{c.login_id}</span>
+                      </p>
+                      <p className="whitespace-normal wrap-break-word">
+                        Password <span className="font-mono text-foreground">{c.login_password}</span>
+                      </p>
+                    </div>
+                    <div className="mt-3 flex items-center justify-end gap-2 border-t pt-2.5">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label="Copy login"
+                        title="Copy User ID & password"
+                        onClick={() => onCopy(c)}
+                      >
+                        <Copy className="size-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label="Send on WhatsApp"
+                        title="Send login to the owner on WhatsApp"
+                        onClick={() => onWhatsApp(c)}
+                      >
+                        <MessageCircle className="size-4 text-emerald-600" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop: full table */}
+              <div className="hidden overflow-hidden rounded-lg border md:block">
                 <Table>
                   <TableHeader>
                     <TableRow>
