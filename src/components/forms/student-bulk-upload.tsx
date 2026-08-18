@@ -31,12 +31,16 @@ const norm = (s: string) => s.toLowerCase().replace(/[\s_.\-]+/g, "");
 const digits = (s: string) => (s || "").replace(/\D/g, "");
 
 /**
- * Identity key for duplicate detection: name + phone. DOB is intentionally
- * excluded — spreadsheet date cells parse into inconsistent formats, which made
- * the old name+DOB+phone key miss real duplicates. Name + phone is stable.
+ * Identity key for duplicate detection: name + phone + category. DOB is
+ * intentionally excluded — spreadsheet date cells parse into inconsistent
+ * formats, which made the old name+DOB+phone key miss real duplicates.
+ * Category is INCLUDED because the same student may participate in multiple
+ * categories — only a repeat entry in the same category is a duplicate.
  */
-export function studentKey(s: Pick<Student, "full_name" | "phone">): string {
-  return `${norm(s.full_name ?? "")}|${digits(s.phone ?? "")}`;
+export function studentKey(
+  s: Pick<Student, "full_name" | "phone"> & { category_id?: string | null },
+): string {
+  return `${norm(s.full_name ?? "")}|${digits(s.phone ?? "")}|${s.category_id ?? ""}`;
 }
 
 function rawPick(row: Record<string, unknown>, ...aliases: string[]): unknown {
@@ -173,9 +177,9 @@ export function StudentBulkUpload({
           "phone number",
           "phone no",
         );
-        const key = studentKey({ full_name, phone });
+        const key = studentKey({ full_name, phone, category_id: cat.id });
         if (seen.has(key)) {
-          errors.push(`Row ${rowNo}: duplicate "${full_name}"`);
+          errors.push(`Row ${rowNo}: duplicate "${full_name}" in ${cat.name}`);
           continue;
         }
 

@@ -93,10 +93,12 @@ export function StudentForm({
           toast.error("Student photo is required");
           return;
         }
+        // Same student may enter multiple categories — only block a repeat
+        // registration in the SAME category.
         const existing = await store.listStudents(centerId ? { centerId } : undefined);
-        const candidate = { full_name: values.full_name, dob: values.dob, phone: values.phone };
+        const candidate = { full_name: values.full_name, phone: values.phone, category_id: values.category_id };
         if (existing.some((s) => studentKey(s) === studentKey(candidate))) {
-          toast.error("A student with the same name, date of birth and phone already exists");
+          toast.error("This student is already registered in this category — pick a different category");
           return;
         }
         const created = await store.createStudent({
