@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
-import { Download } from "lucide-react";
+import { ChevronDown, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
@@ -108,12 +108,17 @@ export function CollectionByCentre({ hideTest = false }: { hideTest?: boolean })
           <p className="text-sm text-muted-foreground">No approved payments yet.</p>
         ) : (
           <div className="space-y-4">
-            {rows.map((r) => (
-              <div key={r.centreName} className="rounded-lg border">
-                <div className="flex items-center justify-between gap-3 border-b bg-muted/40 px-4 py-2">
-                  <p className="text-sm font-semibold">{r.centreName}</p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-bold">{formatCurrency(r.total)}</p>
+            {rows.map((r, i) => (
+              /* Accordion per centre — the top collector starts open, the
+                 rest collapsed. Header always shows the total + download. */
+              <details key={r.centreName} open={i === 0 || undefined} className="group rounded-lg border">
+                <summary className="flex cursor-pointer select-none items-center justify-between gap-3 bg-muted/40 px-4 py-2 transition-colors hover:bg-muted/60 [&::-webkit-details-marker]:hidden">
+                  <span className="flex min-w-0 items-center gap-2">
+                    <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                    <span className="truncate text-sm font-semibold">{r.centreName}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2">
+                    <span className="text-sm font-bold">{formatCurrency(r.total)}</span>
                     <Button
                       size="icon"
                       variant="ghost"
@@ -121,13 +126,18 @@ export function CollectionByCentre({ hideTest = false }: { hideTest?: boolean })
                       aria-label={`Download ${r.centreName} collection`}
                       title="Download this centre (.xlsx)"
                       disabled={busy}
-                      onClick={() => downloadReport(r)}
+                      onClick={(e) => {
+                        // Don't let the download click toggle the accordion.
+                        e.preventDefault();
+                        e.stopPropagation();
+                        downloadReport(r);
+                      }}
                     >
                       <Download className="size-3.5" />
                     </Button>
-                  </div>
-                </div>
-                <ul className="divide-y px-4">
+                  </span>
+                </summary>
+                <ul className="divide-y border-t px-4">
                   {r.byCategory.map((c) => (
                     <li key={c.categoryName} className="flex justify-between py-2 text-sm">
                       <span className="text-muted-foreground">{c.categoryName}</span>
@@ -135,7 +145,7 @@ export function CollectionByCentre({ hideTest = false }: { hideTest?: boolean })
                     </li>
                   ))}
                 </ul>
-              </div>
+              </details>
             ))}
             <div className="flex items-center justify-between rounded-lg border bg-muted/40 px-4 py-2.5">
               <p className="text-sm font-semibold">All centres</p>

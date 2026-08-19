@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Pagination } from "@/components/ui/pagination";
 import { useCenters } from "@/services";
 import { TEST_CENTER_IDS } from "@/constants/test-data";
 import { useShowTestData } from "@/lib/use-show-test-data";
@@ -30,7 +32,7 @@ import {
   type CenterCredential,
 } from "@/lib/auth/center-credentials";
 
-const UNGROUPED = "Other / Unspecified";
+import { groupByArea } from "@/lib/utils";
 
 export default function CredentialsPage() {
   const { data: allCenters, loading } = useCenters();
@@ -67,7 +69,7 @@ export default function CredentialsPage() {
     });
   }, [creds]);
 
-  // Filter, then group by city / area.
+  // Filter, then group by city / area (case-insensitive, shared helper).
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
     const filtered = q
@@ -76,22 +78,37 @@ export default function CredentialsPage() {
             .some((v) => v?.toLowerCase().includes(q)),
         )
       : creds;
-
-    const map = new Map<string, CenterCredential[]>();
-    for (const c of filtered) {
-      const area = c.center.city?.trim() || UNGROUPED;
-      (map.get(area) ?? map.set(area, []).get(area)!).push(c);
-    }
-    // Sort areas alphabetically (Unspecified last), centres by name inside each.
-    return [...map.entries()]
-      .sort(([a], [b]) =>
-        a === UNGROUPED ? 1 : b === UNGROUPED ? -1 : a.localeCompare(b),
-      )
-      .map(([area, items]) => [
-        area,
-        items.sort((x, y) => x.center.center_name.localeCompare(y.center.center_name)),
-      ] as const);
+    return groupByArea(filtered, (c) => c.center.city).map(
+      ([area, items]) =>
+        [
+          area,
+          [...items].sort((x, y) => x.center.center_name.localeCompare(y.center.center_name)),
+        ] as const,
+    );
   }, [creds, query]);
+
+  // Area filter + group-level pagination keep long lists short.
+  const [areaFilter, setAreaFilter] = useState("all");
+  const areaOptions = useMemo(
+    () => groupByArea(creds, (c) => c.center.city).map(([area]) => area),
+    [creds],
+  );
+  const visibleGroups = useMemo(
+    () =>
+      areaFilter === "all"
+        ? groups
+        : groups.filter(([area]) => area.toLowerCase() === areaFilter.toLowerCase()),
+    [groups, areaFilter],
+  );
+  const GROUPS_PER_PAGE = 5;
+  const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [query, areaFilter]);
+  const pageCount = Math.max(1, Math.ceil(visibleGroups.length / GROUPS_PER_PAGE));
+  const safePage = Math.min(page, pageCount);
+  const pageGroups = useMemo(
+    () => visibleGroups.slice((safePage - 1) * GROUPS_PER_PAGE, safePage * GROUPS_PER_PAGE),
+    [visibleGroups, safePage],
+  );
 
   const onCopy = async (c: CenterCredential) => {
     try {
@@ -167,11 +184,22 @@ export default function CredentialsPage() {
             onChange={(e) => setQuery(e.target.value)}
             className="h-9 w-full sm:w-80"
           />
-          {query && (
+          <SearchableSelect
+            value={areaFilter}
+            onValueChange={setAreaFilter}
+            options={[
+              { value: "all", label: "All areas" },
+              ...areaOptions.map((a) => ({ value: a, label: a })),
+            ]}
+            placeholder="Area"
+            searchPlaceholder="Search area…"
+            className="w-full sm:w-48"
+          />
+          {(query || areaFilter !== "all") && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setQuery("")}
+              onClick={() => { setQuery(""); setAreaFilter("all"); }}
               className="h-9 shrink-0 gap-1.5 px-2 text-muted-foreground"
             >
               <X className="size-3.5" /> Reset
@@ -185,10 +213,11 @@ export default function CredentialsPage() {
           <p className="rounded-lg border border-dashed bg-muted/30 p-8 text-center text-sm text-muted-foreground">
             No centres yet. Upload a centre list on the Centers page and the logins will appear here.
           </p>
-        ) : groups.length === 0 ? (
-          <p className="text-center text-sm text-muted-foreground">No centres match your search.</p>
+        ) : visibleGroups.length === 0 ? (
+          <p className="text-center text-sm text-muted-foreground">No centres match your filters.</p>
         ) : (
-          groups.map(([area, items]) => (
+          <>
+          {pageGroups.map(([area, items]) => (
             <section key={area}>
               <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-foreground">
                 <MapPin className="size-4 text-primary" />
@@ -284,7 +313,9 @@ export default function CredentialsPage() {
                 </Table>
               </div>
             </section>
-          ))
+          ))}
+          <Pagination page={safePage} pageCount={pageCount} onPageChange={setPage} />
+          </>
         )}
       </CardContent>
     </Card>

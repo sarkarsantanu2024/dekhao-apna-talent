@@ -1,5 +1,27 @@
-import type { Center, Payment, Student } from "@/types";
+import type { Category, Center, Payment, Student } from "@/types";
 import type { DashboardStats } from "@/services/store";
+
+/**
+ * byCategory only contains categories that HAVE students — a brand-new
+ * category would be invisible on dashboards/reports. Merge in every active
+ * category with a 0 count (order: category list first, then any legacy names).
+ */
+export function withAllCategories(
+  byCategory: DashboardStats["byCategory"],
+  categories: Category[],
+): DashboardStats["byCategory"] {
+  const counts = new Map(byCategory.map((r) => [r.categoryName, r.count]));
+  const listed = new Set<string>();
+  const out: DashboardStats["byCategory"] = [];
+  for (const c of categories.filter((c) => c.active)) {
+    out.push({ categoryName: c.name, count: counts.get(c.name) ?? 0 });
+    listed.add(c.name);
+  }
+  for (const r of byCategory) {
+    if (!listed.has(r.categoryName)) out.push(r);
+  }
+  return out;
+}
 
 /**
  * Compute DashboardStats from raw lists on the client. Mirrors the store's

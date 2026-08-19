@@ -28,6 +28,7 @@ const CAT = {
   song:   { id: "c0000002-0000-0000-0000-000000000002", name: "Song",                 slug: "song",         prefix: "SONG",  fee: 400, active: true, description: null },
   math:   { id: "c0000003-0000-0000-0000-000000000003", name: "Mental Math Olympiad", slug: "mental-math",  prefix: "MATH",  fee: 250, active: true, description: null },
   other:  { id: "c0000004-0000-0000-0000-000000000004", name: "Other Talent",         slug: "other-talent", prefix: "OTHER", fee: 400, active: true, description: null },
+  kbb:    { id: "c0000005-0000-0000-0000-000000000005", name: "KBB",                  slug: "kbb",          prefix: "KBB",   fee: 250, active: true, description: "Kaun Banega Brainist — on-screen quiz challenge" },
 };
 
 const nowIso = () => new Date().toISOString();

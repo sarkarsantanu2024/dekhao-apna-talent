@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Check, X, RotateCcw, Files } from "lucide-react";
+import { Check, X, RotateCcw, Files, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { ScreenshotPreview } from "@/components/common/screenshot-link";
 import { PaymentActions } from "@/components/admin/payment-actions";
 import { Pagination } from "@/components/ui/pagination";
 import { confirm, prompt } from "@/components/ui/confirm-dialog";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate, groupByArea, UNGROUPED_AREA } from "@/lib/utils";
 import { store, useCenters, usePayments } from "@/services";
 import { TEST_CENTER_IDS, TEST_PAYMENT_IDS } from "@/constants/test-data";
 import { Input } from "@/components/ui/input";
@@ -37,6 +37,7 @@ export default function AdminPaymentsPage() {
   const [filter, setFilter] = useState<PaymentStatus | "all">("all");
   const [query, setQuery] = useState("");
   const [centerFilter, setCenterFilter] = useState("all");
+  const [areaFilter, setAreaFilter] = useState("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const { data: allCenters } = useCenters();
@@ -45,9 +46,26 @@ export default function AdminPaymentsPage() {
     [allCenters, showTestData],
   );
 
+  // Payments carry no city — their area is the paying centre's city.
+  const areaByCenter = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of allCenters) m.set(c.id, c.city?.trim() || UNGROUPED_AREA);
+    return m;
+  }, [allCenters]);
+  const areaOptions = useMemo(
+    () => groupByArea(centers, (c) => c.city).map(([area]) => area),
+    [centers],
+  );
+
   const filtered = useMemo(() => {
     let out = filter === "all" ? rows : rows.filter((p) => p.status === filter);
     if (centerFilter !== "all") out = out.filter((p) => p.center_name === centerFilter);
+    if (areaFilter !== "all") {
+      const want = areaFilter.toLowerCase();
+      out = out.filter(
+        (p) => ((p.center_id && areaByCenter.get(p.center_id)) || UNGROUPED_AREA).toLowerCase() === want,
+      );
+    }
     const q = query.trim().toLowerCase();
     if (q) {
       out = out.filter((p) =>
@@ -55,7 +73,10 @@ export default function AdminPaymentsPage() {
       );
     }
     return out;
-  }, [rows, filter, centerFilter, query]);
+  }, [rows, filter, centerFilter, areaFilter, areaByCenter, query]);
+
+  // All pending payments in the current scope — powers centre-wise bulk approve.
+  const scopePending = useMemo(() => filtered.filter((p) => p.status === "pending"), [filtered]);
 
   // Rows sharing one screenshot are ONE real-world transfer ("batch") — the
   // centre paid HO once for several students. Group them so the admin sees a
@@ -75,16 +96,25 @@ export default function AdminPaymentsPage() {
     return order.map((key) => ({ key, rows: map.get(key)! }));
   }, [filtered]);
 
+  // Order units area-by-area (Andal, Bankura, …) so the list renders as
+  // area sections; inside an area, newest first (original order kept).
+  const areaUnits = useMemo(() => {
+    const grouped = groupByArea(units, (u) =>
+      u.rows[0].center_id ? areaByCenter.get(u.rows[0].center_id) : null,
+    );
+    return grouped.flatMap(([area, us]) => us.map((u) => ({ ...u, area })));
+  }, [units, areaByCenter]);
+
   // Pagination keeps long lists scannable; changing the filter resets to page 1.
   // Paginate by unit so a batch is never split across pages.
   const PAGE_SIZE = 20;
   const [page, setPage] = useState(1);
-  useEffect(() => { setPage(1); }, [filter, query, centerFilter]);
-  const pageCount = Math.max(1, Math.ceil(units.length / PAGE_SIZE));
+  useEffect(() => { setPage(1); }, [filter, query, centerFilter, areaFilter]);
+  const pageCount = Math.max(1, Math.ceil(areaUnits.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount);
   const pageUnits = useMemo(
-    () => units.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
-    [units, safePage],
+    () => areaUnits.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [areaUnits, safePage],
   );
   const pageRows = useMemo(() => pageUnits.flatMap((u) => u.rows), [pageUnits]);
 
@@ -122,6 +152,30 @@ export default function AdminPaymentsPage() {
     }
     setSelected(new Set());
     toast.success(`${kind === "approve" ? "Approved" : "Rejected"} ${ok} payment${ok !== 1 ? "s" : ""}`);
+  };
+
+  /** Approve or reject every pending payment of the selected centre in one go. */
+  const onCentreBulk = async (kind: "approve" | "reject") => {
+    if (centerFilter === "all" || !scopePending.length) return;
+    const n = scopePending.length;
+    if (!(await confirm({
+      title: `${kind === "approve" ? "Approve" : "Reject"} all ${n} pending payment${n !== 1 ? "s" : ""} of ${centerFilter}?`,
+      description:
+        kind === "approve"
+          ? "Every pending payment of this centre (in the current filter) will be approved and the students' chest cards unlocked."
+          : "Every pending payment of this centre (in the current filter) will be rejected. The centre can re-submit.",
+      confirmText: kind === "approve" ? "Approve all" : "Reject all",
+      destructive: kind === "reject",
+    }))) return;
+    let ok = 0;
+    for (const p of scopePending) {
+      try {
+        if (kind === "approve") await store.approvePayment(p.id);
+        else await store.rejectPayment(p.id);
+        ok++;
+      } catch { /* skip failures */ }
+    }
+    toast.success(`${kind === "approve" ? "Approved" : "Rejected"} ${ok} payment${ok !== 1 ? "s" : ""} — ${centerFilter}`);
   };
 
   /** Approve/reject every still-pending member of one batch in one go. */
@@ -204,11 +258,43 @@ export default function AdminPaymentsPage() {
               searchPlaceholder="Search centre…"
               className="col-span-2 w-full sm:w-56"
             />
-            {(query || centerFilter !== "all" || filter !== "all") && (
+            <SearchableSelect
+              value={areaFilter}
+              onValueChange={setAreaFilter}
+              options={[
+                { value: "all", label: "All areas" },
+                ...areaOptions.map((a) => ({ value: a, label: a })),
+              ]}
+              placeholder="Area"
+              searchPlaceholder="Search area…"
+              className="col-span-2 w-full sm:w-44"
+            />
+            {centerFilter !== "all" && scopePending.length > 0 && (
+              <>
+                <Button
+                  size="sm"
+                  onClick={() => onCentreBulk("approve")}
+                  className="h-9 gap-1.5"
+                  title={`Approve every pending payment of ${centerFilter}`}
+                >
+                  <Check className="size-4" /> Approve centre ({scopePending.length})
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onCentreBulk("reject")}
+                  className="h-9 gap-1.5"
+                  title={`Reject every pending payment of ${centerFilter}`}
+                >
+                  <X className="size-4" /> Reject centre ({scopePending.length})
+                </Button>
+              </>
+            )}
+            {(query || centerFilter !== "all" || areaFilter !== "all" || filter !== "all") && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => { setQuery(""); setCenterFilter("all"); setFilter("all"); }}
+                onClick={() => { setQuery(""); setCenterFilter("all"); setAreaFilter("all"); setFilter("all"); }}
                 className="col-span-2 h-9 gap-1.5 px-2 text-muted-foreground sm:col-auto"
               >
                 <X className="size-3.5" /> Reset
@@ -236,7 +322,8 @@ export default function AdminPaymentsPage() {
             <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>
           ) : filtered.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">No payments match this filter.</p>
-          ) : pageUnits.map((u) => {
+          ) : pageUnits.map((u, i) => {
+            const showArea = i === 0 || pageUnits[i - 1].area !== u.area;
             const total = u.rows.reduce((s, p) => s + Number(p.amount), 0);
             const pendingCount = u.rows.filter((p) => p.status === "pending").length;
             const memberCards = u.rows.map((p) => (
@@ -303,10 +390,10 @@ export default function AdminPaymentsPage() {
             ));
             // Single payment renders exactly as before; a batch gets a
             // framed wrapper + header with whole-batch actions.
-            return u.rows.length === 1 ? (
+            const content = u.rows.length === 1 ? (
               memberCards
             ) : (
-              <div key={u.key} className="space-y-2 rounded-lg border-2 border-primary/40 bg-primary/5 p-2 shadow-sm">
+              <div className="space-y-2 rounded-lg border-2 border-primary/40 bg-primary/5 p-2 shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2 px-1 pt-0.5">
                   <div className="flex min-w-0 items-center gap-2 text-xs">
                     <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
@@ -335,6 +422,16 @@ export default function AdminPaymentsPage() {
                 {memberCards}
               </div>
             );
+            return (
+              <Fragment key={u.key}>
+                {showArea && (
+                  <h3 className="flex items-center gap-1.5 pt-1 text-sm font-semibold text-foreground">
+                    <MapPin className="size-4 text-primary" /> {u.area}
+                  </h3>
+                )}
+                {content}
+              </Fragment>
+            );
           })}
         </div>
 
@@ -360,11 +457,21 @@ export default function AdminPaymentsPage() {
               <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
             ) : filtered.length === 0 ? (
               <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">No payments match this filter.</TableCell></TableRow>
-            ) : pageUnits.map((u) => {
+            ) : pageUnits.map((u, i) => {
+              const showArea = i === 0 || pageUnits[i - 1].area !== u.area;
               const total = u.rows.reduce((s, p) => s + Number(p.amount), 0);
               const pendingCount = u.rows.filter((p) => p.status === "pending").length;
               return (
                 <Fragment key={u.key}>
+                  {showArea && (
+                    <TableRow className="bg-muted/40 hover:bg-muted/40">
+                      <TableCell colSpan={8} className="py-1.5">
+                        <span className="flex items-center gap-1.5 text-xs font-semibold">
+                          <MapPin className="size-3.5 text-primary" /> {u.area}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  )}
                   {u.rows.length > 1 && (
                     <TableRow className="border-l-4 border-l-primary bg-primary/10 hover:bg-primary/10">
                       <TableCell colSpan={8} className="py-2">

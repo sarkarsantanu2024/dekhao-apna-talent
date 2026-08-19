@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, CheckCircle2, MinusCircle, MapPin } from "lucide-react";
+import { Plus, Pencil, Trash2, CheckCircle2, MinusCircle, MapPin, X } from "lucide-react";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Pagination } from "@/components/ui/pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -43,6 +45,26 @@ export default function CentersPage() {
 
   // Centres grouped by area / city / locality.
   const groups = useMemo(() => groupByArea(rows, (c) => c.city), [rows]);
+
+  // Area filter (Andal, Bankura, Durgapur, …) + group-level pagination.
+  const [areaFilter, setAreaFilter] = useState("all");
+  const areaOptions = useMemo(() => groups.map(([area]) => area), [groups]);
+  const visibleGroups = useMemo(
+    () =>
+      areaFilter === "all"
+        ? groups
+        : groups.filter(([area]) => area.toLowerCase() === areaFilter.toLowerCase()),
+    [groups, areaFilter],
+  );
+  const GROUPS_PER_PAGE = 5;
+  const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [areaFilter]);
+  const pageCount = Math.max(1, Math.ceil(visibleGroups.length / GROUPS_PER_PAGE));
+  const safePage = Math.min(page, pageCount);
+  const pageGroups = useMemo(
+    () => visibleGroups.slice((safePage - 1) * GROUPS_PER_PAGE, safePage * GROUPS_PER_PAGE),
+    [visibleGroups, safePage],
+  );
 
   const toggle = (id: string) =>
     setSelected((prev) => {
@@ -114,7 +136,30 @@ export default function CentersPage() {
           <p className="py-6 text-center text-sm text-muted-foreground">No centres yet.</p>
         ) : (
           <div className="space-y-6">
-            {groups.map(([area, items]) => {
+            <div className="sticky top-16 z-20 -mx-4 flex items-center gap-2 border-b bg-card px-4 py-3 sm:-mx-6 sm:px-6">
+              <SearchableSelect
+                value={areaFilter}
+                onValueChange={setAreaFilter}
+                options={[
+                  { value: "all", label: "All areas" },
+                  ...areaOptions.map((a) => ({ value: a, label: a })),
+                ]}
+                placeholder="Area"
+                searchPlaceholder="Search area…"
+                className="w-full sm:w-56"
+              />
+              {areaFilter !== "all" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setAreaFilter("all")}
+                  className="h-9 shrink-0 gap-1.5 px-2 text-muted-foreground"
+                >
+                  <X className="size-3.5" /> Reset
+                </Button>
+              )}
+            </div>
+            {pageGroups.map(([area, items]) => {
               const groupAllSelected = items.every((r) => selected.has(r.id));
               return (
                 <section key={area}>
@@ -239,6 +284,7 @@ export default function CentersPage() {
                 </section>
               );
             })}
+            <Pagination page={safePage} pageCount={pageCount} onPageChange={setPage} />
           </div>
         )}
       </CardContent>

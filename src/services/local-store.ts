@@ -123,6 +123,7 @@ const SEED_CATEGORIES: Category[] = [
   { id: "cat_song",  name: "Song",                 slug: "song",         prefix: "SONG",  fee: 400, active: true, description: "Audition round is a cappella (no music)." },
   { id: "cat_math",  name: "Mental Math Olympiad", slug: "mental-math",  prefix: "MATH",  fee: 250, active: true, description: "Levels L1–L8. Centre round is free." },
   { id: "cat_other", name: "Other Talent",         slug: "other-talent", prefix: "OTHER", fee: 400, active: true, description: "Showcase any special talent." },
+  { id: "cat_kbb",   name: "KBB",                  slug: "kbb",          prefix: "KBB",   fee: 250, active: true, description: "Kaun Banega Brainist — the on-screen quiz challenge. Brain-teasing questions appear on screen and students answer live." },
 ];
 
 /* ---------- DataStore implementation ---------- */

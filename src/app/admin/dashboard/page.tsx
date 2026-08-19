@@ -3,9 +3,9 @@
 import { useMemo } from "react";
 import { EVENT_YEAR } from "@/constants";
 import { TEST_CENTER_IDS, TEST_PAYMENT_IDS, TEST_STUDENT_IDS } from "@/constants/test-data";
-import { useStats, useStudents, usePayments, useCenters, type DashboardStats } from "@/services";
+import { useStats, useStudents, usePayments, useCenters, useCategories, type DashboardStats } from "@/services";
 import { useShowTestData } from "@/lib/use-show-test-data";
-import { buildStats } from "@/lib/build-stats";
+import { buildStats, withAllCategories } from "@/lib/build-stats";
 import { DashboardOverview } from "@/components/dashboard/overview";
 import { CollectionByCentre } from "@/components/dashboard/collection-by-centre";
 import { Switch } from "@/components/ui/switch";
@@ -15,6 +15,7 @@ export default function AdminDashboard() {
   const { data: students } = useStudents();
   const { data: payments } = usePayments();
   const { data: centers } = useCenters();
+  const { data: categories } = useCategories();
   const [showTestData, onToggle] = useShowTestData();
 
   /** Stats over real rows only — the marked test rows filtered out. */
@@ -53,7 +54,11 @@ export default function AdminDashboard() {
       )}
 
       <DashboardOverview
-        stats={showTestData ? stats : realStats}
+        stats={{
+          ...(showTestData ? stats : realStats),
+          // Show every active category, even ones with no students yet.
+          byCategory: withAllCategories((showTestData ? stats : realStats).byCategory, categories),
+        }}
         scope="global"
         studentsHref="/admin/students"
         paymentsHref="/admin/payments"

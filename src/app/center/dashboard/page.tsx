@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EVENT_YEAR } from "@/constants";
 import { formatDate } from "@/lib/utils";
-import { useCenters, usePayments, useStudents } from "@/services";
+import { useCategories, useCenters, usePayments, useStudents } from "@/services";
+import { withAllCategories } from "@/lib/build-stats";
 import type { DashboardStats } from "@/services";
 import { DashboardOverview } from "@/components/dashboard/overview";
 import { TEST_PAYMENT_IDS, TEST_STUDENT_IDS } from "@/constants/test-data";
@@ -19,6 +20,7 @@ import { useShowTestData } from "@/lib/use-show-test-data";
 export default function CenterDashboard() {
   const { data: session } = useSession();
   const { data: centers } = useCenters();
+  const { data: categories } = useCategories();
   const sessionCenterId = session?.user?.centerId ?? null;
   const myCenter = centers.find((c) => c.id === sessionCenterId) ?? centers[0] ?? null;
   const centerId = myCenter?.id;
@@ -67,9 +69,13 @@ export default function CenterDashboard() {
       approvedPayments: aPay,
       rejectedPayments: rPay,
       collected,
-      byCategory: Array.from(byCat.entries()).map(([categoryName, count]) => ({ categoryName, count })),
+      // Every active category shows, even with 0 students (e.g. a new one).
+      byCategory: withAllCategories(
+        Array.from(byCat.entries()).map(([categoryName, count]) => ({ categoryName, count })),
+        categories,
+      ),
     };
-  }, [students, payments]);
+  }, [students, payments, categories]);
 
   function downloadReport() {
     setBusy(true);

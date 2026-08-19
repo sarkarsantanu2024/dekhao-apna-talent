@@ -8,15 +8,16 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/cards/stat-card";
 import { Trophy, Users, IndianRupee, FileCheck2, Download, RotateCcw } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { store, useStats, useStudents, useCenters, usePayments } from "@/services";
+import { store, useStats, useStudents, useCenters, usePayments, useCategories } from "@/services";
 import { confirm } from "@/components/ui/confirm-dialog";
 import { EVENT_YEAR } from "@/constants";
 import { TEST_CENTER_IDS, TEST_PAYMENT_IDS, TEST_STUDENT_IDS } from "@/constants/test-data";
 import { useShowTestData } from "@/lib/use-show-test-data";
-import { buildStats } from "@/lib/build-stats";
+import { buildStats, withAllCategories } from "@/lib/build-stats";
 import { useMemo } from "react";
 
 export default function ReportsPage() {
+  const { data: categories } = useCategories();
   const { data: allStats, loading } = useStats();
   const { data: allStudents } = useStudents();
   const { data: allCenters } = useCenters();
@@ -39,6 +40,8 @@ export default function ReportsPage() {
         : buildStats(students, allPayments.filter((p) => !TEST_PAYMENT_IDS.has(p.id)), centers),
     [showTestData, allStats, students, allPayments, centers],
   );
+  // Every active category appears, even with 0 students (e.g. a new one).
+  const byCategory = useMemo(() => withAllCategories(s.byCategory, categories), [s, categories]);
 
   async function onResetTestData() {
     if (!(await confirm({
@@ -65,7 +68,7 @@ export default function ReportsPage() {
         ["Rejected students", s.rejectedStudents],
         ["Chest-card active", s.activeStudents],
         ["Registered centres", s.centers],
-        ["Categories", s.byCategory.length],
+        ["Categories", byCategory.length],
         ["Pending payments", s.pendingPayments],
         ["Approved payments", s.approvedPayments],
         ["Rejected payments", s.rejectedPayments],
@@ -76,7 +79,7 @@ export default function ReportsPage() {
       XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
 
       // 2) Students by category
-      const byCat = [["Category", "Students"], ...s.byCategory.map((r) => [r.categoryName, r.count])];
+      const byCat = [["Category", "Students"], ...byCategory.map((r) => [r.categoryName, r.count])];
       const wsCat = XLSX.utils.aoa_to_sheet(byCat);
       wsCat["!cols"] = [{ wch: 28 }, { wch: 12 }];
       XLSX.utils.book_append_sheet(wb, wsCat, "By Category");
@@ -140,7 +143,7 @@ export default function ReportsPage() {
         <StatCard label="Total students"        value={s.students}                  icon={Users}      />
         <StatCard label="Chest-card active"     value={s.activeStudents}            icon={FileCheck2} />
         <StatCard label="Collected (approved)"  value={formatCurrency(s.collected)} icon={IndianRupee} />
-        <StatCard label="Categories"            value={s.byCategory.length}         icon={Trophy}     />
+        <StatCard label="Categories"            value={byCategory.length}           icon={Trophy}     />
       </div>
 
       <Card>
@@ -149,9 +152,9 @@ export default function ReportsPage() {
         </CardHeader>
         <CardContent>
           <ul className="divide-y">
-            {s.byCategory.length === 0 ? (
+            {byCategory.length === 0 ? (
               <li className="py-2 text-sm text-muted-foreground">No data yet.</li>
-            ) : s.byCategory.map((row) => (
+            ) : byCategory.map((row) => (
               <li key={row.categoryName} className="flex justify-between py-2 text-sm">
                 <span>{row.categoryName}</span>
                 <span className="font-semibold">{row.count}</span>

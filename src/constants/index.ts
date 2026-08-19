@@ -36,6 +36,26 @@ export const CATEGORIES = [
   { slug: "song",         name: "Song",                 prefix: "SONG",  fee: 400, blurb: "Audition round is a cappella (no music)." },
   { slug: "mental-math",  name: "Mental Math Olympiad", prefix: "MATH",  fee: 250, blurb: "Levels L1–L8. Centre round is free." },
   { slug: "other-talent", name: "Other Talent",         prefix: "OTHER", fee: 400, blurb: "Showcase any special talent — submit a video first." },
+  { slug: "kbb",          name: "KBB — Kaun Banega Brainist", prefix: "KBB", fee: 250, blurb: "The on-screen quiz challenge — brain-teasing questions appear on screen, students answer live. Are you a genius?" },
+] as const;
+
+/**
+ * Trilingual notice shown on the auth (login) screen as an infinitely
+ * scrolling ticker. Edit the texts here — the ticker just renders this list.
+ */
+export const LOGIN_NOTICES = [
+  {
+    lang: "English",
+    text: "How to pay — Step 1: Add all your students. Step 2: Pay the total entry fee to Head Office. Step 3: Open the Payments page, upload ONE payment screenshot and tick every student it covers. Step 4: Once the admin approves, chest cards unlock automatically.",
+  },
+  {
+    lang: "বাংলা",
+    text: "পেমেন্ট করার নিয়ম — ধাপ ১: প্রথমে আপনার সব ছাত্রছাত্রীকে যোগ করুন। ধাপ ২: মোট এন্ট্রি ফি হেড অফিসে পাঠান। ধাপ ৩: Payments পেজে গিয়ে একটি পেমেন্ট স্ক্রিনশট আপলোড করুন এবং যাদের জন্য পেমেন্ট করেছেন তাদের সবাইকে টিক দিন। ধাপ ৪: অ্যাডমিন অনুমোদন করলেই চেস্ট কার্ড নিজে থেকে চালু হয়ে যাবে।",
+  },
+  {
+    lang: "हिन्दी",
+    text: "भुगतान कैसे करें — चरण 1: पहले अपने सभी छात्रों को जोड़ें। चरण 2: कुल एंट्री फीस हेड ऑफ़िस को भेजें। चरण 3: Payments पेज खोलें, एक पेमेंट स्क्रीनशॉट अपलोड करें और जिन छात्रों के लिए भुगतान किया है उन सभी को टिक करें। चरण 4: एडमिन की मंज़ूरी मिलते ही चेस्ट कार्ड अपने आप चालू हो जाएगा।",
+  },
 ] as const;
 
 export const PRIZES = {

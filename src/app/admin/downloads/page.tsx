@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Download, Loader2, Files, MapPin, X } from "lucide-react";
 import {
@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Pagination } from "@/components/ui/pagination";
 import { StatusBadge } from "@/components/common/status-badge";
 import { ChestCardBlockers, chestCardBlockers } from "@/components/common/chest-card-blockers";
 import { useCenters, usePayments, useStudents } from "@/services";
@@ -54,6 +55,7 @@ export default function AdminDownloadsPage() {
   );
   const [query, setQuery] = useState("");
   const [centerFilter, setCenterFilter] = useState("all");
+  const [areaFilter, setAreaFilter] = useState("all");
   const [singleBusy, setSingleBusy] = useState<string | null>(null);
   const [bulk, setBulk] = useState(false);
 
@@ -76,6 +78,31 @@ export default function AdminDownloadsPage() {
 
   // Students grouped by area / city / locality.
   const groups = useMemo(() => groupByArea(filtered, (s) => s.city), [filtered]);
+
+  // Area filter options come from the full list, so a chosen area never
+  // disappears from the dropdown while a search is narrowing the results.
+  const areaOptions = useMemo(
+    () => groupByArea(rows, (s) => s.city).map(([area]) => area),
+    [rows],
+  );
+  const visibleGroups = useMemo(
+    () =>
+      areaFilter === "all"
+        ? groups
+        : groups.filter(([area]) => area.toLowerCase() === areaFilter.toLowerCase()),
+    [groups, areaFilter],
+  );
+
+  // Paginate by area group so a long area list stays scannable.
+  const GROUPS_PER_PAGE = 4;
+  const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [query, centerFilter, areaFilter]);
+  const pageCount = Math.max(1, Math.ceil(visibleGroups.length / GROUPS_PER_PAGE));
+  const safePage = Math.min(page, pageCount);
+  const pageGroups = useMemo(
+    () => visibleGroups.slice((safePage - 1) * GROUPS_PER_PAGE, safePage * GROUPS_PER_PAGE),
+    [visibleGroups, safePage],
+  );
 
   const onSingle = async (s: Student) => {
     setSingleBusy(s.id);
@@ -153,11 +180,22 @@ export default function AdminDownloadsPage() {
             searchPlaceholder="Search centre…"
             className="w-full sm:w-56"
           />
-          {(query || centerFilter !== "all") && (
+          <SearchableSelect
+            value={areaFilter}
+            onValueChange={setAreaFilter}
+            options={[
+              { value: "all", label: "All areas" },
+              ...areaOptions.map((a) => ({ value: a, label: a })),
+            ]}
+            placeholder="Area"
+            searchPlaceholder="Search area…"
+            className="w-full sm:w-48"
+          />
+          {(query || centerFilter !== "all" || areaFilter !== "all") && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => { setQuery(""); setCenterFilter("all"); }}
+              onClick={() => { setQuery(""); setCenterFilter("all"); setAreaFilter("all"); }}
               className="h-9 gap-1.5 px-2 text-muted-foreground sm:shrink-0"
             >
               <X className="size-3.5" /> Reset
@@ -170,7 +208,7 @@ export default function AdminDownloadsPage() {
           <p className="py-6 text-center text-sm text-muted-foreground">No students match.</p>
         ) : (
           <div className="space-y-6">
-            {groups.map(([area, items]) => (
+            {pageGroups.map(([area, items]) => (
               <section key={area}>
                 <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-foreground">
                   <MapPin className="size-4 text-primary" />
@@ -253,6 +291,7 @@ export default function AdminDownloadsPage() {
                 </div>
               </section>
             ))}
+            <Pagination page={safePage} pageCount={pageCount} onPageChange={setPage} />
           </div>
         )}
       </CardContent>
