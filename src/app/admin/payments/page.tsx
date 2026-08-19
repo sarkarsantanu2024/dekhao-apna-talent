@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Check, X, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,10 +10,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { StatusBadge } from "@/components/common/status-badge";
 import { ScreenshotPreview } from "@/components/common/screenshot-link";
 import { PaymentActions } from "@/components/admin/payment-actions";
+import { Pagination } from "@/components/ui/pagination";
 import { confirm, prompt } from "@/components/ui/confirm-dialog";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { store, usePayments } from "@/services";
-import { TEST_PAYMENT_IDS } from "@/constants/test-data";
+import { store, useCenters, usePayments } from "@/services";
+import { TEST_CENTER_IDS, TEST_PAYMENT_IDS } from "@/constants/test-data";
+import { Input } from "@/components/ui/input";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { useShowTestData } from "@/lib/use-show-test-data";
 import type { Payment, PaymentStatus } from "@/types";
 
@@ -32,15 +35,42 @@ export default function AdminPaymentsPage() {
     [allRows, showTestData],
   );
   const [filter, setFilter] = useState<PaymentStatus | "all">("all");
+  const [query, setQuery] = useState("");
+  const [centerFilter, setCenterFilter] = useState("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const filtered = useMemo(
-    () => (filter === "all" ? rows : rows.filter((p) => p.status === filter)),
-    [rows, filter],
+  const { data: allCenters } = useCenters();
+  const centers = useMemo(
+    () => (showTestData ? allCenters : allCenters.filter((c) => !TEST_CENTER_IDS.has(c.id))),
+    [allCenters, showTestData],
   );
 
-  // Only pending payments can be approved/rejected, so only those are selectable.
-  const pendingRows = useMemo(() => filtered.filter((p) => p.status === "pending"), [filtered]);
+  const filtered = useMemo(() => {
+    let out = filter === "all" ? rows : rows.filter((p) => p.status === filter);
+    if (centerFilter !== "all") out = out.filter((p) => p.center_name === centerFilter);
+    const q = query.trim().toLowerCase();
+    if (q) {
+      out = out.filter((p) =>
+        [p.student_name, p.center_name, p.transaction_ref].some((v) => v?.toLowerCase().includes(q)),
+      );
+    }
+    return out;
+  }, [rows, filter, centerFilter, query]);
+
+  // Pagination keeps long lists scannable; changing the filter resets to page 1.
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [filter, query, centerFilter]);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pageRows = useMemo(
+    () => filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [filtered, safePage],
+  );
+
+  // Only pending payments can be approved/rejected, so only those are
+  // selectable — scoped to the visible page.
+  const pendingRows = useMemo(() => pageRows.filter((p) => p.status === "pending"), [pageRows]);
   const allSelected = pendingRows.length > 0 && pendingRows.every((p) => selected.has(p.id));
 
   const toggle = (id: string) =>
@@ -110,30 +140,62 @@ export default function AdminPaymentsPage() {
               </Button>
             </>
           )}
-          <div className="inline-flex flex-wrap gap-1 rounded-md border bg-background p-1">
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        <div className="sticky top-16 z-20 -mx-4 mb-4 flex flex-col gap-3 border-b bg-card px-4 py-3 sm:-mx-6 sm:px-6 xl:flex-row xl:items-center xl:justify-between">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+            <Input
+              placeholder="Search student, centre, ref…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="col-span-2 h-9 w-full sm:w-64"
+            />
+            <SearchableSelect
+              value={centerFilter}
+              onValueChange={setCenterFilter}
+              options={[
+                { value: "all", label: "All centres" },
+                ...centers.map((c) => ({ value: c.center_name, label: c.center_name })),
+              ]}
+              placeholder="Centre"
+              searchPlaceholder="Search centre…"
+              className="col-span-2 w-full sm:w-56"
+            />
+            {(query || centerFilter !== "all" || filter !== "all") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setQuery(""); setCenterFilter("all"); setFilter("all"); }}
+                className="col-span-2 h-9 gap-1.5 px-2 text-muted-foreground sm:col-auto"
+              >
+                <X className="size-3.5" /> Reset
+              </Button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1 rounded-md border bg-background p-1 sm:inline-flex sm:w-fit">
             {FILTERS.map((f) => (
               <Button
                 key={f.value}
                 size="sm"
                 variant={filter === f.value ? "default" : "ghost"}
                 onClick={() => setFilter(f.value)}
-                className="h-7 px-3 text-xs"
+                className="h-7 flex-1 px-3 text-xs sm:flex-none"
               >
                 {f.label}
               </Button>
             ))}
           </div>
         </div>
-      </CardHeader>
 
-      <CardContent>
         {/* Mobile: app-style card list */}
         <div className="space-y-3 md:hidden">
           {loading && filtered.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>
           ) : filtered.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">No payments match this filter.</p>
-          ) : filtered.map((p) => (
+          ) : pageRows.map((p) => (
             <div
               key={p.id}
               className={`rounded-lg border bg-card p-4 shadow-sm ${selected.has(p.id) ? "border-primary/50 bg-muted/30" : ""}`}
@@ -219,7 +281,7 @@ export default function AdminPaymentsPage() {
               <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
             ) : filtered.length === 0 ? (
               <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">No payments match this filter.</TableCell></TableRow>
-            ) : filtered.map((p) => (
+            ) : pageRows.map((p) => (
               <TableRow key={p.id} data-state={selected.has(p.id) ? "selected" : undefined}>
                 <TableCell>
                   {p.status === "pending" ? (
@@ -283,6 +345,8 @@ export default function AdminPaymentsPage() {
           </TableBody>
         </Table>
         </div>
+
+        <Pagination page={safePage} pageCount={pageCount} onPageChange={setPage} />
       </CardContent>
     </Card>
   );

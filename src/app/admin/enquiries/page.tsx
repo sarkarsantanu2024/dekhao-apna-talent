@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
-import { Download, Mail, MessageCircle, Check, Archive, Trash2, RotateCcw } from "lucide-react";
+import { Download, Mail, MessageCircle, Check, Archive, Trash2, RotateCcw, X } from "lucide-react";
+import { Pagination } from "@/components/ui/pagination";
 import {
   Card,
   CardContent,
@@ -61,6 +62,17 @@ export default function EnquiriesPage() {
       return [e.name, e.email, e.phone, e.message].some((v) => v?.toLowerCase().includes(q));
     });
   }, [enquiries, query, filter]);
+
+  // Pagination keeps long lists scannable; filters/search reset to page 1.
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [query, filter]);
+  const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pageRows = useMemo(
+    () => rows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [rows, safePage],
+  );
 
   const setStatus = async (e: Enquiry, status: EnquiryStatus) => {
     setBusyId(e.id);
@@ -130,8 +142,8 @@ export default function EnquiriesPage() {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap gap-1.5">
+        <div className="sticky top-16 z-20 -mx-4 flex flex-col gap-3 border-b bg-card px-4 py-3 sm:-mx-6 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div className="flex flex-wrap items-center gap-1.5">
             {FILTERS.map((f) => (
               <Button
                 key={f.key}
@@ -142,6 +154,16 @@ export default function EnquiriesPage() {
                 {f.label}
               </Button>
             ))}
+            {(query || filter !== "all") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setQuery(""); setFilter("all"); }}
+                className="gap-1.5 px-2 text-muted-foreground"
+              >
+                <X className="size-3.5" /> Reset
+              </Button>
+            )}
           </div>
           <Input
             placeholder="Search name, email, phone, message…"
@@ -163,7 +185,7 @@ export default function EnquiriesPage() {
           <>
           {/* Mobile: app-style card list */}
           <div className="space-y-3 md:hidden">
-            {rows.map((e) => {
+            {pageRows.map((e) => {
               const phoneDigits = (e.phone ?? "").replace(/\D/g, "");
               return (
                 <div key={e.id} className="rounded-lg border bg-card p-4 shadow-sm">
@@ -245,7 +267,7 @@ export default function EnquiriesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.map((e) => {
+                {pageRows.map((e) => {
                   const phoneDigits = (e.phone ?? "").replace(/\D/g, "");
                   return (
                     <TableRow key={e.id} className={e.status === "new" ? "bg-primary/[0.03]" : undefined}>
@@ -319,6 +341,8 @@ export default function EnquiriesPage() {
               </TableBody>
             </Table>
           </div>
+
+          <Pagination page={safePage} pageCount={pageCount} onPageChange={setPage} />
           </>
         )}
       </CardContent>

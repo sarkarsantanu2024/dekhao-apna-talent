@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
-import { Copy, Download, MessageCircle, MapPin } from "lucide-react";
+import { Copy, Download, MessageCircle, MapPin, X } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -160,12 +160,24 @@ export default function CredentialsPage() {
         </Button>
       </CardHeader>
       <CardContent className="space-y-6">
-        <Input
-          placeholder="Search centre, owner, area, user ID…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="h-9 w-full sm:w-80"
-        />
+        <div className="sticky top-16 z-20 -mx-4 flex items-center gap-2 border-b bg-card px-4 py-3 sm:-mx-6 sm:px-6">
+          <Input
+            placeholder="Search centre, owner, area, user ID…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="h-9 w-full sm:w-80"
+          />
+          {query && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setQuery("")}
+              className="h-9 shrink-0 gap-1.5 px-2 text-muted-foreground"
+            >
+              <X className="size-3.5" /> Reset
+            </Button>
+          )}
+        </div>
 
         {loading && creds.length === 0 ? (
           <p className="text-center text-sm text-muted-foreground">Loading…</p>

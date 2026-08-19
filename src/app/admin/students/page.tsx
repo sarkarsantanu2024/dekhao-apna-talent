@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Pencil, Trash2, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { Pagination } from "@/components/ui/pagination";
 import { StatusBadge } from "@/components/common/status-badge";
 import { formatDate } from "@/lib/utils";
 import { confirm, prompt } from "@/components/ui/confirm-dialog";
@@ -85,7 +87,19 @@ export default function AdminStudentsPage() {
     return rows;
   }, [students, filter, categoryFilter, centerFilter, sortBy, query]);
 
-  const allSelected = filtered.length > 0 && filtered.every((s) => selected.has(s.id));
+  // Pagination keeps long lists scannable; filters/search reset to page 1.
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(1);
+  useEffect(() => { setPage(1); }, [query, categoryFilter, centerFilter, sortBy, filter]);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pageRows = useMemo(
+    () => filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [filtered, safePage],
+  );
+
+  // "Select all" operates on the visible page, not the whole filtered list.
+  const allSelected = pageRows.length > 0 && pageRows.every((s) => selected.has(s.id));
 
   const toggle = (id: string) =>
     setSelected((prev) => {
@@ -95,7 +109,14 @@ export default function AdminStudentsPage() {
       return next;
     });
   const toggleAll = () =>
-    setSelected(allSelected ? new Set() : new Set(filtered.map((s) => s.id)));
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const s of pageRows) {
+        if (allSelected) next.delete(s.id);
+        else next.add(s.id);
+      }
+      return next;
+    });
 
   const onDelete = async (s: Student) => {
     if (!(await confirm({
@@ -178,7 +199,7 @@ export default function AdminStudentsPage() {
       </CardHeader>
 
       <CardContent>
-        <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <div className="sticky top-16 z-20 -mx-4 mb-4 flex flex-col gap-3 border-b bg-card px-4 py-3 sm:-mx-6 sm:px-6 xl:flex-row xl:items-center xl:justify-between">
           <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
             <Input
               placeholder="Search name, roll, centre…"
@@ -197,17 +218,17 @@ export default function AdminStudentsPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={centerFilter} onValueChange={setCenterFilter}>
-              <SelectTrigger className="h-9 w-full sm:w-44">
-                <SelectValue placeholder="Centre" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All centres</SelectItem>
-                {centers.map((c) => (
-                  <SelectItem key={c.id} value={c.center_name}>{c.center_name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              value={centerFilter}
+              onValueChange={setCenterFilter}
+              options={[
+                { value: "all", label: "All centres" },
+                ...centers.map((c) => ({ value: c.center_name, label: c.center_name })),
+              ]}
+              placeholder="Centre"
+              searchPlaceholder="Search centre…"
+              className="w-full sm:w-56"
+            />
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
               <SelectTrigger className="col-span-2 h-9 w-full sm:w-40">
                 <SelectValue placeholder="Sort" />
@@ -218,6 +239,22 @@ export default function AdminStudentsPage() {
                 <SelectItem value="category">Category (A–Z)</SelectItem>
               </SelectContent>
             </Select>
+            {(query || categoryFilter !== "all" || centerFilter !== "all" || sortBy !== "newest" || filter !== "all") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setQuery("");
+                  setCategoryFilter("all");
+                  setCenterFilter("all");
+                  setSortBy("newest");
+                  setFilter("all");
+                }}
+                className="col-span-2 h-9 gap-1.5 px-2 text-muted-foreground sm:col-auto"
+              >
+                <X className="size-3.5" /> Reset
+              </Button>
+            )}
           </div>
           <div className="flex flex-wrap gap-1 rounded-md border bg-background p-1 sm:inline-flex sm:w-fit">
             {FILTERS.map((f) => (
@@ -244,7 +281,7 @@ export default function AdminStudentsPage() {
             <p className="py-8 text-center text-sm text-muted-foreground">
               {query ? "No students match your search." : `No ${filter === "all" ? "" : filter + " "}students.`}
             </p>
-          ) : filtered.map((s) => (
+          ) : pageRows.map((s) => (
             <div
               key={s.id}
               className={`rounded-lg border bg-card p-4 shadow-sm ${selected.has(s.id) ? "border-primary/50 bg-muted/30" : ""}`}
@@ -313,7 +350,7 @@ export default function AdminStudentsPage() {
               <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">
                 {query ? "No students match your search." : `No ${filter === "all" ? "" : filter + " "}students.`}
               </TableCell></TableRow>
-            ) : filtered.map((s) => (
+            ) : pageRows.map((s) => (
               <TableRow key={s.id} data-state={selected.has(s.id) ? "selected" : undefined}>
                 <TableCell>
                   <Checkbox
@@ -356,6 +393,8 @@ export default function AdminStudentsPage() {
           </TableBody>
         </Table>
         </div>
+
+        <Pagination page={safePage} pageCount={pageCount} onPageChange={setPage} />
       </CardContent>
 
       <StudentDialog

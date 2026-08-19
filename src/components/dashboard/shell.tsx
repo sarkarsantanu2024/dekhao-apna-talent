@@ -181,7 +181,9 @@ export function DashboardShell({ nav, title, user, children }: Props) {
           </div>
         </header>
 
-        <main className="min-w-0 flex-1 overflow-x-hidden p-4 md:p-6">{children}</main>
+        {/* overflow-x-clip (not -hidden): clip guards sideways overflow without
+            creating a scroll container, so sticky filter bars keep working. */}
+        <main className="min-w-0 flex-1 overflow-x-clip p-4 md:p-6">{children}</main>
       </div>
     </div>
   );

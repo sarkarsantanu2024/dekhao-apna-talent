@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Download, Loader2, Files, MapPin } from "lucide-react";
+import { Download, Loader2, Files, MapPin, X } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -20,10 +20,11 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { StatusBadge } from "@/components/common/status-badge";
 import { ChestCardBlockers, chestCardBlockers } from "@/components/common/chest-card-blockers";
-import { usePayments, useStudents } from "@/services";
-import { TEST_PAYMENT_IDS, TEST_STUDENT_IDS } from "@/constants/test-data";
+import { useCenters, usePayments, useStudents } from "@/services";
+import { TEST_CENTER_IDS, TEST_PAYMENT_IDS, TEST_STUDENT_IDS } from "@/constants/test-data";
 import { useShowTestData } from "@/lib/use-show-test-data";
 import { groupByArea } from "@/lib/utils";
 import {
@@ -46,20 +47,32 @@ export default function AdminDownloadsPage() {
     () => (showTestData ? allPayments : allPayments.filter((p) => !TEST_PAYMENT_IDS.has(p.id))),
     [allPayments, showTestData],
   );
+  const { data: allCenters } = useCenters();
+  const centers = useMemo(
+    () => (showTestData ? allCenters : allCenters.filter((c) => !TEST_CENTER_IDS.has(c.id))),
+    [allCenters, showTestData],
+  );
   const [query, setQuery] = useState("");
+  const [centerFilter, setCenterFilter] = useState("all");
   const [singleBusy, setSingleBusy] = useState<string | null>(null);
   const [bulk, setBulk] = useState(false);
 
+  // Centre scope first — the bulk download follows it (but not the text search).
+  const inScope = useMemo(
+    () => (centerFilter === "all" ? rows : rows.filter((s) => s.center_name === centerFilter)),
+    [rows, centerFilter],
+  );
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter((s) =>
+    if (!q) return inScope;
+    return inScope.filter((s) =>
       [s.full_name, s.roll_number, s.center_name, s.category_name].some((v) => v?.toLowerCase().includes(q)),
     );
-  }, [rows, query]);
+  }, [inScope, query]);
 
-  // Across all centres, students ready to print (active + photo).
-  const eligible = useMemo(() => rows.filter((s) => isDownloadable(s) && hasPhoto(s)), [rows]);
+  // Within the selected centre (or all centres), students ready to print (active + photo).
+  const eligible = useMemo(() => inScope.filter((s) => isDownloadable(s) && hasPhoto(s)), [inScope]);
 
   // Students grouped by area / city / locality.
   const groups = useMemo(() => groupByArea(filtered, (s) => s.city), [filtered]);
@@ -79,10 +92,16 @@ export default function AdminDownloadsPage() {
   const onBulk = async () => {
     setBulk(true);
     try {
+      const scope =
+        centerFilter === "all"
+          ? "all"
+          : centerFilter.replace(/[^\w]+/g, "-").toLowerCase();
       await downloadAllChestCards(eligible, {
-        fileName: `chest-cards-all-${new Date().toISOString().slice(0, 10)}.pdf`,
+        fileName: `chest-cards-${scope}-${new Date().toISOString().slice(0, 10)}.pdf`,
       });
-      toast.success(`Bundled ${eligible.length} chest cards`);
+      toast.success(
+        `Bundled ${eligible.length} chest cards${centerFilter === "all" ? "" : ` — ${centerFilter}`}`,
+      );
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Bulk download failed");
     } finally {
@@ -97,26 +116,53 @@ export default function AdminDownloadsPage() {
           <CardTitle>Chest card downloads</CardTitle>
           <CardDescription>
             Print any active student&apos;s chest card, or bundle every ready student into one PDF.
-            {rows.length > 0 && <> · {eligible.length} of {rows.length} ready.</>}
+            {inScope.length > 0 && <> · {eligible.length} of {inScope.length} ready{centerFilter === "all" ? "" : ` at ${centerFilter}`}.</>}
           </CardDescription>
         </div>
         <Button
           onClick={onBulk}
-          disabled={bulk || eligible.length < 2}
-          title={eligible.length >= 2 ? "Download all ready chest cards as one PDF" : "Bulk download unlocks once 2 or more students are ready"}
+          disabled={bulk || eligible.length < 1}
+          title={
+            eligible.length >= 1
+              ? `Download the ready chest cards ${centerFilter === "all" ? "of every centre" : `of ${centerFilter}`} as one PDF`
+              : "Unlocks once at least 1 student in this scope is ready"
+          }
           className="gap-2 shrink-0 sm:self-start"
         >
-          {bulk ? <><Loader2 className="size-4 animate-spin" /> Generating…</> : <><Files className="size-4" /> Download all ({eligible.length})</>}
+          {bulk
+            ? <><Loader2 className="size-4 animate-spin" /> Generating…</>
+            : <><Files className="size-4" /> {centerFilter === "all" ? `Download all (${eligible.length})` : `Download centre (${eligible.length})`}</>}
         </Button>
       </CardHeader>
       <CardContent>
-        <div className="mb-4">
+        <div className="sticky top-16 z-20 -mx-4 mb-4 flex flex-col gap-2 border-b bg-card px-4 py-3 sm:-mx-6 sm:flex-row sm:items-center sm:px-6">
           <Input
             placeholder="Search name, roll, centre…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="h-9 w-full sm:w-72"
           />
+          <SearchableSelect
+            value={centerFilter}
+            onValueChange={setCenterFilter}
+            options={[
+              { value: "all", label: "All centres" },
+              ...centers.map((c) => ({ value: c.center_name, label: c.center_name })),
+            ]}
+            placeholder="Centre"
+            searchPlaceholder="Search centre…"
+            className="w-full sm:w-56"
+          />
+          {(query || centerFilter !== "all") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { setQuery(""); setCenterFilter("all"); }}
+              className="h-9 gap-1.5 px-2 text-muted-foreground sm:shrink-0"
+            >
+              <X className="size-3.5" /> Reset
+            </Button>
+          )}
         </div>
         {loading && filtered.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">Loading…</p>
