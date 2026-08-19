@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Check, X, RotateCcw } from "lucide-react";
+import { Check, X, RotateCcw, Files } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -57,16 +57,36 @@ export default function AdminPaymentsPage() {
     return out;
   }, [rows, filter, centerFilter, query]);
 
+  // Rows sharing one screenshot are ONE real-world transfer ("batch") — the
+  // centre paid HO once for several students. Group them so the admin sees a
+  // single batch instead of apparent duplicates. The shared screenshot URL is
+  // the batch key (each upload produces a unique URL); no schema involved.
+  const units = useMemo(() => {
+    const map = new Map<string, Payment[]>();
+    const order: string[] = [];
+    for (const p of filtered) {
+      const key = `${p.center_id ?? p.center_name}|${p.screenshot_url}`;
+      if (!map.has(key)) {
+        map.set(key, []);
+        order.push(key);
+      }
+      map.get(key)!.push(p);
+    }
+    return order.map((key) => ({ key, rows: map.get(key)! }));
+  }, [filtered]);
+
   // Pagination keeps long lists scannable; changing the filter resets to page 1.
+  // Paginate by unit so a batch is never split across pages.
   const PAGE_SIZE = 20;
   const [page, setPage] = useState(1);
   useEffect(() => { setPage(1); }, [filter, query, centerFilter]);
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageCount = Math.max(1, Math.ceil(units.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount);
-  const pageRows = useMemo(
-    () => filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
-    [filtered, safePage],
+  const pageUnits = useMemo(
+    () => units.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [units, safePage],
   );
+  const pageRows = useMemo(() => pageUnits.flatMap((u) => u.rows), [pageUnits]);
 
   // Only pending payments can be approved/rejected, so only those are
   // selectable — scoped to the visible page.
@@ -102,6 +122,27 @@ export default function AdminPaymentsPage() {
     }
     setSelected(new Set());
     toast.success(`${kind === "approve" ? "Approved" : "Rejected"} ${ok} payment${ok !== 1 ? "s" : ""}`);
+  };
+
+  /** Approve/reject every still-pending member of one batch in one go. */
+  const onBatch = async (batchRows: Payment[], kind: "approve" | "reject") => {
+    const pending = batchRows.filter((p) => p.status === "pending");
+    if (!pending.length) return;
+    if (kind === "reject" && !(await confirm({
+      title: `Reject this batch (${pending.length} payment${pending.length !== 1 ? "s" : ""})?`,
+      description: "Every pending payment in this batch will be marked as rejected. The centre can re-submit.",
+      confirmText: "Reject",
+      destructive: true,
+    }))) return;
+    let ok = 0;
+    for (const p of pending) {
+      try {
+        if (kind === "approve") await store.approvePayment(p.id);
+        else await store.rejectPayment(p.id);
+        ok++;
+      } catch { /* skip failures */ }
+    }
+    toast.success(`${kind === "approve" ? "Approved" : "Rejected"} ${ok} payment${ok !== 1 ? "s" : ""} in the batch`);
   };
 
   const onRevert = async (p: Payment) => {
@@ -195,7 +236,10 @@ export default function AdminPaymentsPage() {
             <p className="py-8 text-center text-sm text-muted-foreground">Loading…</p>
           ) : filtered.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">No payments match this filter.</p>
-          ) : pageRows.map((p) => (
+          ) : pageUnits.map((u) => {
+            const total = u.rows.reduce((s, p) => s + Number(p.amount), 0);
+            const pendingCount = u.rows.filter((p) => p.status === "pending").length;
+            const memberCards = u.rows.map((p) => (
             <div
               key={p.id}
               className={`rounded-lg border bg-card p-4 shadow-sm ${selected.has(p.id) ? "border-primary/50 bg-muted/30" : ""}`}
@@ -256,7 +300,42 @@ export default function AdminPaymentsPage() {
                 )}
               </div>
             </div>
-          ))}
+            ));
+            // Single payment renders exactly as before; a batch gets a
+            // framed wrapper + header with whole-batch actions.
+            return u.rows.length === 1 ? (
+              memberCards
+            ) : (
+              <div key={u.key} className="space-y-2 rounded-lg border-2 border-primary/40 bg-primary/5 p-2 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2 px-1 pt-0.5">
+                  <div className="flex min-w-0 items-center gap-2 text-xs">
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
+                      <Files className="size-3" /> Batch
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-semibold">
+                        {u.rows.length} students · {formatCurrency(total)}
+                      </p>
+                      <p className="truncate text-muted-foreground">
+                        {u.rows[0].center_name} · one transfer, one screenshot
+                      </p>
+                    </div>
+                  </div>
+                  {pendingCount > 0 && (
+                    <div className="flex gap-2">
+                      <Button size="sm" className="h-7 gap-1 px-2 text-xs" onClick={() => onBatch(u.rows, "approve")}>
+                        <Check className="size-3.5" /> Approve all
+                      </Button>
+                      <Button size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs" onClick={() => onBatch(u.rows, "reject")}>
+                        <X className="size-3.5" /> Reject all
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                {memberCards}
+              </div>
+            );
+          })}
         </div>
 
         {/* Desktop: full table */}
@@ -272,17 +351,51 @@ export default function AdminPaymentsPage() {
                   aria-label="Select all pending"
                 />
               </TableHead>
-              <TableHead>Centre</TableHead><TableHead>Student</TableHead><TableHead>Amount</TableHead><TableHead>Ref</TableHead>
+              <TableHead>Centre</TableHead><TableHead>Student</TableHead><TableHead>Amount</TableHead>
               <TableHead>Screenshot</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead><TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading && filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">No payments match this filter.</TableCell></TableRow>
-            ) : pageRows.map((p) => (
-              <TableRow key={p.id} data-state={selected.has(p.id) ? "selected" : undefined}>
+              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">No payments match this filter.</TableCell></TableRow>
+            ) : pageUnits.map((u) => {
+              const total = u.rows.reduce((s, p) => s + Number(p.amount), 0);
+              const pendingCount = u.rows.filter((p) => p.status === "pending").length;
+              return (
+                <Fragment key={u.key}>
+                  {u.rows.length > 1 && (
+                    <TableRow className="border-l-4 border-l-primary bg-primary/10 hover:bg-primary/10">
+                      <TableCell colSpan={8} className="py-2">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
+                            <Files className="size-3" /> Batch
+                          </span>
+                          <span className="text-xs font-semibold">
+                            {u.rows.length} students · {formatCurrency(total)}
+                          </span>
+                          <span className="text-xs text-muted-foreground">one transfer, one screenshot</span>
+                          {pendingCount > 0 && (
+                            <span className="ml-auto flex gap-2">
+                              <Button size="sm" className="h-7 gap-1 px-2 text-xs" onClick={() => onBatch(u.rows, "approve")}>
+                                <Check className="size-3.5" /> Approve all
+                              </Button>
+                              <Button size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs" onClick={() => onBatch(u.rows, "reject")}>
+                                <X className="size-3.5" /> Reject all
+                              </Button>
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {u.rows.map((p) => (
+              <TableRow
+                key={p.id}
+                data-state={selected.has(p.id) ? "selected" : undefined}
+                className={u.rows.length > 1 ? "border-l-4 border-l-primary/40 bg-primary/3" : undefined}
+              >
                 <TableCell>
                   {p.status === "pending" ? (
                     <Checkbox
@@ -295,7 +408,6 @@ export default function AdminPaymentsPage() {
                 <TableCell>{p.center_name}</TableCell>
                 <TableCell>{p.student_name ?? "—"}</TableCell>
                 <TableCell>{formatCurrency(p.amount)}</TableCell>
-                <TableCell className="font-mono text-xs">{p.transaction_ref ?? "—"}</TableCell>
                 <TableCell>
                   <ScreenshotPreview
                     url={p.screenshot_url}
@@ -341,7 +453,10 @@ export default function AdminPaymentsPage() {
                   )}
                 </TableCell>
               </TableRow>
-            ))}
+                  ))}
+                </Fragment>
+              );
+            })}
           </TableBody>
         </Table>
         </div>
