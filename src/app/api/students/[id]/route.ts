@@ -40,6 +40,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Centre owners can add/edit but never delete — removals are admin-only.
+  if (session.user.role === "center_owner") {
+    return NextResponse.json({ error: "Only the admin can delete students" }, { status: 403 });
+  }
   const { id } = await ctx.params;
   const existing = await loadAuthorised(id, session);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
